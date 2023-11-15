@@ -1,4 +1,4 @@
-package com.vguardrishtaretailer;
+package com.tfl.vguardretailer;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
@@ -13,7 +13,7 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "VGuardRishtaRetailer";
+    return "V-Guard Rishta Retailer";
   }
 
   /**

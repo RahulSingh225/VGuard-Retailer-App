@@ -1,4 +1,4 @@
-package com.vguardrishtaretailer;
+package com.tfl.vguardretailer;
 
 import android.app.Application;
 import com.facebook.react.PackageList;

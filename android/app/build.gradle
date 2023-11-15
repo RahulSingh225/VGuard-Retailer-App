@@ -73,9 +73,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.vguardrishtaretailer"
+    namespace "com.tfl.vguardretailer"
     defaultConfig {
-        applicationId "com.vguardrishtaretailer"
+        applicationId "com.tfl.vguardretailer"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
