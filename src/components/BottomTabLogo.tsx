@@ -12,7 +12,7 @@ const BottomTabLogo: React.FC = () => {
           <Image
             style={styles.logoImage}
             resizeMode="contain"
-            source={require('../assets/images/ic_rishta_logo.png')}
+            source={require('../assets/images/rishta_retailer_logo.webp')}
           />
         </View>
       </ImageBackground>
