@@ -84,7 +84,7 @@ export default {
         lbl_enter_mobile_number: "2. আপনার মোবাইল নম্বর লিখুন যাতে OTP পাওয়া যায়",
         get_otp: "OTP পেতে",
         or: "অথবা",
-        powered_by_v_guard: "V-GUARD দ্বারা পাওয়ার্ড",
+        powered_by_v_guard: "দ্বারা পাওয়ার্ড",
         lbl_otp_through_phone_call: "এখানে ক্লিক করুন OTP পেতে\nফোন কলের মাধ্যমে",
         call: "কল",
         enter_your_mobile_number: "আপনার মোবাইল নম্বর লিখুন",

@@ -84,7 +84,7 @@ export default {
         lbl_enter_mobile_number: "2. Enter your mobile number to get OTP",
         get_otp: "Get OTP",
         or: "or",
-        powered_by_v_guard: "Powered by V-GUARD",
+        powered_by_v_guard: "Powered by",
         lbl_otp_through_phone_call: "Click Here to get OTP\nthrough phone call",
         call: "call",
         enter_your_mobile_number: "Enter your mobile number",

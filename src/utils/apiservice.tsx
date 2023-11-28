@@ -121,6 +121,55 @@ export const loginPasswordDigest = async (relativeUrl: string, username: string,
         throw error;
     }
 };
+export function loginWithPassword(username: string, password: string) {
+    const path = "user/userDetails/login";
+    console.log("<><><><", username)
+    return loginPasswordDigest(path, username, password);
+}
+
+export function sendloginWithOtp(number: Number) {
+    const body = {
+        loginOtpUserName: number,
+        otpType: "SMS"
+    };
+    const path = "user/generateOtpForLogin"
+    return createDigestPostRequest(path, body)
+}
+
+interface NewUserOtpValidationResponse {
+    data: {
+        message: string;
+        // Add other properties based on your API response
+    };
+    // Add other properties based on your API response
+}
+
+const api = axios.create({
+    baseURL: API_LINK,
+});
+
+export const Newuserotpvalidation = async (
+    mobileNo: string,
+    otp: string
+): Promise<NewUserOtpValidationResponse> => {
+    try {
+        const requestBody = {
+            mobileNo: mobileNo,
+            otp: otp,
+        };
+        console.log({ mobileNo, otp });
+        const response = await api.post('/vguard/api/user/validateNewUserOtp', {
+            mobileNo: mobileNo,
+            otp: otp,
+        });
+
+        return response.data as NewUserOtpValidationResponse;
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        throw error;
+    }
+};
+
 export function getUsers(filter: string) {
     const path = "user/";
     return createDigestPostRequest(path, filter);
