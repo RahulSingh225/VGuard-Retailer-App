@@ -1,5 +1,6 @@
 export default {
     strings: {
+        language: "English",
         app_name: "V-Guard Rishta Retailer",
         channel_id: "Channel Id",
         channel_name: "Channel name",

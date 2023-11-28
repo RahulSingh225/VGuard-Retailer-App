@@ -1,5 +1,6 @@
 export default {
     strings: {
+        language: "Bangla",
         app_name: "ভি-গার্ড রিশতা",
         channel_id: "চ্যানেল আইডি",
         channel_name: "চ্যানেল নাম",

@@ -1,5 +1,6 @@
 export default {
     strings: {
+        language: "Hindi",
         app_name: "वी-गार्ड रिश्ता",
         please_wait: "कृपया प्रतीक्षा करे",
         enter_username: "यूजरनाम डालें",
