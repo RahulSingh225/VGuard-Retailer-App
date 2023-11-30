@@ -175,7 +175,7 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           <CustomTouchableOption
               text="strings:tds_statement"
               iconSource={require('../../../assets/images/tds_ic.png')}
-              screenName="TDS Certificate"
+              screenName="TDS Statement"
             />
           </View>
         </View>

@@ -14,6 +14,9 @@ import InfoStack from '../pages/options/info/stack/InfoStack';
 import NewStack from '../pages/options/new/stack/NewStack';
 import TicketStack from '../pages/options/ticket/stack/TicketStack';
 import Bank from '../pages/options/bank/Bank';
+import TDS from '../pages/options/TDS/TDS';
+import Engagement from '../pages/options/engagement/Engagement';
+import TDSStatement from '../pages/options/TDSStatement/TDSStatement';
 
 const HomeStack: React.FC = () => {
   type HomeStackParams = {
@@ -24,13 +27,12 @@ const HomeStack: React.FC = () => {
     'Update KYC': undefined;
     schemes: undefined;
     info: undefined;
-    Welfare: undefined;
     new: undefined;
     ticket: undefined;
     'Update Bank': undefined;
     'TDS Certificate': undefined;
+    'TDS Statement': undefined;
     Engagement: undefined;
-    Manual: undefined;
     Profile: undefined;
   };
 
@@ -79,21 +81,6 @@ const HomeStack: React.FC = () => {
             headerShown: true,
           }}
         />
-        {/* 
-        
-        
-        <Stack.Screen name="Update KYC" component={UpdateKYC} options={{ headerShown: true }} />
-        
-        
-        <Stack.Screen
-          name="Welfare"
-          component={Welfare}
-          options={{
-            headerShown: true,
-          }}
-        />
-        
-        
         <Stack.Screen
           name="TDS Certificate"
           component={TDS}
@@ -109,13 +96,12 @@ const HomeStack: React.FC = () => {
           }}
         />
         <Stack.Screen
-          name="Manual"
-          component={Manual}
+          name="TDS Statement"
+          component={TDSStatement}
           options={{
             headerShown: true,
           }}
         />
-        */}
         <Stack.Screen
           name="Profile"
           component={ProfileStack}
