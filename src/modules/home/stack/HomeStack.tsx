@@ -10,6 +10,7 @@ import ScanStack from '../pages/options/scanQR/stack/ScanStack';
 import RedeemStack from '../pages/options/redeemPoints/stack/RedeemStack';
 import DashboardStack from '../pages/options/dashboard/stack/DashboardStack';
 import SchemesStack from '../pages/options/schemes/stack/SchemesStack';
+import InfoStack from '../pages/options/info/stack/InfoStack';
 
 const HomeStack: React.FC = () => {
   type HomeStackParams = {
@@ -65,12 +66,13 @@ const HomeStack: React.FC = () => {
         <Stack.Screen name="Redeem Products" component={RedeemStack} />
         <Stack.Screen name="Dashboard" component={DashboardStack} />
         <Stack.Screen name="schemes" component={SchemesStack} />
+        <Stack.Screen name="info" component={InfoStack} />
         {/* 
         
         
         <Stack.Screen name="Update KYC" component={UpdateKYC} options={{ headerShown: true }} />
         
-        <Stack.Screen name="info" component={InfoStack} />
+        
         <Stack.Screen
           name="Welfare"
           component={Welfare}
