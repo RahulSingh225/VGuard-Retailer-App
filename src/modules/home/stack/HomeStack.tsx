@@ -5,12 +5,17 @@ import colors from '../../../../colors';
 import { CustomTabHeader } from '../../common/services/BottomTab';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LanguagePicker from '../../../components/LanguagePicker';
+import ProfileStack from '../../profile/stack/ProfileStack';
+import ScanStack from '../pages/options/scanQR/stack/ScanStack';
+import RedeemStack from '../pages/options/redeemPoints/stack/RedeemStack';
+import DashboardStack from '../pages/options/dashboard/stack/DashboardStack';
+import SchemesStack from '../pages/options/schemes/stack/SchemesStack';
 
 const HomeStack: React.FC = () => {
   type HomeStackParams = {
     Home: undefined;
     'Scan QR': undefined;
-    Dashboard: undefined;
+    'Dashboard': undefined;
     'Redeem Products': undefined;
     'Update KYC': undefined;
     schemes: undefined;
@@ -56,11 +61,15 @@ const HomeStack: React.FC = () => {
             headerShown: true,
           })}
         />
-        {/* <Stack.Screen name="Scan QR" component={ScanStack} />
-        <Stack.Screen name="Dashboard" component={DashboardStack} />
+        <Stack.Screen name="Scan QR" component={ScanStack} />
         <Stack.Screen name="Redeem Products" component={RedeemStack} />
-        <Stack.Screen name="Update KYC" component={UpdateKYC} options={{ headerShown: true }} />
+        <Stack.Screen name="Dashboard" component={DashboardStack} />
         <Stack.Screen name="schemes" component={SchemesStack} />
+        {/* 
+        
+        
+        <Stack.Screen name="Update KYC" component={UpdateKYC} options={{ headerShown: true }} />
+        
         <Stack.Screen name="info" component={InfoStack} />
         <Stack.Screen
           name="Welfare"
@@ -99,13 +108,14 @@ const HomeStack: React.FC = () => {
             headerShown: true,
           }}
         />
+        */}
         <Stack.Screen
           name="Profile"
           component={ProfileStack}
           options={{
             headerShown: true,
           }}
-        /> */}
+        /> 
       </Stack.Navigator>
       <Modal
         animationType="slide"

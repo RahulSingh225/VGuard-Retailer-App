@@ -175,6 +175,22 @@ export function getUsers(filter: string) {
     return createDigestPostRequest(path, filter);
 }
 
+export function getFile(uuid: String, imageRelated: String, userRole: Number) {
+    const path = `file/${uuid}/${imageRelated}/${userRole}`;
+    console.log(path);
+    return createDigestGetRequest(path);
+}
+
+export const sendFile = async (formData: FormData) => {
+    try {
+        const response = await api.post('/vguard/api/file', formData);
+        return response;
+    } catch (error) {
+        console.error('Error sending file:', error);
+        throw error;
+    }
+};
+
 export function getDistributorList() {
     const path = "user/dist/";
     return createDigestGetRequest(path);
@@ -551,8 +567,8 @@ export function getProductWiseOffers() {
     return createDigestGetRequest(path);
 }
 
-export function getRedemptionHistory(parameter: string) {
-    const path = `product/redemptionHistory/${parameter}`;
+export function getRedemptionHistory() {
+    const path = `product/redemptionHistory?type=''`;
     return createDigestGetRequest(path);
 }
 
