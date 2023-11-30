@@ -36,7 +36,7 @@ const Dashboard: React.FC = () => {
 
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
-  const [profileImage, setProfileImage] = useState<string>('');
+  const [profileImage, setProfileImage] = useState(null);
 
   const [userData, setUserData] = useState<UserData>({
     userName: '',
@@ -78,17 +78,18 @@ const Dashboard: React.FC = () => {
     if (userData.userRole && userData.userImage) {
       const getImage = async () => {
         try {
-          const profileImage = await getFile(
-            userData.userImage,
-            'PROFILE',
-            2
-          );
-          setProfileImage(profileImage.url);
+          const profileImageUrl = await getFile(userData.userImage, 'PROFILE', 2);
+          if (profileImageUrl.status === 500) {
+            setProfileImage(null);
+          }
+          else {
+            setProfileImage(profileImageUrl.url);
+          }
+          console.log(profileImage)
         } catch (error) {
           console.log('Error while fetching profile image:', error);
         }
       };
-
       getImage();
     }
   }, [userData.userRole, userData.userImage]);
@@ -96,12 +97,12 @@ const Dashboard: React.FC = () => {
   return (
     <View style={styles.mainWrapper}>
       <View style={styles.profileDetails}>
-        <View style={styles.ImageProfile}>
-          <Image
-            source={{ uri: profileImage }}
-            style={{ width: '100%', height: '100%', borderRadius: 100 }}
-            resizeMode="contain"
-          />
+      <View style={styles.ImageProfile}>
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
+          ) : (
+            <Image source={require('../../../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
+          )}
         </View>
         <View>
           <Text style={styles.textDetail}>{userData.userName}</Text>
@@ -195,7 +196,6 @@ const styles = StyleSheet.create({
   ImageProfile: {
     height: 50,
     width: 50,
-    backgroundColor: colors.lightGrey,
     borderRadius: 100,
   },
   textDetail: {

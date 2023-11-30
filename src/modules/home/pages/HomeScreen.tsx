@@ -21,7 +21,7 @@ interface User {
 const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
   const [userData, setUserData] = useState<User | null>(null);
-  const [profileImage, setProfileImage] = useState('');
+  const [profileImage, setProfileImage] = useState(null);
 
   const loadUserDetails = async () => {
     try {
@@ -54,26 +54,30 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (userData?.userRole && userData.selfieImage) {
       const getImage = async () => {
         try {
-          const profileImage = await getFile(userData.selfieImage, 'PROFILE', 2);
-          setProfileImage(profileImage.url);
-          console.log(profileImage.url, "<><><<>Image")
+          const profileImageUrl = await getFile(userData.selfieImage, 'PROFILE', 2);
+          if (profileImageUrl.status === 500) {
+            setProfileImage(null);
+          }
+          else {
+            setProfileImage(profileImageUrl.url);
+          }
+          console.log(profileImage)
         } catch (error) {
           console.log('Error while fetching profile image:', error);
         }
       };
-
       getImage();
     }
   }, [userData?.userRole, userData?.selfieImage]);
   return (
     <ScrollView style={styles.mainWrapper}>
       <View style={styles.detailContainer}>
-        <View style={styles.ImageProfile}>
-          <Image
-            source={profileImage ? { uri: profileImage } : require('../../../assets/images/ic_v_guards_user.png')}
-            style={{ width: '100%', height: '100%', borderRadius: 100 }}
-            resizeMode="contain"
-          />
+      <View style={styles.ImageProfile}>
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
+          ) : (
+            <Image source={require('../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
+          )}
         </View>
         <View>
           <Text style={styles.name}>{userData?.name}</Text>
@@ -211,7 +215,6 @@ const styles = StyleSheet.create({
   ImageProfile: {
     height: 50,
     width: 50,
-    backgroundColor: colors.lightGrey,
     borderRadius: 100,
   },
   points: {

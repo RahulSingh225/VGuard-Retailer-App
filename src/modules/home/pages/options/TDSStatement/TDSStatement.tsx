@@ -1,13 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
-import { responsiveFontSize } from 'react-native-responsive-dimensions';
+import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import { useTranslation } from 'react-i18next';
 import colors from '../../../../../../colors';
 import { getFiscalYear, getMonth } from '../../../../../utils/apiservice';
 import Loader from '../../../../../components/Loader';
+import { Table, Row, Rows } from 'react-native-table-component';
+import { getTdsStatementList } from '../../../../../utils/apiservice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface TDSProps {}
 
+interface StatementList {
+  redDate: string;
+  redAmnt: string;
+  tdsAmnt: string;
+  tdsPerc: string;
+}
+
+interface UserData {
+  userId: string;
+}
+interface PostData {
+  id: string;
+  month: string;
+  year: string;
+  intuserid: string;
+}
 const CustomMonthDropdown: React.FC<{ data: any[]; value: string; onChange: (item: any) => void }> = ({ data, value, onChange }) => {
   return (
     <FlatList
@@ -39,49 +58,112 @@ const CustomYearDropdown: React.FC<{ data: any[]; value: string; onChange: (item
 
 const TDSStatement: React.FC<TDSProps> = () => {
   const { t } = useTranslation();
-  const [fiscalYearData, setFiscalYearData] = useState([]);
-  const [monthData, setMonthData] = useState([]);
-  const [loader, showLoader] = useState(false);
-  const [isFocusFiscalYear, setIsFocusFiscalYear] = useState(false);
-  const [isFocusMonth, setIsFocusMonth] = useState(false);
-  const [fiscalYearValue, setFiscalYearValue] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('');
+  const [fiscalYearData, setFiscalYearData] = useState<string[]>([]); // Set appropriate type for fiscalYearData
+  const [monthData, setMonthData] = useState<any[]>([]); // Set appropriate type for monthData
+  const [loader, showLoader] = useState<boolean>(false);
+  const [isFocusFiscalYear, setIsFocusFiscalYear] = useState<boolean>(false);
+  const [isFocusMonth, setIsFocusMonth] = useState<boolean>(false);
+  const [fiscalYearValue, setFiscalYearValue] = useState<string>('');
+  const [selectedMonth, setSelectedMonth] = useState<string>('');
+  const [userData, setUserData] = useState<UserData>({
+    userId: '',
+  });
+  const [postData, setPostData] = useState<PostData>({
+    id: '',
+    month: '',
+    year: '',
+    intuserid: '',
+  });
+  const [statementList, setStatementList] = useState<StatementList[]>([]);
 
-  const handleDropdownFiscalYear = () => {
-    setIsFocusFiscalYear(!isFocusFiscalYear);
-    setIsFocusMonth(false);
+  const handleDropdownFiscalYear = (item: string) => {
+    setIsFocusFiscalYear(false);
+    setFiscalYearValue(item);
+    setPostData((prevData) => ({
+      ...prevData,
+      id: selectedMonth,
+      month: selectedMonth,
+      year: item,
+    }));
   };
 
-  const handleDropdownMonth = () => {
-    setIsFocusMonth(!isFocusMonth);
-    setIsFocusFiscalYear(false);
+  const handleDropdownMonth = (item: any) => {
+    setIsFocusMonth(false);
+    setSelectedMonth(item.month);
+    setPostData((prevData) => ({
+      ...prevData,
+      id: item.id,
+      month: item.month,
+      year: fiscalYearValue,
+    }));
   };
 
   useEffect(() => {
-    showLoader(true);
+    const fetchData = async () => {
+      showLoader(true);
 
-    getFiscalYear().then(async (response) => {
-      const result = await response.json();
-      setFiscalYearData(result);
-      setFiscalYearValue(result[0]);
-      showLoader(false);
-    });
+      try {
+        const [fiscalYearResponse, monthResponse] = await Promise.all([
+          getFiscalYear(),
+          getMonth(),
+        ]);
 
-    getMonth().then(async (response) => {
-      const result = await response.json();
-      setMonthData(result);
-      setSelectedMonth(result[0].month)
-      showLoader(false);
+        const fiscalYearResult = await fiscalYearResponse.json();
+        const monthResult = await monthResponse.json();
+
+        setFiscalYearData(fiscalYearResult);
+        setFiscalYearValue(fiscalYearResult[0]);
+        setMonthData(monthResult);
+        setSelectedMonth(monthResult[0]?.month);
+        showLoader(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        showLoader(false);
+      }
+    };
+
+    fetchData();
+
+    AsyncStorage.getItem('USER').then((r) => {
+      const user = JSON.parse(r || '{}');
+      const data: UserData = {
+        userId: user.userId || '',
+      };
+      setUserData(data);
+      setPostData((prevData) => ({
+        ...prevData,
+        intuserid: user.userId || '',
+      }));
     });
   }, []);
+
+  useEffect(() => {
+    getTdsStatementList(postData)
+      .then((response) => response.json())
+      .then((responseData) => {
+        setStatementList(responseData);
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+      });
+  }, [postData]);
+
+  const data = statementList.map((data) => [
+    data?.redDate.toString(),
+    data?.redAmnt.toString(),
+    data?.tdsAmnt.toString(),
+    data?.tdsPerc.toString(),
+  ]);
+
+  const tableHead = ['Red Date', 'Red Amt', 'TDS Amt', 'TDS %'];
 
   return (
     <View style={styles.mainWrapper}>
       {loader && <Loader />}
 
       <Text style={styles.greyText}>{t('strings:select_fiscal_year')}</Text>
-      <TouchableOpacity onPress={handleDropdownFiscalYear}>
-        <View style={styles.card}>
+      <TouchableOpacity onPress={() => setIsFocusFiscalYear((prev) => !prev)}>
+        <View style={[styles.card, isFocusFiscalYear && styles.dropdownContainer]}>
           <Text style={styles.yearText}>{fiscalYearValue}</Text>
           <Image
             style={styles.downImage}
@@ -94,16 +176,13 @@ const TDSStatement: React.FC<TDSProps> = () => {
         <CustomYearDropdown
           data={fiscalYearData}
           value={fiscalYearValue}
-          onChange={(item) => {
-            setFiscalYearValue(item);
-            setIsFocusFiscalYear(false);
-          }}
+          onChange={handleDropdownFiscalYear}
         />
       )}
 
       <Text style={styles.greyText}>{t('strings:select_month')}</Text>
-      <TouchableOpacity onPress={handleDropdownMonth}>
-        <View style={styles.card}>
+      <TouchableOpacity onPress={() => setIsFocusMonth((prev) => !prev)}>
+        <View style={[styles.card, isFocusMonth && styles.dropdownContainer]}>
           <Text style={styles.yearText}>{selectedMonth}</Text>
           <Image
             style={styles.downImage}
@@ -113,15 +192,21 @@ const TDSStatement: React.FC<TDSProps> = () => {
       </TouchableOpacity>
 
       {isFocusMonth && (
-        <CustomMonthDropdown
-          data={monthData}
-          value={selectedMonth}
-          onChange={(item) => {
-            setSelectedMonth(item.month);
-            setIsFocusMonth(false);
-          }}
-        />
+        <CustomMonthDropdown data={monthData} value={selectedMonth} onChange={handleDropdownMonth} />
       )}
+      <Table style={[{zIndex: -1}]}>
+        {data.length === 0 ? (
+          <Rows
+            data={[['No Data']]}
+            textStyle={[styles.text, { color: colors.grey, fontWeight: 'bold', textAlign: 'center' }]}
+          />
+        ) : (
+          <>
+            <Row data={tableHead} style={styles.head} textStyle={styles.text} />
+            <Rows data={data} textStyle={styles.text} />
+          </>
+        )}
+      </Table>
     </View>
   );
 };
@@ -136,6 +221,9 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(1.5),
     fontWeight: 'bold',
     marginBottom: 20,
+  },
+  dropdownContainer: {
+    zIndex: 1,
   },
   card: {
     padding: 10,
@@ -168,6 +256,14 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: responsiveFontSize(2),
     color: colors.black,
+  },
+  head: {
+    height: responsiveHeight(7),
+    backgroundColor: colors.lightGrey
+  },
+  text: {
+    margin: 10,
+    color: colors.black
   },
 });
 
