@@ -12,6 +12,8 @@ import DashboardStack from '../pages/options/dashboard/stack/DashboardStack';
 import SchemesStack from '../pages/options/schemes/stack/SchemesStack';
 import InfoStack from '../pages/options/info/stack/InfoStack';
 import NewStack from '../pages/options/new/stack/NewStack';
+import TicketStack from '../pages/options/ticket/stack/TicketStack';
+import Bank from '../pages/options/bank/Bank';
 
 const HomeStack: React.FC = () => {
   type HomeStackParams = {
@@ -69,6 +71,14 @@ const HomeStack: React.FC = () => {
         <Stack.Screen name="schemes" component={SchemesStack} />
         <Stack.Screen name="info" component={InfoStack} />
         <Stack.Screen name="new" component={NewStack} />
+        <Stack.Screen name="ticket" component={TicketStack} />
+        <Stack.Screen
+          name="Update Bank"
+          component={Bank}
+          options={{
+            headerShown: true,
+          }}
+        />
         {/* 
         
         
@@ -83,14 +93,7 @@ const HomeStack: React.FC = () => {
           }}
         />
         
-        <Stack.Screen name="ticket" component={TicketStack} />
-        <Stack.Screen
-          name="Update Bank"
-          component={Bank}
-          options={{
-            headerShown: true,
-          }}
-        />
+        
         <Stack.Screen
           name="TDS Certificate"
           component={TDS}

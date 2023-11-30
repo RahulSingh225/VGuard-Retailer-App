@@ -47,7 +47,7 @@ const DailyWinner: React.FC = () => {
   };
 
   const sendDate = (selectedDate: string) => {
-    getDailyWinner(selectedDate, "date")
+    getDailyWinner(selectedDate)
       .then(response => response.json())
       .then(data => {
         if (Array.isArray(data)) {
