@@ -36,11 +36,16 @@ export const createDigestGetRequest = async (relativeUrl = {}) => {
 
 };
 
-export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
+export const createDigestPostRequest = async (relativeUrl = {}, data: any, key: string) => {
     try {
         const url = BASE_URL + relativeUrl;
         const headers = {
             'Content-Type': 'application/json',
+        };
+
+        const requestData = {
+            key: key,
+            ...data,
         };
 
         const username = await AsyncStorage.getItem('username');
@@ -50,7 +55,7 @@ export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
             const response = await digestFetch(url, {
                 method: 'POST',
                 headers,
-                body: JSON.stringify(data),
+                body: JSON.stringify(requestData),
                 username,
                 password,
             });
@@ -63,6 +68,7 @@ export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
         throw error;
     }
 };
+
 export const createDigestPutRequest = async (relativeUrl = {}, data: any) => {
     try {
         const url = BASE_URL + relativeUrl;
@@ -788,13 +794,14 @@ export function getDistrictsFromCrmApi(stateId: string) {
     return createDigestGetRequest(path);
 }
 
-export function getDailyWinner(date: any) {
+export function getDailyWinner(date: String, key: String) {
     const path = "user/dailyWinners";
-    return createDigestPostRequest(path, date);
+    console.log(date)
+    return createDigestPostRequest(path, date, key);
 }
 
 export function getDailyWinnerDates() {
-    const path = "user/getDailyWinnerDates";
+    const path = "user/getDailyWinnerDates/";
     return createDigestGetRequest(path);
 }
 

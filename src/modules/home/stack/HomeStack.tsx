@@ -11,6 +11,7 @@ import RedeemStack from '../pages/options/redeemPoints/stack/RedeemStack';
 import DashboardStack from '../pages/options/dashboard/stack/DashboardStack';
 import SchemesStack from '../pages/options/schemes/stack/SchemesStack';
 import InfoStack from '../pages/options/info/stack/InfoStack';
+import NewStack from '../pages/options/new/stack/NewStack';
 
 const HomeStack: React.FC = () => {
   type HomeStackParams = {
@@ -67,6 +68,7 @@ const HomeStack: React.FC = () => {
         <Stack.Screen name="Dashboard" component={DashboardStack} />
         <Stack.Screen name="schemes" component={SchemesStack} />
         <Stack.Screen name="info" component={InfoStack} />
+        <Stack.Screen name="new" component={NewStack} />
         {/* 
         
         
@@ -80,7 +82,7 @@ const HomeStack: React.FC = () => {
             headerShown: true,
           }}
         />
-        <Stack.Screen name="new" component={NewStack} />
+        
         <Stack.Screen name="ticket" component={TicketStack} />
         <Stack.Screen
           name="Update Bank"
