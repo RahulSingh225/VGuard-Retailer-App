@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, ScrollView } from 'react-native';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import { useTranslation } from 'react-i18next';
 import colors from '../../../../../../colors';
@@ -158,7 +158,7 @@ const TDSStatement: React.FC<TDSProps> = () => {
   const tableHead = ['Red Date', 'Red Amt', 'TDS Amt', 'TDS %'];
 
   return (
-    <View style={styles.mainWrapper}>
+    <ScrollView style={styles.mainWrapper}>
       {loader && <Loader />}
 
       <Text style={styles.greyText}>{t('strings:select_fiscal_year')}</Text>
@@ -207,13 +207,15 @@ const TDSStatement: React.FC<TDSProps> = () => {
           </>
         )}
       </Table>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   mainWrapper: {
-    padding: 15,
+    paddingHorizontal: 15,
+    marginTop: 15,
+    paddingBottom: 50
   },
   greyText: {
     color: colors.grey,
@@ -234,6 +236,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: colors.white,
+    elevation: 5
   },
   yearText: {
     fontSize: responsiveFontSize(2),
