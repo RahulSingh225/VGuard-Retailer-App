@@ -23,7 +23,9 @@ const ProductRegistration: React.FC<{ navigation: any }> = ({ navigation }) => {
                         style={styles.image}
                         resizeMode="contain" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.oval}>
+            <TouchableOpacity 
+            style={styles.oval}
+            onPress={()=>navigation.navigate('Product Registration Form')}>
                 <Image
                     source={require('../../../../../../assets/images/qr_code.png')}
                     style={styles.image}

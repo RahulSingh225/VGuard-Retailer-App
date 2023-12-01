@@ -5,12 +5,14 @@ import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ProductRegistration from '../pages/ProductRegistration';
 import ScanCode from '../pages/ScanCode';
 import UniqueCodeHistory from '../pages/UniqueCodeHistory';
+import ProductRegistrationForm from '../pages/ProductRegistrationForm';
 
 const ScanStack: React.FC = () => {
   type ScanStackParams = {
     'Product Registratrion': undefined;
     'Scan Code': undefined;
     'Unique Code History': undefined;
+    'Product Registration Form': undefined;
   };
 
   const Stack = createNativeStackNavigator<ScanStackParams>();
@@ -46,6 +48,13 @@ const ScanStack: React.FC = () => {
             headerShown: true,
           }}
         /> 
+        <Stack.Screen
+          name="Product Registration Form"
+          component={ProductRegistrationForm}
+          options={{
+            headerShown: true,
+          }}
+        />  
       </Stack.Navigator>
     </>
   );
