@@ -3,7 +3,7 @@ import { View, Text, Button, Modal, StyleSheet, TouchableOpacity, Image } from '
 import colors from '../../colors';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import closeIcon from '../assets/images/ic_close.png';
-// import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 interface LogoutConfirmationPopupProps {
   isVisible: boolean;
@@ -12,7 +12,7 @@ interface LogoutConfirmationPopupProps {
 }
 
 const LogoutConfirmationPopup: React.FC<LogoutConfirmationPopupProps> = ({ isVisible, onClose, onConfirm }) => {
-//   const { t } = useTranslation();
+  const { t } = useTranslation();
 
   if (!isVisible) {
     return null;
@@ -22,7 +22,7 @@ const LogoutConfirmationPopup: React.FC<LogoutConfirmationPopupProps> = ({ isVis
     <Modal visible={isVisible} animationType="slide">
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <Text style={styles.popupText}>Logout</Text>
+          <Text style={styles.popupText}>{t('strings:are_you_sure_logout')}</Text>
           <Button title="Yes" onPress={onConfirm} color={colors.black} />
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Image source={closeIcon} style={{ flex: 1, width: "100%", height: "100%" }} resizeMode="contain" />

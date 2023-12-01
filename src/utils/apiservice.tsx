@@ -43,6 +43,8 @@ export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
             'Content-Type': 'application/json',
         };
 
+        console.log(data, "<><>><")
+
         const username = await AsyncStorage.getItem('username');
         const password = await AsyncStorage.getItem('password');
 
@@ -63,6 +65,7 @@ export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
         throw error;
     }
 };
+
 export const createDigestPutRequest = async (relativeUrl = {}, data: any) => {
     try {
         const url = BASE_URL + relativeUrl;
@@ -174,6 +177,38 @@ export function getUsers(filter: string) {
     const path = "user/";
     return createDigestPostRequest(path, filter);
 }
+
+export function getFile(uuid: String, imageRelated: String, userRole: Number) {
+    const path = `file/${uuid}/${imageRelated}/${userRole}`;
+    console.log(path);
+    return createDigestGetRequest(path);
+}
+
+// export const sendFile = async (formData: any) => {
+//     try {
+//       const path = "file";
+//       const response = await createDigestPostRequest(path, formData);
+//       const result = await response.json();
+//       return result;
+//     } catch (error) {
+//       console.error('Error sending file:', error);
+//       throw error;
+//     }
+//   };
+
+export const sendFile = async (formData: FormData): Promise<any> => {
+    console.log(formData)
+    try {
+      const response = await api.post('/vguard/api/file', formData);
+      console.log(response.status);
+      return response;
+    } catch (error) {
+        console.error('Error sending file:', error);
+        console.error('Error details:', error.response);
+      throw error;
+    }
+  };
+  
 
 export function getDistributorList() {
     const path = "user/dist/";
@@ -486,9 +521,9 @@ export function getTicketTypes() {
     return createDigestGetRequest(path);
 }
 
-export function sendTicket(rt: any) {
+export function sendTicket(data: any) {
     const path = "ticket/create";
-    return createDigestPostRequest(path, rt);
+    return createDigestPostRequest(path, data);
 }
 
 export function getWhatsNew() {
@@ -551,8 +586,8 @@ export function getProductWiseOffers() {
     return createDigestGetRequest(path);
 }
 
-export function getRedemptionHistory(parameter: string) {
-    const path = `product/redemptionHistory/${parameter}`;
+export function getRedemptionHistory() {
+    const path = `product/redemptionHistory?type=''`;
     return createDigestGetRequest(path);
 }
 
@@ -772,13 +807,17 @@ export function getDistrictsFromCrmApi(stateId: string) {
     return createDigestGetRequest(path);
 }
 
-export function getDailyWinner(date: any) {
+export function getDailyWinner(date: string) {
     const path = "user/dailyWinners";
-    return createDigestPostRequest(path, date);
-}
+    const data = {
+      date: date
+    };
+    return createDigestPostRequest(path, data);
+  }
+  
 
 export function getDailyWinnerDates() {
-    const path = "user/getDailyWinnerDates";
+    const path = "user/getDailyWinnerDates/";
     return createDigestGetRequest(path);
 }
 

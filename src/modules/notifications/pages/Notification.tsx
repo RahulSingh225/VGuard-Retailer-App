@@ -3,6 +3,7 @@ import { View, Text, ScrollView, StyleSheet, Image } from 'react-native';
 import colors from '../../../../colors';
 import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions';
 import { getNotifications } from '../../../utils/apiservice';
+import Loader from '../../../components/Loader';
 
 interface NotificationItem {
   alertDesc: string;
@@ -10,19 +11,24 @@ interface NotificationItem {
 }
 
 const Notification: React.FC = () => {
+  const [loader, showLoader] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
   useEffect(() => {
+    showLoader(true);
+    
     getNotifications().then(async (response) => {
       console.log(response);
       const result = await response.json();
       console.log(result);
       setNotifications(result);
+      showLoader(false);
     });
   }, []);
 
   return (
     <ScrollView style={styles.mainWrapper}>
+      {loader && <Loader />}
       {notifications.map((item, index) => (
         <View key={index} style={styles.messageItem}>
           <Image
@@ -45,7 +51,7 @@ const styles = StyleSheet.create({
   mainWrapper: {
     backgroundColor: colors.white,
     flex: 1,
-    padding: 15,
+    paddingHorizontal: 15,
   },
   header: {
     color: colors.black,

@@ -1,27 +1,42 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import HomeScreen from '../pages/HomeScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import colors from '../../../../colors';
 import { CustomTabHeader } from '../../common/services/BottomTab';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LanguagePicker from '../../../components/LanguagePicker';
+import ProfileStack from '../../profile/stack/ProfileStack';
+import ScanStack from '../pages/options/scanQR/stack/ScanStack';
+import RedeemStack from '../pages/options/redeemPoints/stack/RedeemStack';
+import DashboardStack from '../pages/options/dashboard/stack/DashboardStack';
+import SchemesStack from '../pages/options/schemes/stack/SchemesStack';
+import InfoStack from '../pages/options/info/stack/InfoStack';
+import NewStack from '../pages/options/new/stack/NewStack';
+import TicketStack from '../pages/options/ticket/stack/TicketStack';
+import Bank from '../pages/options/bank/Bank';
+import TDS from '../pages/options/TDS/TDS';
+import Engagement from '../pages/options/engagement/Engagement';
+import TDSStatement from '../pages/options/TDSStatement/TDSStatement';
+import UpdatePAN from '../pages/options/pan/UpdatePAN';
+import AirCoolerStack from '../pages/options/airCooler/stack/AirCoolerStack';
 
 const HomeStack: React.FC = () => {
   type HomeStackParams = {
     Home: undefined;
     'Scan QR': undefined;
-    Dashboard: undefined;
+    'Dashboard': undefined;
     'Redeem Products': undefined;
     'Update KYC': undefined;
     schemes: undefined;
     info: undefined;
-    Welfare: undefined;
     new: undefined;
     ticket: undefined;
     'Update Bank': undefined;
     'TDS Certificate': undefined;
+    'TDS Statement': undefined;
+    'Update PAN': undefined;
+    'Air Cooler': undefined;
     Engagement: undefined;
-    Manual: undefined;
     Profile: undefined;
   };
 
@@ -56,21 +71,20 @@ const HomeStack: React.FC = () => {
             headerShown: true,
           })}
         />
-        {/* <Stack.Screen name="Scan QR" component={ScanStack} />
-        <Stack.Screen name="Dashboard" component={DashboardStack} />
+        <Stack.Screen name="Scan QR" component={ScanStack} />
         <Stack.Screen name="Redeem Products" component={RedeemStack} />
-        <Stack.Screen name="Update KYC" component={UpdateKYC} options={{ headerShown: true }} />
+        <Stack.Screen name="Dashboard" component={DashboardStack} />
         <Stack.Screen name="schemes" component={SchemesStack} />
         <Stack.Screen name="info" component={InfoStack} />
-        <Stack.Screen
-          name="Welfare"
-          component={Welfare}
-          options={{
-            headerShown: true,
-          }}
-        />
         <Stack.Screen name="new" component={NewStack} />
         <Stack.Screen name="ticket" component={TicketStack} />
+        <Stack.Screen name="Air Cooler" component={AirCoolerStack} />
+        <Stack.Screen
+          name="Update PAN"
+          component={UpdatePAN}
+          options={{
+            headerShown: true,
+          }} />
         <Stack.Screen
           name="Update Bank"
           component={Bank}
@@ -93,8 +107,8 @@ const HomeStack: React.FC = () => {
           }}
         />
         <Stack.Screen
-          name="Manual"
-          component={Manual}
+          name="TDS Statement"
+          component={TDSStatement}
           options={{
             headerShown: true,
           }}
@@ -105,7 +119,7 @@ const HomeStack: React.FC = () => {
           options={{
             headerShown: true,
           }}
-        /> */}
+        />
       </Stack.Navigator>
       <Modal
         animationType="slide"
@@ -125,30 +139,30 @@ const HomeStack: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-    languageContainer: {
-      borderWidth: 1,
-      borderColor: colors.black,
-      paddingVertical: 2,
-      paddingHorizontal: 5,
-      borderRadius: 5,
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    languagePickerContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.white,
-    },
-    closeText: {
-      marginTop: 20,
-      color: colors.black,
-      backgroundColor: colors.yellow,
-      paddingHorizontal: 15,
-      paddingVertical: 5,
-      borderRadius: 5,
-      fontWeight: 'bold',
-    },
-  });
+  languageContainer: {
+    borderWidth: 1,
+    borderColor: colors.black,
+    paddingVertical: 2,
+    paddingHorizontal: 5,
+    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  languagePickerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+  },
+  closeText: {
+    marginTop: 20,
+    color: colors.black,
+    backgroundColor: colors.yellow,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    borderRadius: 5,
+    fontWeight: 'bold',
+  },
+});
 
 export default HomeStack;
