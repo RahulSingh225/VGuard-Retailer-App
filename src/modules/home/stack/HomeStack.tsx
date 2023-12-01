@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import HomeScreen from '../pages/HomeScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import colors from '../../../../colors';
@@ -17,6 +17,8 @@ import Bank from '../pages/options/bank/Bank';
 import TDS from '../pages/options/TDS/TDS';
 import Engagement from '../pages/options/engagement/Engagement';
 import TDSStatement from '../pages/options/TDSStatement/TDSStatement';
+import UpdatePAN from '../pages/options/pan/UpdatePAN';
+import AirCoolerStack from '../pages/options/airCooler/stack/AirCoolerStack';
 
 const HomeStack: React.FC = () => {
   type HomeStackParams = {
@@ -32,6 +34,8 @@ const HomeStack: React.FC = () => {
     'Update Bank': undefined;
     'TDS Certificate': undefined;
     'TDS Statement': undefined;
+    'Update PAN': undefined;
+    'Air Cooler': undefined;
     Engagement: undefined;
     Profile: undefined;
   };
@@ -74,6 +78,13 @@ const HomeStack: React.FC = () => {
         <Stack.Screen name="info" component={InfoStack} />
         <Stack.Screen name="new" component={NewStack} />
         <Stack.Screen name="ticket" component={TicketStack} />
+        <Stack.Screen name="Air Cooler" component={AirCoolerStack} />
+        <Stack.Screen
+          name="Update PAN"
+          component={UpdatePAN}
+          options={{
+            headerShown: true,
+          }} />
         <Stack.Screen
           name="Update Bank"
           component={Bank}
@@ -108,7 +119,7 @@ const HomeStack: React.FC = () => {
           options={{
             headerShown: true,
           }}
-        /> 
+        />
       </Stack.Navigator>
       <Modal
         animationType="slide"
@@ -128,30 +139,30 @@ const HomeStack: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-    languageContainer: {
-      borderWidth: 1,
-      borderColor: colors.black,
-      paddingVertical: 2,
-      paddingHorizontal: 5,
-      borderRadius: 5,
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    languagePickerContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.white,
-    },
-    closeText: {
-      marginTop: 20,
-      color: colors.black,
-      backgroundColor: colors.yellow,
-      paddingHorizontal: 15,
-      paddingVertical: 5,
-      borderRadius: 5,
-      fontWeight: 'bold',
-    },
-  });
+  languageContainer: {
+    borderWidth: 1,
+    borderColor: colors.black,
+    paddingVertical: 2,
+    paddingHorizontal: 5,
+    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  languagePickerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+  },
+  closeText: {
+    marginTop: 20,
+    color: colors.black,
+    backgroundColor: colors.yellow,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    borderRadius: 5,
+    fontWeight: 'bold',
+  },
+});
 
 export default HomeStack;

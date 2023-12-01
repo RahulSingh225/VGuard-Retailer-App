@@ -113,12 +113,15 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const triggerApiWithImage = async (fileData) => {
     const formData = new FormData();
-    formData.append('USER_ROLE', userRole);
+    formData.append('USER_ROLE', 2);
     formData.append('image_related', 'TICKET');
     formData.append('file', fileData);
 
+    console.log("------------------",fileData)
+
     try {
       const response = await sendFile(formData);
+      console.log("response of image--------", response)
       setEntityUid(response.data.entityUid);
     } catch (error) {
       console.error('API Error:', error);
@@ -135,6 +138,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
         redeemedPoints: user.pointsSummary.redeemedPoints,
         userImage: user.kycDetails.selfie,
         userRole: user.professionId,
+        userId: user.contactNo
       };
       setUserData(data);
     });
@@ -193,22 +197,24 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
       description: descriptionInput,
     };
 
-    sendTicket(postData)
-      .then((response) => {
-        if (response.status === 200) {
-          setSelectedOption('');
-          setSelectedImage(null);
-          setSelectedImageName('');
-          setEntityUid('');
-          setDescriptionInput('');
-          showSnackbar('Ticket Created Successfully');
-        } else {
-          throw new Error('Failed to create ticket');
-        }
-      })
-      .catch((error) => {
-        console.error('API Error:', error);
-      });
+    console.log("Post Data========",postData)
+
+    // sendTicket(postData)
+    //   .then((response) => {
+    //     if (response.status === 200) {
+    //       setSelectedOption('');
+    //       setSelectedImage(null);
+    //       setSelectedImageName('');
+    //       setEntityUid('');
+    //       setDescriptionInput('');
+    //       showSnackbar('Ticket Created Successfully');
+    //     } else {
+    //       throw new Error('Failed to create ticket');
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.error('API Error:', error);
+    //   });
   };
 
   const showSnackbar = (message) => {

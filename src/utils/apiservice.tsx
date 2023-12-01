@@ -184,15 +184,31 @@ export function getFile(uuid: String, imageRelated: String, userRole: Number) {
     return createDigestGetRequest(path);
 }
 
-export const sendFile = async (formData: FormData) => {
+// export const sendFile = async (formData: any) => {
+//     try {
+//       const path = "file";
+//       const response = await createDigestPostRequest(path, formData);
+//       const result = await response.json();
+//       return result;
+//     } catch (error) {
+//       console.error('Error sending file:', error);
+//       throw error;
+//     }
+//   };
+
+export const sendFile = async (formData: FormData): Promise<any> => {
+    console.log(formData)
     try {
-        const response = await api.post('/vguard/api/file', formData);
-        return response;
+      const response = await api.post('/vguard/api/file', formData);
+      console.log(response.status);
+      return response;
     } catch (error) {
         console.error('Error sending file:', error);
-        throw error;
+        console.error('Error details:', error.response);
+      throw error;
     }
-};
+  };
+  
 
 export function getDistributorList() {
     const path = "user/dist/";

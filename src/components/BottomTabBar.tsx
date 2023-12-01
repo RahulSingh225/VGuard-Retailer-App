@@ -99,6 +99,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 60,
     backgroundColor: 'white',
+    elevation: 15
   },
 });
 
