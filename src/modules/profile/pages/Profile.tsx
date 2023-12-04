@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { UserData } from '../../../utils/modules/UserData';
 import InputField from '../../../components/InputField';
+import Popup from '../../../components/Popup';
 
 const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
@@ -43,6 +44,13 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
       getImage();
     }
   }, [userData?.roleId, userData?.kycDetails?.selfie]);
+  const [isPopupVisible, setPopupVisible] = useState(false);
+  const [popupContent, setPopupContent] = useState('');
+
+  const openReferralPopop = () => {
+    setPopupVisible(true);
+    setPopupContent("Coming Soon!")
+  }
 
   const labels = [
     // 'Preferred Language',
@@ -185,19 +193,19 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
       <View style={styles.buttons}>
         <TouchableHighlight
           style={styles.button}
-          onPress={() => navigation.navigate('editProfile')}
+          onPress={() => navigation.navigate('Edit Profile')}
         >
           <Text style={styles.buttonText}>{t('strings:edit_profile')}</Text>
         </TouchableHighlight>
         <TouchableHighlight
           style={styles.button}
-          onPress={() => navigation.navigate('editProfile')}
+          onPress={() => navigation.navigate('Add Sub-Login')}
         >
           <Text style={styles.buttonText}>{t('strings:add_sub_login')}</Text>
         </TouchableHighlight>
         <TouchableHighlight
           style={styles.button}
-          onPress={() => navigation.navigate('editProfile')}
+          onPress={() => openReferralPopop()}
         >
           <Text style={styles.buttonText}>{t('strings:referral_code')}</Text>
         </TouchableHighlight>
@@ -255,6 +263,11 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
           }}
         />
       </View>
+      {isPopupVisible && (
+                <Popup isVisible={isPopupVisible} onClose={() => setPopupVisible(false)}>
+                    {popupContent}
+                </Popup>
+            )}
     </ScrollView>
   );
 }
@@ -298,9 +311,6 @@ const styles = StyleSheet.create({
     marginTop: responsiveHeight(3),
     textAlign: 'right',
     fontWeight: 'bold'
-  },
-  profileText: {
-    marginTop: responsiveHeight(2),
   },
   buttons: {
     display: 'flex',

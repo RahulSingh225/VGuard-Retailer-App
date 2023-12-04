@@ -1,3 +1,5 @@
+// InputField.tsx
+
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import colors from '../../colors';
@@ -7,9 +9,10 @@ interface InputFieldProps {
   label: string;
   errorMessage?: string;
   disabled?: boolean;
-  isImage?: boolean; // New prop to indicate if it's an image field
-  imageSource?: string; // New prop to provide the image source
-  onPressImage?: () => void; // New prop to handle image press
+  isImage?: boolean;
+  imageSource?: string;
+  onPressImage?: () => void;
+  onChangeText: (value: string) => void; // Callback to handle text changes
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -19,6 +22,7 @@ const InputField: React.FC<InputFieldProps> = ({
   isImage,
   imageSource,
   onPressImage,
+  onChangeText,
   ...rest
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -45,6 +49,7 @@ const InputField: React.FC<InputFieldProps> = ({
           editable={!disabled}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          onChangeText={onChangeText}
           {...rest}
         />
       )}
@@ -55,6 +60,7 @@ const InputField: React.FC<InputFieldProps> = ({
 
 const styles = StyleSheet.create({
   container: {
+    height: 50,
     marginBottom: 20,
     borderColor: colors.lightGrey,
     borderWidth: 2,

@@ -123,7 +123,7 @@ const BottomTab: React.FC = () => {
           component={ProfileStack}
           options={({ route }) => ({
             headerTitle: () => <CustomTabHeader handleLanguageButtonPress={handleLanguageButtonPress} route={route} />,
-            headerShown: true,
+            headerShown: false,
           })}
         />
         <Tab.Screen
