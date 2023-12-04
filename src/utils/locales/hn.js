@@ -108,7 +108,7 @@ export default {
         lbl_landmark: "सीमा चिह्न",
         lbl_city_mandatory: "शहर*",
         lbl_pin_code_mandatory: "पिन कोड*",
-        lbl_bank_details: "<b>बैंक विवरण</b> (केवल ए/सी ट्रांसफर के लिए)",
+        lbl_bank_details: "बैंक विवरण (केवल ए/सी ट्रांसफर के लिए)",
         lbl_account_number: "खाता संख्या",
         lbl_account_holder_name: "खाताधारक का नाम",
         lbl_account_holder: "खाताधारक",

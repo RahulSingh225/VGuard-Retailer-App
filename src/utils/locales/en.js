@@ -110,7 +110,7 @@ export default {
         lbl_landmark: "Landmark",
         lbl_city_mandatory: "City*",
         lbl_pin_code_mandatory: "Pin Code*",
-        lbl_bank_details: "<b>Bank Details</b> (for A/C transfer only)",
+        lbl_bank_details: "Bank Details (for A/C transfer only)",
         lbl_account_number: "Account Number",
         lbl_account_holder_name: "Account Holder Name",
         lbl_account_holder: "Account Holder",

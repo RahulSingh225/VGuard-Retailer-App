@@ -110,7 +110,7 @@ export default {
         lbl_landmark: "ল্যান্ডমার্ক",
         lbl_city_mandatory: "শহর*",
         lbl_pin_code_mandatory: "পিন কোড*",
-        lbl_bank_details: "<b>ব্যাংক বিবরণ</b> (কেবল A/C স্থানান্তরের জন্য)",
+        lbl_bank_details: "ব্যাংক বিবরণ (কেবল A/C স্থানান্তরের জন্য)",
         lbl_account_number: "অ্যাকাউন্ট নম্বর",
         lbl_account_holder_name: "অ্যাকাউন্ট হোল্ডার নাম",
         lbl_account_holder: "অ্যাকাউন্ট হোল্ডার",

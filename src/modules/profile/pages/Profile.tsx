@@ -2,18 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableHighlight, Image, Linking, TouchableOpacity } from 'react-native';
 import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getFile, getRishtaUserProfile } from '../../../utils/apiservice';
+import { getFile } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
-
-interface UserProfile {
-  userName: string;
-  userCode: string;
-  pointsBalance: string;
-  redeemedPoints: string;
-  userImage: string;
-  userRole: string;
-}
+import { UserData } from '../../../utils/modules/UserData';
+import InputField from '../../../components/InputField';
 
 const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
@@ -21,55 +14,27 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const baseURL = 'https://www.vguardrishta.com/img/appImages/Profile/';
   const ecardURL = 'https://www.vguardrishta.com/img/appImages/eCard/';
 
-  const [data, setData] = useState<any[]>([]);
-  const [userData, setUserData] = useState<UserProfile>({
-    userName: '',
-    userCode: '',
-    pointsBalance: '',
-    redeemedPoints: '',
-    userImage: '',
-    userRole: ''
-  });
+  const [userData, setUserData] = useState<UserData | any>();
   const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
     AsyncStorage.getItem('USER').then(r => {
       const user = JSON.parse(r || '');
-      console.log(user);
-      const data = {
-        userName: user.name,
-        userCode: user.userCode,
-        pointsBalance: user.pointsSummary.pointsBalance,
-        redeemedPoints: user.pointsSummary.redeemedPoints,
-        userImage: user.kycDetails.selfie,
-        userRole: user.professionId
-      };
-      setUserData(data);
-      getRishtaUserProfile()
-        .then(response => response.json())
-        .then(responseData => {
-          setData(responseData);
-          console.log("<><<><<><>><", responseData, "<><<<><><><><><><<><");
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
-        });
+      setUserData(user);
     });
   }, []);
 
   useEffect(() => {
-    if (userData.userRole && userData.userImage) {
-
+    if (userData?.roleId && userData?.kycDetails?.selfie) {
       const getImage = async () => {
         try {
-          const profileImageUrl = await getFile(userData.userImage, 'PROFILE', 2);
+          const profileImageUrl = await getFile(userData.kycDetails.selfie, 'PROFILE', 2);
           if (profileImageUrl.status === 500) {
             setProfileImage(null);
           }
           else {
             setProfileImage(profileImageUrl.url);
           }
-          console.log(profileImage)
         } catch (error) {
           console.log('Error while fetching profile image:', error);
         }
@@ -77,83 +42,127 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
       getImage();
     }
-  }, [userData.userRole, userData.userImage]);
+  }, [userData?.roleId, userData?.kycDetails?.selfie]);
 
   const labels = [
-    'Preferred Language',
-    'Gender',
+    // 'Preferred Language',
+    'Contact Number',
+    'Store/Firm Name',
+    // 'Front Facade',
+    // 'GST Photo',
     'Date of Birth',
-    'Contact',
-    'WhatsApp',
-    'Email',
-    'Permanent Address',
-    'Profession',
-    'Enrolled in Scheme',
-    'Annual Business Potential',
-    'Selfie',
-    'ID Document',
-    'Bank Details',
-    'Pan Card',
+    'Email'
   ];
 
-  const renderField = (fieldName: string): string => {
+  const addressLabels = [
+    'Permanent Address House/Flat/Block No.',
+    'Street/Colony/Locality Name',
+    'Landmark',
+    'State',
+    'Distict',
+    'City',
+    'Pincode',
+    'Marital Status',
+    'Annual Business Potential'
+  ]
+
+  const bankDetails = [
+    'Account Number',
+    'Account Holder Name',
+    'Bank Name',
+    'IFSC Code',
+    // 'Cancelled Cheque Copy'
+  ]
+
+  const renderField = async (fieldName: string): string => {
+    if (fieldName === 'Cancelled Cheque Copy') {
+      const chequePhoto = await getFile(userData.bankDetail.checkPhoto, 'CHEQUE', 2);
+      return chequePhoto.url;
+    }
+    if (fieldName === 'GST Photo') {
+      const gstPhoto = await getFile(userData.kycDetails.gstFront, 'GST', 2);
+      return gstPhoto.url;
+    }
     const fieldMap: Record<string, string> = {
       'Date of Birth': 'dob',
-      'Contact': 'contactNo',
-      'WhatsApp': 'whatsappNo',
-      'Permanent Address': 'permanentAddress',
-      'Enrolled in Scheme': 'enrolledOtherSchemeYesNo',
-      'Annual Business Potential': 'annualBusinessPotential',
-      'Preferred Language': 'preferredLanguage',
-      'Gender': 'gender',
+      'Contact Number': 'mobileNo',
       'Email': 'emailId',
-      'Profession': 'profession',
+      'Store/Firm Name': 'firmName',
+      'Permanent Address House/Flat/Block No.': 'permanentAddress',
+      'Street/Colony/Locality Name': 'streetAndLocality',
+      'Landmark': 'currLandmark',
+      'State': 'state',
+      'Distict': 'dist',
+      'City': 'city',
+      'Pincode': 'pinCode',
+      'Marital Status': 'maritalStatus',
+      'Annual Business Potential': 'annualBusinessPotential',
+      'Account Number': 'bankDetail.bankAccNo',
+      'Account Holder Name': 'bankDetail.bankAccHolderName',
+      'Bank Name': 'bankDetail.bankNameAndBranch',
+      'IFSC Code': 'bankDetail.bankIfsc',
+      'GST Photo': 'kycDetails.gstFront',
     };
+    
 
     if (fieldName in fieldMap) {
       const mappedField = fieldMap[fieldName];
-      if (mappedField in data) {
-        const fieldValue = data[mappedField];
-        return fieldValue === true ? 'Yes' : fieldValue === false ? 'No' : fieldValue;
-      } else {
-        return 'N/A';
-      }
-    } else if (fieldName === 'Selfie') {
-      if (data.kycDetails && data.kycDetails.selfie) {
-        return 'Yes';
-      } else {
-        return 'No';
-      }
-    } else if (fieldName === 'ID Document') {
-      if (data.kycDetails && data.kycDetails.aadharOrVoterOrDLFront && data.kycDetails.aadharOrVoterOrDlBack && data.kycDetails.aadharOrVoterOrDlNo) {
-        return 'Yes';
-      } else {
-        return 'No';
-      }
-    } else if (fieldName === 'Pan Card') {
-      if (data.kycDetails && data.kycDetails.panCardFront && data.kycDetails.panCardBack && data.kycDetails.panCardNo) {
-        return 'Yes';
-      } else {
-        return 'No';
-      }
-    } else if (fieldName === 'Bank Details') {
-      if (data.bankDetail && data.bankDetail.bankAccNo) {
-        return 'Yes';
-      } else {
-        return 'No';
-      }
-    } else if (fieldName in data) {
-      const fieldValue = data[fieldName];
-      return fieldValue === true ? 'Yes' : fieldValue === false ? 'No' : fieldValue;
+      const fieldValue = mappedField.split('.').reduce((obj, key) => obj[key], userData);
+      const formattedValue =
+        typeof fieldValue === 'number' ? fieldValue.toString() : fieldValue;
+      return formattedValue === true ? 'Yes' : formattedValue === false ? 'No' : formattedValue;
     } else {
-      return 'N/A';
+      return '';
     }
   };
 
   const openEVisitingCard = () => {
-    console.log(ecardURL + data.ecardPath, 'url---------')
-    Linking.openURL(ecardURL + data.ecardPath);
+    Linking.openURL(ecardURL + userData.ecardPath);
   };
+
+  const renderFields = async (fieldNames: string[]): Promise<string[]> => {
+    const results = await Promise.all(
+      fieldNames.map(async (fieldName) => await renderField(fieldName))
+    );
+    return results;
+  };
+
+  const [renderedFields, setRenderedFields] = useState<string[] | null>(null);
+  const [renderedBankFields, setRenderedBankFields] = useState<string[] | null>(null);
+  const [renderedAddressFields, setRenderedAddressFields] = useState<string[] | null>(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      const fields = await renderFields(labels);
+      const addressFields = await renderFields(addressLabels);
+      const bankFields = await renderFields(bankDetails);
+      setRenderedFields(fields);
+      setRenderedAddressFields(addressFields);
+      setRenderedBankFields(bankFields);
+    };
+
+    fetchData();
+  }, [userData?.roleId, userData?.kycDetails?.selfie]);
+
+  const [chequeCopySource, setChequeCopySource] = useState<string | null>(null);
+  const [gstCopySource, setGstCopySource] = useState<string | null>(null);
+  // const [facadeCopySource, setFacadeCopySource] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchChequeCopy = async () => {
+      try {
+        const source = await renderField("Cancelled Cheque Copy");
+        const gstSource = await renderField("GST Photo");
+        // const facadeSource = await renderField("Front Facade");
+        setChequeCopySource(source);
+        setGstCopySource(gstSource);
+        // setFacadeCopySource(facadeSource);
+      } catch (error) {
+        console.error("Error fetching cheque copy:", error);
+      }
+    };
+
+    fetchChequeCopy();
+  }, []);
 
   return (
     <ScrollView style={styles.mainWrapper}>
@@ -165,28 +174,86 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
             <Image source={require('../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
           )}
         </View>
-
+        <View style={styles.profileText}>
+          <Text style={styles.textDetail}>{userData?.name}</Text>
+          <Text style={styles.textDetail}>{userData?.userCode}</Text>
+          <TouchableOpacity onPress={openEVisitingCard}>
+            <Text style={styles.viewProfile}>{t('strings:view_e_card')}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      <View style={styles.buttons}>
         <TouchableHighlight
           style={styles.button}
           onPress={() => navigation.navigate('editProfile')}
         >
           <Text style={styles.buttonText}>{t('strings:edit_profile')}</Text>
         </TouchableHighlight>
-      </View>
-      <View style={styles.profileText}>
-        <Text style={styles.textDetail}>{userData.userName}</Text>
-        <Text style={styles.textDetail}>{userData.userCode}</Text>
-        <TouchableOpacity onPress={openEVisitingCard}>
-          <Text style={styles.viewProfile}>{t('strings:view_e_card')}</Text>
-        </TouchableOpacity>
+        <TouchableHighlight
+          style={styles.button}
+          onPress={() => navigation.navigate('editProfile')}
+        >
+          <Text style={styles.buttonText}>{t('strings:add_sub_login')}</Text>
+        </TouchableHighlight>
+        <TouchableHighlight
+          style={styles.button}
+          onPress={() => navigation.navigate('editProfile')}
+        >
+          <Text style={styles.buttonText}>{t('strings:referral_code')}</Text>
+        </TouchableHighlight>
       </View>
       <View style={styles.detailsContainer}>
         {labels.map((label, index) => (
-          <View style={styles.labelDataContainer} key={index}>
-            <Text style={styles.label}>{label}:</Text>
-            <Text style={styles.data}>{renderField(label)}</Text>
-          </View>
+          <InputField
+            key={index}
+            label={label}
+            value={renderedFields ? renderedFields[index] : ''}
+            disabled={true}
+            isImage={false}
+          />
         ))}
+        {/* <InputField
+          label="Front Facade"
+          isImage
+          imageSource={facadeCopySource}
+          onPressImage={() => {
+            console.log("Image Pressed")
+          }}
+        /> */}
+        <InputField
+          label="GST Photo"
+          isImage
+          imageSource={gstCopySource}
+          onPressImage={() => {
+            console.log("Image Pressed")
+          }}
+        />
+        <Text style={styles.subHeading}>{t('strings:permanent_address')}</Text>
+        {addressLabels.map((label, index) => (
+          <InputField
+            label={label}
+            value={renderedAddressFields ? renderedAddressFields[index] : ''}
+            disabled={true}
+            isImage={false}
+          />
+        ))}
+        <Text style={styles.subHeading}>{t('strings:lbl_bank_details')}</Text>
+        {bankDetails.map((label, index) => (
+          <InputField
+            label={label}
+            value={renderedBankFields ? renderedBankFields[index] : ''}
+            disabled={true}
+            isImage={false}
+          />
+        ))}
+        <InputField
+          label="Cancelled Cheque Copy"
+          isImage
+          imageSource={chequeCopySource}
+          onPressImage={() => {
+            console.log("Image Pressed")
+          }}
+        />
       </View>
     </ScrollView>
   );
@@ -199,9 +266,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   ImageProfile: {
-    height: 100,
-    width: 100,
-    // backgroundColor: colors.lightGrey,
+    height: 50,
+    width: 50,
     borderRadius: 100,
   },
   textName: {
@@ -236,9 +302,14 @@ const styles = StyleSheet.create({
   profileText: {
     marginTop: responsiveHeight(2),
   },
+  buttons: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
   button: {
     backgroundColor: colors.yellow,
-    paddingHorizontal: responsiveWidth(5),
+    paddingHorizontal: responsiveWidth(3),
     paddingVertical: responsiveHeight(1),
     shadowColor: 'rgba(0, 0, 0, 0.8)',
     elevation: 5,
@@ -247,8 +318,9 @@ const styles = StyleSheet.create({
   flexBox: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 20,
+    marginBottom: 20
   },
   buttonText: {
     color: colors.black,
@@ -257,13 +329,14 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     flexDirection: 'column',
-    marginBottom: 50
+    marginVertical: 30
   },
-  labelDataContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
+  subHeading: {
+    color: colors.grey,
+    fontSize: responsiveFontSize(2.2),
+    fontWeight: 'bold',
+    marginBottom: 20
+  }
 });
 
 export default Profile;
