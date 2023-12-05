@@ -101,7 +101,7 @@ export default {
         calendar_icon: "कैलेंडर आइकन",
         lbl_contact_number_mandatory: "संपर्क नंबर*",
         lbl_whats_app_number: "WhatsApp नंबर",
-        lbl_permanent_address_mandatory: "<b>स्थायी पता*</b> घर/फ्लैट/ब्लॉक नंबर",
+        lbl_permanent_address_mandatory: "स्थायी पता* घर/फ्लैट/ब्लॉक नंबर",
         lbl_delivery_address_mandatory: "<b>वितरण पता*</b> घर/फ्लैट/ब्लॉक नंबर",
         lbl_current_address_mandatory: "<b>वर्तमान पता*</b> घर/फ्लैट/ब्लॉक नंबर",
         lbl_street_locality: "सड़क/कॉलोनी/स्थान का नाम*",
@@ -268,7 +268,7 @@ export default {
         _is_what_s_app_contact_same_as_above: "क्या वॉट्सऐप संपर्क उपरोक्त से समान है?",
         state: "राज्य",
         profession: "पेशेवर",
-        marital_status: "वैवाहिक स्थिति*",
+        lbl_marital_status: "वैवाहिक स्थिति*",
         already_enrolled_into_loyalty_scheme: "पहले से ही लॉयल्टी योजना में पंजीकृत हैं?",
         id_proof: "आईडी प्रूफ",
         points: "पॉइंट्स",
@@ -496,7 +496,7 @@ export default {
         select_city: "शहर चुनें",
         select_gender: {
             select_gender: "लिंग का चयन करें*",
-            amle: "पुरुष",
+            male: "पुरुष",
             female: "महिला",
             other: "अन्य"
         },

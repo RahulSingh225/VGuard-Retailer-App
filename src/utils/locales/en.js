@@ -103,7 +103,7 @@ export default {
         calendar_icon: "Calendar icon",
         lbl_contact_number_mandatory: "Contact Number*",
         lbl_whats_app_number: "WhatsApp Number",
-        lbl_permanent_address_mandatory: "<b>Permanent Address*</b> House/Flat/Block No.",
+        lbl_permanent_address_mandatory: "Permanent Address* House/Flat/Block No.",
         lbl_delivery_address_mandatory: "<b>Delivery Address*</b> House/Flat/Block No.",
         lbl_current_address_mandatory: "<b>Current Address*</b> House/Flat/Block No.",
         lbl_street_locality: "Street/Colony/Locality Name*",
@@ -269,7 +269,7 @@ export default {
         _is_what_s_app_contact_same_as_above: "Is What's app contact same as above?",
         state: "State",
         profession: "Profession",
-        marital_status: "Marital Status*",
+        lbl_marital_status: "Marital Status*",
         already_enrolled_into_loyalty_scheme: "Already enrolled into loyalty scheme?",
         id_proof: "Id Proof",
         points: "Points",
@@ -497,7 +497,7 @@ export default {
         select_city: "Select City",
         select_gender: {
             select_gender: "Select Gender*",
-            amle: "Male",
+            male: "Male",
             female: "Female",
             other: "Other"
         },

@@ -269,7 +269,7 @@ export default {
         _is_what_s_app_contact_same_as_above: "ওয়াটস অ্যাপ যোগাযোগ সময় উপরের সাথে একই?",
         state: "রাজ্য",
         profession: "পেশা",
-        marital_status: "বৈবাহিক অবস্থা*",
+        lbl_marital_status: "বৈবাহিক অবস্থা*",
         already_enrolled_into_loyalty_scheme: "ইতিমধ্যে বিশ্বাসপত্র স্কীমে নিবন্ধিত?",
         id_proof: "আইডি প্রমাণ",
         points: "পয়েন্ট",
