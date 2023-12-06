@@ -141,19 +141,25 @@ const TDSStatement: React.FC<TDSProps> = () => {
     getTdsStatementList(postData)
       .then((response) => response.json())
       .then((responseData) => {
+        console.log(responseData)
         setStatementList(responseData);
       })
       .catch((error) => {
+        setStatementList([]);
         console.error('Error fetching data:', error);
       });
   }, [postData]);
 
-  const data = statementList.map((data) => [
-    data?.redDate.toString(),
-    data?.redAmnt.toString(),
-    data?.tdsAmnt.toString(),
-    data?.tdsPerc.toString(),
-  ]);
+  let data: any[] = [];
+  if(statementList && statementList.length > 0){
+    console.log("Statement List", statementList)
+    data = statementList?.map((data) => [
+      data?.redDate.toString(),
+      data?.redAmnt.toString(),
+      data?.tdsAmnt.toString(),
+      data?.tdsPerc.toString(),
+    ]);
+  }
 
   const tableHead = ['Red Date', 'Red Amt', 'TDS Amt', 'TDS %'];
 
@@ -189,12 +195,8 @@ const TDSStatement: React.FC<TDSProps> = () => {
             source={require('../../../../../assets/images/ic_ticket_drop_down2.png')}
           />
         </View>
-      </TouchableOpacity>
-
-      {isFocusMonth && (
-        <CustomMonthDropdown data={monthData} value={selectedMonth} onChange={handleDropdownMonth} />
-      )}
-      <Table style={[{zIndex: -1}]}>
+      </TouchableOpacity>   
+      <Table style={[{zIndex: -999, minHeight: responsiveHeight(50)}]}>
         {data.length === 0 ? (
           <Rows
             data={[['No Data']]}
@@ -207,6 +209,9 @@ const TDSStatement: React.FC<TDSProps> = () => {
           </>
         )}
       </Table>
+      {isFocusMonth && (
+        <CustomMonthDropdown data={monthData} value={selectedMonth} onChange={handleDropdownMonth} />
+      )}
     </ScrollView>
   );
 };
@@ -215,7 +220,7 @@ const styles = StyleSheet.create({
   mainWrapper: {
     paddingHorizontal: 15,
     marginTop: 15,
-    paddingBottom: 50
+    paddingBottom: 50,
   },
   greyText: {
     color: colors.grey,
@@ -225,7 +230,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   dropdownContainer: {
-    zIndex: 1,
+    zIndex: 999,
   },
   card: {
     padding: 10,

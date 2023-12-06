@@ -206,7 +206,8 @@ const styles = StyleSheet.create({
   },
   noDataText: {
     color: colors.grey,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    textAlign:'center'
   }
 });
 
