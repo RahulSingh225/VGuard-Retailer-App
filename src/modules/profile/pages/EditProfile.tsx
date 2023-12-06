@@ -12,6 +12,7 @@ import PickerField from '../../../components/PickerField';
 import DatePickerField from '../../../components/DatePickerField';
 import Popup from '../../../components/Popup';
 import Snackbar from 'react-native-snackbar';
+import ImagePickerField from '../../../components/ImagePickerField';
 
 
 const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -25,10 +26,12 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [profileImage, setProfileImage] = useState(null);
   const [isShopAddressDifferent, setIsShopAddressDifferent] = useState('Yes');
   const [retailerCategoryDealIn, setRetailerCategoryDealIn] = useState([]);
-  const [idFrontCopySource, setIdFrontCopySource] = useState<string | null>(null);
-  const [idBackCopySource, setIdBackCopySource] = useState<string | null>(null);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
+  const [IdFrontUid, setIdFrontUid] = useState("");
+  const [IdBackUid, setIdBackUid] = useState("");
+  const [selfie, setSelfie] = useState("");
+
   useEffect(() => {
     AsyncStorage.getItem('USER').then(r => {
       const user = JSON.parse(r || '');
@@ -39,7 +42,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       .then(response => response.json())
       .then((responseData) => {
         setRetailerCategoryDealIn(responseData);
-        console.log("<><<><<><>><", responseData, "<><<<><><><><><><<><");
       })
       .catch(error => {
         console.error('Error fetching data:', error);
@@ -70,11 +72,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const openEVisitingCard = () => {
     Linking.openURL(ecardURL + userData.ecardPath);
   };
-
-
-
-
-  // ... (other imports)
 
   const handleSubmit = async () => {
     console.log("Post Data:", postData?.dob);
@@ -136,7 +133,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     });
   };
 
-
   const genderpickerItems = [
     { label: 'Male', value: 'Male' },
     { label: 'Female', value: 'Female' },
@@ -151,6 +147,32 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     { label: 'UnMarried', value: 'UnMarried' }
   ];
 
+  const handleImageChange = async (image: string, imageName: string, apiResponse: any, label:string) => {
+    console.log("Image Name:", label)
+
+    try {
+      if(label=="Id Proof* (Front)"){
+        setIdFrontUid(apiResponse.data.entityUid);
+      }
+      else if(label=="Id Proof* (Back)"){
+        setIdBackUid(apiResponse.data.entityUid);
+      }
+      else if(label=="Selfie"){
+        setSelfie(apiResponse.data.entityUid);
+      }
+      console.log('API Response in EditProfile:', apiResponse);
+    } catch (error) {
+      console.error('Error handling image change in EditProfile:', error);
+    }
+  };
+
+  const setPostDataOfImage = (label: string, value: string) => {
+    setPostData((prevData: UserData) => ({
+      ...prevData,
+      [label]: value,
+    }));
+  }
+  
 
   return (
     <ScrollView style={styles.mainWrapper}>
@@ -287,29 +309,20 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           value={postData?.annualBusinessPotential?.toString()}
           onChangeText={(text) => handleInputChange(text, 'annualBusinessPotential')}
         />
-        <InputField
-          label={t('strings:selfie')}
-          isImage
-          imageSource={profileImage}
-          onPressImage={() => {
-            console.log("Image Pressed")
-          }}
+        <ImagePickerField label='Selfie'
+        onImageChange={handleImageChange}
+        setImageData = {()=>setPostDataOfImage('kycDetails?.selfie', selfie)}
+        imageRelated='PROFILE' 
         />
-        <InputField
-          label="ID Proof* (Front)"
-          isImage
-          imageSource={idFrontCopySource}
-          onPressImage={() => {
-            console.log("Image Pressed")
-          }}
+        <ImagePickerField label='Id Proof* (Front)'
+        onImageChange={handleImageChange} 
+        setImageData = {()=>setPostDataOfImage('kycDetails?.aadharOrVoterOrDLFront', IdFrontUid)}
+        imageRelated='ID_CARD_FRONT'
         />
-        <InputField
-          label="ID Proof* (Back)"
-          isImage
-          imageSource={idBackCopySource}
-          onPressImage={() => {
-            console.log("Image Pressed")
-          }}
+        <ImagePickerField label='Id Proof* (Back)'
+        onImageChange={handleImageChange} 
+        setImageData = {()=>setPostDataOfImage('kycDetails?.aadharOrVoterOrDlBack', IdBackUid)}
+        imageRelated = "ID_CARD_BACK"
         />
         <InputField
           label={t('strings:id_proof_no')}
