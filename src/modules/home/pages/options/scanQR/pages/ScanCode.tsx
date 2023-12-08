@@ -31,6 +31,7 @@ import { scanQR } from 'react-native-simple-qr-reader';
 import Popup from '../../../../../../components/Popup';
 import PopupWithOkAndCancel from '../../../../../../components/PopupWithOkAndCancel';
 import PopupWithPin from '../../../../../../components/PopupWithPin';
+import RewardBox from '../../../../../../components/RewardBox';
 interface ScanCodeProps {
   navigation: any;
   route: any;
@@ -68,6 +69,9 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
     category: '',
   })
   var USER: any = null;
+  var scratchCardProps;
+  var CouponResponse: any;
+
 
   useEffect(() => {
     AsyncStorage.getItem("USER").then(r => {
@@ -101,7 +105,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         console.error("Error getting location:", error);
       });
   };
-  
+
   async function sendBarcode() {
     if (qrCode && qrCode != '') {
       console.log("COUPON DATA:------", CouponData)
@@ -117,9 +121,54 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         apiResponse = await isValidBarcode(CouponData, 0, '', 0, null);
         const r = await apiResponse.json();
         console.log("Response-----:", r);
+        CouponResponse = r;
         if (r.errorCode == 1) {
           setQrcode('');
-          showScratchCard(true);
+          var couponPoints = r.couponPoints;
+          var basePoints = r.basePoints;
+          basePoints ? (basePoints = `Base Points: ${basePoints}`) : null;
+
+          scratchCardProps = {
+            rewardImage: {
+              width: 100,
+              height: 100,
+              resourceLocation: require('../../../../../../assets/images/ic_rewards_gift.png'),
+            },
+            rewardResultText: {
+              color: 'black',
+              fontSize: 16,
+              textContent: 'YOU WON',
+              fontWeight: '700',
+            },
+            text1: {
+              color: 'black',
+              fontSize: 16,
+              textContent: couponPoints,
+              fontWeight: '700',
+            },
+            text2: {
+              color: 'black',
+              fontSize: 16,
+              textContent: 'POINTS',
+              fontWeight: '700',
+            },
+            text3: {
+              color: '#9c9c9c',
+              fontSize: 12,
+              textContent: basePoints,
+              fontWeight: '700',
+            },
+            button: {
+              buttonColor: '#F0C300',
+              buttonTextColor: 'black',
+              buttonText: '',
+              buttonAction: showScratchCard(false),
+              fontWeight: '400',
+            },
+            textInput: false,
+            scratchable: false
+          };
+          showScratchCard(true)
         }
         else if (r.errorCode == 2) {
           setPinPopupVisible(true);
@@ -169,7 +218,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
       .then((result) => result.json())
       .then((jsonResult) => {
         console.log("CouponData:", CouponData);
-  
+
         setPinPopupVisible(false);
         setPopupVisible(true);
         setPopupContent(jsonResult.errorMsg);
@@ -181,19 +230,69 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         console.error('Send Coupon PIN API Error:', error);
       });
   };
+  function checkBonusPoints(){
+    showScratchCard(false);
+    if(CouponResponse.transactId && CouponResponse.bitEligibleScratchCard){
+      getBonusPoints(CouponResponse.transactId).then(response=>response.json().then(result=>{
+        var couponPoints = result.promotionPoints;
+        scratchCardProps = {
+          rewardImage: {
+            width: 100,
+            height: 100,
+            resourceLocation: require('../../../../../../assets/images/ic_rewards_gift.png'),
+          },
+          rewardResultText: {
+            color: 'black',
+            fontSize: 16,
+            textContent: result.errorMsg,
+            fontWeight: '700',
+          },
+          text1: {
+            color: 'black',
+            fontSize: 16,
+            textContent: couponPoints,
+            fontWeight: '700',
+          },
+          text2: {
+            color: 'black',
+            fontSize: 16,
+            textContent: 'POINTS',
+            fontWeight: '700',
+          },
+          text3: {
+            color: '#9c9c9c',
+            fontSize: 12,
+            textContent: "",
+            fontWeight: '700',
+          },
+          button: {
+            buttonColor: '#F0C300',
+            buttonTextColor: 'black',
+            buttonText: '',
+            buttonAction: showScratchCard(false),
+            fontWeight: '400',
+          },
+          textInput: false,
+          scratchable:true
+        };
+
+      }))
+      showScratchCard(true)
+    }
+  
+  }
 
 
-  
-  
+
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContainer}>
       <View style={styles.mainWrapper}>
         {scratchCard && (
-          <ScratchCard
-            points={'40'}
-            onPress={() => {
-              showScratchCard(false);
-            }}
+          <RewardBox
+            scratchCardProps={scratchCardProps}
+            visible={scratchCard}
+            scratchable={scratchCardProps.scratchable}
+            onClose={checkBonusPoints} textContent={''}
           />
         )}
         <View style={styles.imageContainer}>
@@ -266,7 +365,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         </PopupWithOkAndCancel>
       )}
       {isPinPopupVisible && (
-        <PopupWithPin isVisible={isPinPopupVisible} onClose={() => setPinPopupVisible(false)} onOk={() => sendPin()} onTextChange={(text)=>handlePinChange(text)} />
+        <PopupWithPin isVisible={isPinPopupVisible} onClose={() => setPinPopupVisible(false)} onOk={() => sendPin()} onTextChange={(text) => handlePinChange(text)} />
       )}
     </ScrollView>
   );
