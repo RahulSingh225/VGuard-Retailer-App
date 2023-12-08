@@ -31,7 +31,7 @@ import { scanQR } from 'react-native-simple-qr-reader';
 import Popup from '../../../../../../components/Popup';
 import PopupWithOkAndCancel from '../../../../../../components/PopupWithOkAndCancel';
 import PopupWithPin from '../../../../../../components/PopupWithPin';
-import RewardBox from '../../../../../../components/RewardBox';
+import RewardBox from '../../../../../../components/ScratchCard';
 interface ScanCodeProps {
   navigation: any;
   route: any;
@@ -47,6 +47,19 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
   const [isPinPopupVisible, setPinPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
   const [okPopupContent, setOkPopupContect] = useState('');
+  const [scratchable, setScratchable] = useState(false);
+  const [scratchCardProps, setScratchCardProps] = useState(
+    {
+        rewardImage : { width:100, height:100, resourceLocation:require("../../../../../../assets/images/ic_rewards_gift.png"), /*resourceUrl:"https://www.leavesofgrassnewyork.com/cdn/shop/products/gift-card_612x.jpg?v=1614324792"*/ },
+        rewardResultText:{ color:"black", fontSize:16, textContent:"YOU WON",fontWeight:"700" },
+        text1:{ color:"black", fontSize:16, textContent:"", fontWeight:"700" },
+        text2:{ color:"black", fontSize:16, textContent:"POINTS", fontWeight:"700" },
+        text3:{ color:"#9c9c9c", fontSize:12, textContent:" ", fontWeight:"700" },
+        button:{ buttonColor :"#F0C300", buttonTextColor:"black", buttonText:"Register Warranty", buttonAction:"", fontWeight:"400" },
+        textInput:false
+      }
+  );
+
   const [UserData, setUserData] = useState({
     mobileNo: ''
   });
@@ -69,10 +82,9 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
     category: '',
   })
   var USER: any = null;
-  var scratchCardProps;
   var CouponResponse: any;
 
-
+  
   useEffect(() => {
     AsyncStorage.getItem("USER").then(r => {
       USER = JSON.parse(r || '');
@@ -90,8 +102,6 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
     getLocation()
       .then((position) => {
         if (position != null) {
-          // console.log("Position:", position);
-          // console.log("Latitude:", position?.latitude);
           setCouponData((prevData) => ({
             ...prevData,
             latitude: position.latitude,
@@ -106,11 +116,18 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
       });
   };
 
-  async function sendBarcode() {
-    if (qrCode && qrCode != '') {
-      console.log("COUPON DATA:------", CouponData)
-      var apiResponse;
+  const handleQrText = (coupon: string) => {
+    setQrcode(coupon);
+    setCouponData((prevCouponData) => ({
+      ...prevCouponData,
+      couponCode: coupon
+    }));
+  }
 
+  async function sendBarcode() {
+
+    if (qrCode && qrCode != '') {
+      var apiResponse;
       if (type == 'airCooler') {
         apiResponse = await isValidBarcode(CouponData, 1, '', 0, null);
         const r = await apiResponse.json();
@@ -123,51 +140,57 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         console.log("Response-----:", r);
         CouponResponse = r;
         if (r.errorCode == 1) {
+          console.log("<><<<><><><<><><><<<><><><")
           setQrcode('');
           var couponPoints = r.couponPoints;
           var basePoints = r.basePoints;
+          // var couponPoints = "100";
+          // var basePoints = "200";
           basePoints ? (basePoints = `Base Points: ${basePoints}`) : null;
 
-          scratchCardProps = {
-            rewardImage: {
-              width: 100,
-              height: 100,
-              resourceLocation: require('../../../../../../assets/images/ic_rewards_gift.png'),
+          console.log("COUPON POINTS:===", couponPoints);
+          console.log("BASE POINTS:========", basePoints);
+
+          setScratchCardProps({
+            rewardImage : { 
+              width:100, 
+              height:100, 
+              resourceLocation:require("../../../../../../assets/images/ic_rewards_gift.png")
             },
-            rewardResultText: {
-              color: 'black',
-              fontSize: 16,
-              textContent: 'YOU WON',
-              fontWeight: '700',
+            rewardResultText:{ 
+              color: colors.black, 
+              fontSize:16, 
+              textContent:"YOU WON",
+              fontWeight:"700" 
             },
-            text1: {
-              color: 'black',
-              fontSize: 16,
-              textContent: couponPoints,
-              fontWeight: '700',
+            text1:{ 
+              color: colors.black, 
+              fontSize:16, 
+              textContent:couponPoints, 
+              fontWeight:"700" 
             },
-            text2: {
-              color: 'black',
-              fontSize: 16,
-              textContent: 'POINTS',
-              fontWeight: '700',
+            text2:{ 
+              color: colors.black, 
+              fontSize:16, 
+              textContent:"POINTS", 
+              fontWeight:"700" 
             },
-            text3: {
-              color: '#9c9c9c',
-              fontSize: 12,
-              textContent: basePoints,
-              fontWeight: '700',
+            text3:{ 
+              color: colors.grey, 
+              fontSize:12, 
+              textContent: basePoints, 
+              fontWeight:"700" 
             },
-            button: {
-              buttonColor: '#F0C300',
-              buttonTextColor: 'black',
-              buttonText: '',
-              buttonAction: showScratchCard(false),
-              fontWeight: '400',
+            button:{ 
+              buttonColor : colors.yellow, 
+              buttonTextColor: colors.black, 
+              buttonText:"Register Warranty", 
+              buttonAction:"", 
+              fontWeight:"400" 
             },
-            textInput: false,
-            scratchable: false
-          };
+            textInput:false
+          })
+          setScratchable(true);
           showScratchCard(true)
         }
         else if (r.errorCode == 2) {
@@ -230,10 +253,10 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         console.error('Send Coupon PIN API Error:', error);
       });
   };
-  function checkBonusPoints(){
+  function checkBonusPoints() {
     showScratchCard(false);
-    if(CouponResponse.transactId && CouponResponse.bitEligibleScratchCard){
-      getBonusPoints(CouponResponse.transactId).then(response=>response.json().then(result=>{
+    if (CouponResponse?.transactId && CouponResponse?.bitEligibleScratchCard) {
+      getBonusPoints(CouponResponse.transactId).then(response => response.json().then(result => {
         var couponPoints = result.promotionPoints;
         scratchCardProps = {
           rewardImage: {
@@ -242,44 +265,44 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
             resourceLocation: require('../../../../../../assets/images/ic_rewards_gift.png'),
           },
           rewardResultText: {
-            color: 'black',
+            color: colors.black,
             fontSize: 16,
             textContent: result.errorMsg,
             fontWeight: '700',
           },
           text1: {
-            color: 'black',
+            color: colors.black,
             fontSize: 16,
             textContent: couponPoints,
             fontWeight: '700',
           },
           text2: {
-            color: 'black',
+            color: colors.black,
             fontSize: 16,
             textContent: 'POINTS',
             fontWeight: '700',
           },
           text3: {
-            color: '#9c9c9c',
+            color: colors.grey,
             fontSize: 12,
             textContent: "",
             fontWeight: '700',
           },
           button: {
-            buttonColor: '#F0C300',
-            buttonTextColor: 'black',
+            buttonColor: colors.yellow,
+            buttonTextColor: colors.black,
             buttonText: '',
             buttonAction: showScratchCard(false),
             fontWeight: '400',
           },
           textInput: false,
-          scratchable:true
         };
+        scratchable = false
 
       }))
       showScratchCard(true)
     }
-  
+
   }
 
 
@@ -291,9 +314,10 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
           <RewardBox
             scratchCardProps={scratchCardProps}
             visible={scratchCard}
-            scratchable={scratchCardProps.scratchable}
-            onClose={checkBonusPoints} textContent={''}
+            scratchable={scratchable}
+            onClose={checkBonusPoints}
           />
+
         )}
         <View style={styles.imageContainer}>
           <Image
@@ -326,7 +350,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
               placeholder={t('strings:enter_code_here')}
               placeholderTextColor={colors.grey}
               textAlign="center"
-              onChangeText={(text) => setQrcode(text)}
+              onChangeText={(text) => handleQrText(text)}
             />
           </View>
         </View>
@@ -464,5 +488,7 @@ async function isValidBarcode(
     return result;
   }
 }
+
+
 
 export default ScanCode;
