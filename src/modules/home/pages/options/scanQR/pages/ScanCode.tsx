@@ -31,6 +31,7 @@ import { scanQR } from 'react-native-simple-qr-reader';
 import Popup from '../../../../../../components/Popup';
 import PopupWithOkAndCancel from '../../../../../../components/PopupWithOkAndCancel';
 import PopupWithPin from '../../../../../../components/PopupWithPin';
+import RewardBox from '../../../../../../components/ScratchCard';
 interface ScanCodeProps {
   navigation: any;
   route: any;
@@ -46,6 +47,19 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
   const [isPinPopupVisible, setPinPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
   const [okPopupContent, setOkPopupContect] = useState('');
+  const [scratchable, setScratchable] = useState(false);
+  const [scratchCardProps, setScratchCardProps] = useState(
+    {
+        rewardImage : { width:100, height:100, resourceLocation:require("../../../../../../assets/images/ic_rewards_gift.png"), /*resourceUrl:"https://www.leavesofgrassnewyork.com/cdn/shop/products/gift-card_612x.jpg?v=1614324792"*/ },
+        rewardResultText:{ color:"black", fontSize:16, textContent:"YOU WON",fontWeight:"700" },
+        text1:{ color:"black", fontSize:16, textContent:"", fontWeight:"700" },
+        text2:{ color:"black", fontSize:16, textContent:"POINTS", fontWeight:"700" },
+        text3:{ color:"#9c9c9c", fontSize:12, textContent:" ", fontWeight:"700" },
+        button:{ buttonColor :"#F0C300", buttonTextColor:"black", buttonText:"Register Warranty", buttonAction:"", fontWeight:"400" },
+        textInput:false
+      }
+  );
+
   const [UserData, setUserData] = useState({
     mobileNo: ''
   });
@@ -68,7 +82,9 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
     category: '',
   })
   var USER: any = null;
+  var CouponResponse: any;
 
+  
   useEffect(() => {
     AsyncStorage.getItem("USER").then(r => {
       USER = JSON.parse(r || '');
@@ -86,8 +102,6 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
     getLocation()
       .then((position) => {
         if (position != null) {
-          // console.log("Position:", position);
-          // console.log("Latitude:", position?.latitude);
           setCouponData((prevData) => ({
             ...prevData,
             latitude: position.latitude,
@@ -101,12 +115,19 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         console.error("Error getting location:", error);
       });
   };
-  
-  async function sendBarcode() {
-    if (qrCode && qrCode != '') {
-      console.log("COUPON DATA:------", CouponData)
-      var apiResponse;
 
+  const handleQrText = (coupon: string) => {
+    setQrcode(coupon);
+    setCouponData((prevCouponData) => ({
+      ...prevCouponData,
+      couponCode: coupon
+    }));
+  }
+
+  async function sendBarcode() {
+
+    if (qrCode && qrCode != '') {
+      var apiResponse;
       if (type == 'airCooler') {
         apiResponse = await isValidBarcode(CouponData, 1, '', 0, null);
         const r = await apiResponse.json();
@@ -117,9 +138,60 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         apiResponse = await isValidBarcode(CouponData, 0, '', 0, null);
         const r = await apiResponse.json();
         console.log("Response-----:", r);
+        CouponResponse = r;
         if (r.errorCode == 1) {
+          console.log("<><<<><><><<><><><<<><><><")
           setQrcode('');
-          showScratchCard(true);
+          var couponPoints = r.couponPoints;
+          var basePoints = r.basePoints;
+          // var couponPoints = "100";
+          // var basePoints = "200";
+          basePoints ? (basePoints = `Base Points: ${basePoints}`) : null;
+
+          console.log("COUPON POINTS:===", couponPoints);
+          console.log("BASE POINTS:========", basePoints);
+
+          setScratchCardProps({
+            rewardImage : { 
+              width:100, 
+              height:100, 
+              resourceLocation:require("../../../../../../assets/images/ic_rewards_gift.png")
+            },
+            rewardResultText:{ 
+              color: colors.black, 
+              fontSize:16, 
+              textContent:"YOU WON",
+              fontWeight:"700" 
+            },
+            text1:{ 
+              color: colors.black, 
+              fontSize:16, 
+              textContent:couponPoints, 
+              fontWeight:"700" 
+            },
+            text2:{ 
+              color: colors.black, 
+              fontSize:16, 
+              textContent:"POINTS", 
+              fontWeight:"700" 
+            },
+            text3:{ 
+              color: colors.grey, 
+              fontSize:12, 
+              textContent: basePoints, 
+              fontWeight:"700" 
+            },
+            button:{ 
+              buttonColor : colors.yellow, 
+              buttonTextColor: colors.black, 
+              buttonText:"Register Warranty", 
+              buttonAction:"", 
+              fontWeight:"400" 
+            },
+            textInput:false
+          })
+          setScratchable(true);
+          showScratchCard(true)
         }
         else if (r.errorCode == 2) {
           setPinPopupVisible(true);
@@ -169,7 +241,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
       .then((result) => result.json())
       .then((jsonResult) => {
         console.log("CouponData:", CouponData);
-  
+
         setPinPopupVisible(false);
         setPopupVisible(true);
         setPopupContent(jsonResult.errorMsg);
@@ -181,20 +253,71 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         console.error('Send Coupon PIN API Error:', error);
       });
   };
+  function checkBonusPoints() {
+    showScratchCard(false);
+    if (CouponResponse?.transactId && CouponResponse?.bitEligibleScratchCard) {
+      getBonusPoints(CouponResponse.transactId).then(response => response.json().then(result => {
+        var couponPoints = result.promotionPoints;
+        scratchCardProps = {
+          rewardImage: {
+            width: 100,
+            height: 100,
+            resourceLocation: require('../../../../../../assets/images/ic_rewards_gift.png'),
+          },
+          rewardResultText: {
+            color: colors.black,
+            fontSize: 16,
+            textContent: result.errorMsg,
+            fontWeight: '700',
+          },
+          text1: {
+            color: colors.black,
+            fontSize: 16,
+            textContent: couponPoints,
+            fontWeight: '700',
+          },
+          text2: {
+            color: colors.black,
+            fontSize: 16,
+            textContent: 'POINTS',
+            fontWeight: '700',
+          },
+          text3: {
+            color: colors.grey,
+            fontSize: 12,
+            textContent: "",
+            fontWeight: '700',
+          },
+          button: {
+            buttonColor: colors.yellow,
+            buttonTextColor: colors.black,
+            buttonText: '',
+            buttonAction: showScratchCard(false),
+            fontWeight: '400',
+          },
+          textInput: false,
+        };
+        scratchable = false
+
+      }))
+      showScratchCard(true)
+    }
+
+  }
 
 
-  
-  
+
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContainer}>
       <View style={styles.mainWrapper}>
         {scratchCard && (
-          <ScratchCard
-            points={'40'}
-            onPress={() => {
-              showScratchCard(false);
-            }}
+          <RewardBox
+            scratchCardProps={scratchCardProps}
+            visible={scratchCard}
+            scratchable={scratchable}
+            onClose={checkBonusPoints}
           />
+
         )}
         <View style={styles.imageContainer}>
           <Image
@@ -227,7 +350,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
               placeholder={t('strings:enter_code_here')}
               placeholderTextColor={colors.grey}
               textAlign="center"
-              onChangeText={(text) => setQrcode(text)}
+              onChangeText={(text) => handleQrText(text)}
             />
           </View>
         </View>
@@ -266,7 +389,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         </PopupWithOkAndCancel>
       )}
       {isPinPopupVisible && (
-        <PopupWithPin isVisible={isPinPopupVisible} onClose={() => setPinPopupVisible(false)} onOk={() => sendPin()} onTextChange={(text)=>handlePinChange(text)} />
+        <PopupWithPin isVisible={isPinPopupVisible} onClose={() => setPinPopupVisible(false)} onOk={() => sendPin()} onTextChange={(text) => handlePinChange(text)} />
       )}
     </ScrollView>
   );
@@ -365,5 +488,7 @@ async function isValidBarcode(
     return result;
   }
 }
+
+
 
 export default ScanCode;
