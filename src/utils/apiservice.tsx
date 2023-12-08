@@ -42,9 +42,6 @@ export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
         const headers = {
             'Content-Type': 'application/json',
         };
-
-        console.log(data, "<><>><")
-
         const username = await AsyncStorage.getItem('username');
         const password = await AsyncStorage.getItem('password');
 
@@ -280,12 +277,12 @@ export function reLogin() {
     return createDigestGetRequest(path);
 }
 
-export function captureSale(couponDataList: string) {
+export function captureSale(couponDataList: any) {
     const path = "coupon/process";
     return createDigestPostRequest(path, couponDataList);
 }
 
-export function sendCouponPin(couponDataList: string) {
+export function sendCouponPin(couponDataList: any) {
     const path = "coupon/processForPin";
     return createDigestPostRequest(path, couponDataList);
 }

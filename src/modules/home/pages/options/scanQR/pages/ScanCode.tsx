@@ -30,7 +30,7 @@ import ScratchCard from '../../../../../../components/ScratchCard';
 import { scanQR } from 'react-native-simple-qr-reader';
 import Popup from '../../../../../../components/Popup';
 import PopupWithOkAndCancel from '../../../../../../components/PopupWithOkAndCancel';
-
+import PopupWithPin from '../../../../../../components/PopupWithPin';
 interface ScanCodeProps {
   navigation: any;
   route: any;
@@ -43,48 +43,65 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
   const [scratchCard, showScratchCard] = useState<boolean>(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [isOkPopupVisible, setOkPopupVisible] = useState(false);
+  const [isPinPopupVisible, setPinPopupVisible] = useState(true);
   const [popupContent, setPopupContent] = useState('');
   const [okPopupContent, setOkPopupContect] = useState('');
+  const [UserData, setUserData] = useState({
+    mobileNo: ''
+  });
+  const [CouponData, setCouponData] = useState({
+    userMobileNumber: '',
+    couponCode: '',
+    pin: '',
+    smsText: '',
+    from: '',
+    userType: '',
+    userId: 0,
+    apmID: 0,
+    retailerCoupon: false,
+    userCode: '',
+    isAirCooler: 0,
+    latitude: '',
+    longitude: '',
+    geolocation: '',
+    category: '',
+  })
   var USER: any = null;
 
   useEffect(() => {
     AsyncStorage.getItem("USER").then(r => {
       USER = JSON.parse(r || '');
+      setUserData(USER);
+      setCouponData((prevData) => ({
+        ...prevData,
+        userMobileNumber: USER?.mobileNo,
+      }))
+      getUserLocation();
     })
   }, []);
+
+  const getUserLocation = async () => {
+    const position = await getLocation();
+    
+    console.log("Position:", position);
+  }
+
 
   async function sendBarcode() {
     if (qrCode && qrCode != '') {
       const position = await getLocation();
-      const user = JSON.parse(await AsyncStorage.getItem('USER') || '');
-      const userRoleId = user && user.roleId ? user.roleId.toString() : '';
       var apiResponse;
-      var CouponData = {
-        userMobileNumber: '',
-        couponCode: '',
-        pin: '',
-        smsText: '',
-        from: '',
-        userType: userRoleId,
-        userId: 0,
-        apmID: 0,
-        retailerCoupon: false,
-        userCode: '',
-        isAirCooler: 0,
-        latitude: '',
-        longitude: '',
-        geolocation: '',
-        category: '',
-      };
 
       console.log(position);
-      CouponData.latitude = 99;
-      CouponData.longitude = 99;
-
-      CouponData.couponCode = qrCode;
-      CouponData.from = 'APP';
-      CouponData.userMobileNumber = user.mobileNo1;
-      CouponData.geolocation = null;
+      setCouponData((prevData) => ({
+        ...prevData,
+        latitude: "99",
+        longitude: "99",
+        couponCode: qrCode,
+        from: 'APP',
+        userMobileNumber: UserData?.mobileNo,
+        geolocation: ""
+      }))
 
       if (type == 'airCooler') {
         apiResponse = await isValidBarcode(CouponData, 1, '', 0, null);
@@ -97,35 +114,23 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         const r = await apiResponse.json();
         console.log("Response-----:", r);
         if (r.errorCode == 1) {
-          // setPopupVisible(true);
-          // setPopupContent(r.errorMsg);
-          setOkPopupVisible(true);
-          setOkPopupContect(r.errorMsg);
+          setQrcode('');
+          showScratchCard(true);
         }
         else if (r.errorCode == 2) {
-          // setPopupVisible(true);
-          // setPopupContent(r.errorMsg);
-          setOkPopupVisible(true);
-          setOkPopupContect(r.errorMsg);
+          setPinPopupVisible(true);
         }
         else if (r.errorMsg && r.errorMsg != "") {
           setPopupVisible(true);
           setPopupContent(r.errorMsg);
-          // setOkPopupVisible(true);
-          // setOkPopupContect(r.errorMsg);
         }
-        else{
+        else {
           setPopupVisible(true);
           setPopupContent(t('strings:something_wrong'));
         }
       }
-
-      if (apiResponse.errorCode == 1) {
-        setQrcode('');
-        showScratchCard(true);
-      }
     }
-    else{
+    else {
       setPopupVisible(true);
       setPopupContent("Please enter Coupon Code or Scan a QR");
     }
@@ -143,6 +148,38 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
       });
   }
 
+  const sendPin = (pin: string) => {
+    const mobileNumber = UserData.mobileNo;
+  
+    setCouponData((prevCouponData) => ({
+      ...prevCouponData,
+      userMobileNumber: mobileNumber,
+      latitude: "99",
+      longitude: "99",
+      couponCode: qrCode,
+      from: 'APP',
+      geolocation: "",
+      pin: pin,
+    }));
+  
+    sendCouponPin(CouponData)
+      .then((result) => result.json())
+      .then((jsonResult) => {
+        console.log("CouponData:", CouponData);
+  
+        setPinPopupVisible(false);
+        setPopupVisible(true);
+        setPopupContent(jsonResult.errorMsg);
+      })
+      .catch((error) => {
+        setPinPopupVisible(false);
+        setPopupVisible(true);
+        setPopupContent(t('strings:something_wrong'));
+        console.error('Send Coupon PIN API Error:', error);
+      });
+  };
+  
+  
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContainer}>
       <View style={styles.mainWrapper}>
@@ -185,7 +222,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
               placeholder={t('strings:enter_code_here')}
               placeholderTextColor={colors.grey}
               textAlign="center"
-              onChangeText={(text)=>setQrcode(text)}
+              onChangeText={(text) => setQrcode(text)}
             />
           </View>
         </View>
@@ -222,6 +259,9 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         <PopupWithOkAndCancel isVisible={isOkPopupVisible} onClose={() => setOkPopupVisible(false)} onOk={() => console.log("OKKKKKKKK")}>
           {okPopupContent}
         </PopupWithOkAndCancel>
+      )}
+      {isPinPopupVisible && (
+        <PopupWithPin isVisible={isPinPopupVisible} onClose={() => setPinPopupVisible(false)} onOk={(pin) => sendPin(pin)} />
       )}
     </ScrollView>
   );

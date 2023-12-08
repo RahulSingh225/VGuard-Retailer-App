@@ -11,7 +11,7 @@ export interface CouponData {
     userCode:string;
     isAirCooler: number;
     latitude: string;
-    numberitude: string;
+    longitude: string;
     geolocation: string;
     category: string;
 }

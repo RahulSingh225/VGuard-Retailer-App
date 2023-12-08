@@ -1,13 +1,13 @@
 import Geolocation from 'react-native-geolocation-service';
 
-async function getLocation() {
+export default async function getLocation() {
   var data = {};
   Geolocation.getCurrentPosition(
     position => {
-      console.log(position);
-      return position;
       data.lat = position.coords.latitude;
       data.long = position.coords.longitude;
+      console.log("Position:", position);
+      return position;
     },
     error => {
       // See error code charts below.
