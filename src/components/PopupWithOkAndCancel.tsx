@@ -6,29 +6,24 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  ImageSourcePropType,
 } from 'react-native';
 import closeIcon from '../assets/images/ic_close.png';
+import okIcon from '../assets/images/ic_accept_black2.png';
 import colors from '../../colors';
 import {
   responsiveFontSize,
   responsiveHeight,
 } from 'react-native-responsive-dimensions';
 
-interface PopupWithButtonProps {
+interface PopupProps {
   isVisible: boolean;
   onClose: () => void;
+  onOk: () => void;
   children: React.ReactNode;
-  buttonText: string;
-  onConfirm: () => void;
 }
 
-const PopupWithButton: React.FC<PopupWithButtonProps> = ({
-  isVisible,
-  onClose,
-  children,
-  buttonText,
-  onConfirm,
-}) => {
+const PopupWithOkAndCancel: React.FC<PopupProps> = ({ isVisible, onClose, onOk, children }) => {
   if (!isVisible) {
     return null;
   }
@@ -41,17 +36,24 @@ const PopupWithButton: React.FC<PopupWithButtonProps> = ({
       onRequestClose={onClose}>
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <Text style={styles.popupText}>{children}</Text>
+          <View style={styles.buttons}>
+          <TouchableOpacity style={styles.okButton} onPress={onOk}>
             <Image
-              source={closeIcon}
+              source={okIcon as ImageSourcePropType}
               style={{ flex: 1, width: '100%', height: '100%' }}
               resizeMode="contain"
             />
           </TouchableOpacity>
-          <Text style={styles.popupText}>{children}</Text>
-          <TouchableOpacity style={styles.button} onPress={onConfirm}>
-            <Text style={styles.buttonText}>{buttonText}</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Image
+              source={closeIcon as ImageSourcePropType}
+              style={{ flex: 1, width: '100%', height: '100%' }}
+              resizeMode="contain"
+            />
           </TouchableOpacity>
+          
+          </View>
         </View>
       </View>
     </Modal>
@@ -76,9 +78,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
+    // position: 'absolute',
+    // bottom: 10,
+    // right: 10,
+    width: responsiveHeight(8),
+    height: responsiveHeight(8),
+  },
+  okButton: {
+    // position: 'absolute',
+    // bottom: 10,
+    // right: 100,
     width: responsiveHeight(8),
     height: responsiveHeight(8),
   },
@@ -87,25 +96,17 @@ const styles = StyleSheet.create({
   },
   popupText: {
     color: colors.black,
-    fontSize: responsiveFontSize(2),
+    fontSize: responsiveFontSize(2.2),
     textAlign: 'center',
     fontWeight: 'bold',
     lineHeight: responsiveHeight(3),
-    width: '100%',
+    width: '90%',
   },
-  buttonText: {
-    color: colors.black,
-    fontWeight: 'bold',
-  },
-  button: {
-    backgroundColor: colors.white,
-    position: 'absolute',
-    bottom: 20,
-    borderRadius: 5,
-    paddingVertical: 8,
-    paddingHorizontal: 25,
-    elevation: 10,
-  },
+  buttons: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginTop: 20
+  }
 });
 
-export default PopupWithButton;
+export default PopupWithOkAndCancel;
