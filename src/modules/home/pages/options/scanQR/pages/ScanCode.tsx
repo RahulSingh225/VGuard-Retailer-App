@@ -43,12 +43,13 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
   const [scratchCard, showScratchCard] = useState<boolean>(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [isOkPopupVisible, setOkPopupVisible] = useState(false);
-  const [isPinPopupVisible, setPinPopupVisible] = useState(true);
+  const [isPinPopupVisible, setPinPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
   const [okPopupContent, setOkPopupContect] = useState('');
   const [UserData, setUserData] = useState({
     mobileNo: ''
   });
+  const [pinData, setPinData] = useState('');
   const [CouponData, setCouponData] = useState({
     userMobileNumber: '',
     couponCode: '',
@@ -74,34 +75,37 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
       setUserData(USER);
       setCouponData((prevData) => ({
         ...prevData,
+        from: 'APP',
         userMobileNumber: USER?.mobileNo,
       }))
       getUserLocation();
     })
   }, []);
 
-  const getUserLocation = async () => {
-    const position = await getLocation();
-    
-    console.log("Position:", position);
-  }
-
-
+  const getUserLocation = () => {
+    getLocation()
+      .then((position) => {
+        if (position != null) {
+          // console.log("Position:", position);
+          // console.log("Latitude:", position?.latitude);
+          setCouponData((prevData) => ({
+            ...prevData,
+            latitude: position.latitude,
+            longitude: position.longitude,
+          }));
+        } else {
+          console.log("Position is undefined or null");
+        }
+      })
+      .catch((error) => {
+        console.error("Error getting location:", error);
+      });
+  };
+  
   async function sendBarcode() {
     if (qrCode && qrCode != '') {
-      const position = await getLocation();
+      console.log("COUPON DATA:------", CouponData)
       var apiResponse;
-
-      console.log(position);
-      setCouponData((prevData) => ({
-        ...prevData,
-        latitude: "99",
-        longitude: "99",
-        couponCode: qrCode,
-        from: 'APP',
-        userMobileNumber: UserData?.mobileNo,
-        geolocation: ""
-      }))
 
       if (type == 'airCooler') {
         apiResponse = await isValidBarcode(CouponData, 1, '', 0, null);
@@ -123,6 +127,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         else if (r.errorMsg && r.errorMsg != "") {
           setPopupVisible(true);
           setPopupContent(r.errorMsg);
+          // setPinPopupVisible(true);
         }
         else {
           setPopupVisible(true);
@@ -140,7 +145,11 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
     scanQR()
       .then((result) => {
         setQrcode(result);
-        console.log(qrCode)
+        console.log(qrCode);
+        setCouponData((prevCouponData) => ({
+          ...prevCouponData,
+          couponCode: qrCode
+        }));
         return result;
       })
       .catch((error) => {
@@ -148,20 +157,14 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
       });
   }
 
-  const sendPin = (pin: string) => {
-    const mobileNumber = UserData.mobileNo;
-  
+  const handlePinChange = (pin: string) => {
     setCouponData((prevCouponData) => ({
       ...prevCouponData,
-      userMobileNumber: mobileNumber,
-      latitude: "99",
-      longitude: "99",
-      couponCode: qrCode,
-      from: 'APP',
-      geolocation: "",
       pin: pin,
     }));
-  
+  }
+
+  const sendPin = () => {
     sendCouponPin(CouponData)
       .then((result) => result.json())
       .then((jsonResult) => {
@@ -178,6 +181,8 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         console.error('Send Coupon PIN API Error:', error);
       });
   };
+
+
   
   
   return (
@@ -261,7 +266,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         </PopupWithOkAndCancel>
       )}
       {isPinPopupVisible && (
-        <PopupWithPin isVisible={isPinPopupVisible} onClose={() => setPinPopupVisible(false)} onOk={(pin) => sendPin(pin)} />
+        <PopupWithPin isVisible={isPinPopupVisible} onClose={() => setPinPopupVisible(false)} onOk={() => sendPin()} onTextChange={(text)=>handlePinChange(text)} />
       )}
     </ScrollView>
   );
