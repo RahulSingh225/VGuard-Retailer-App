@@ -38,7 +38,7 @@ const RedeemStack: React.FC = () => {
         headerShown: false,
       }}>
       <Stack.Screen
-        name="Redeem Products"
+        name="Redeem Points"
         component={RedeemPoints}
         options={{
           headerShown: true,

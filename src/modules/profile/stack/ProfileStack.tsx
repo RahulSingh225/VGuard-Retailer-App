@@ -33,8 +33,10 @@ const ProfileStack: React.FC = () => {
         }}>
         <Stack.Screen name="Profile" component={Profile}
           options={({ route }) => ({
+            headerBackVisible: false,
             headerTitle: () => <CustomTabHeader handleLanguageButtonPress={handleLanguageButtonPress} route={route} />,
             headerShown: true,
+            
           })} />
         <Stack.Screen name="Edit Profile" component={EditProfile}
           options={{
