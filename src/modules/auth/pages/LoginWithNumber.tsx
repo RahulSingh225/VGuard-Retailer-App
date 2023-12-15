@@ -58,8 +58,10 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
           <View style={styles.formContainer}>
             <View style={styles.containter}>
               <Text style={styles.textHeader}>
-                {t('strings:enter_registered_mobile_no')}
+                {t('strings:enter_registered_mobile_no_to_continue')}
               </Text>
+              <View style={styles.inputContainer}>
+              <Image style={styles.icon} resizeMode='contain'  source={require('../../../assets/images/mobile_icon.png')} />
               <TextInput
                 style={styles.input}
                 placeholder={t('strings:enter_your_mobile_number')}
@@ -69,6 +71,7 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
                 onChangeText={(text) => setNumber(text)}
                 maxLength={10}
               />
+              </View>
             </View>
             <View style={styles.buttonContainer}>
               <Buttons
@@ -90,7 +93,7 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
                 style={styles.phone}
               />
               <Text style={styles.greyText}>
-                {t('strings:call_to_get_otp')}
+                {t('strings:lbl_otp_through_phone_call')}
               </Text>
             </View>
           </View>
@@ -153,13 +156,23 @@ const styles = StyleSheet.create({
     flex: 2,
   },
   input: {
+    color: colors.black,
     height: 40,
     padding: 10,
-    borderRadius: 5,
-    color: colors.black,
+  },
+  inputContainer: {
     backgroundColor: colors.white,
+    marginBottom: 20,
+    borderRadius: 5,
     shadowColor: 'rgba(0, 0, 0, 0.8)',
     elevation: 5,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  icon: {
+    marginHorizontal: 10,
+    width: 15,
+    height: 15,
   },
   or: {
     textAlign: 'center',

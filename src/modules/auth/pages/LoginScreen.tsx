@@ -23,6 +23,7 @@ import selectedTickImage from '../../../assets/images/tick_1.png';
 import notSelectedTickImage from '../../../assets/images/tick_1_notSelected.png';
 import LanguagePicker from '../../../components/LanguagePicker';
 import language from '../../../assets/images/language.png';
+import { responsiveFontSize } from 'react-native-responsive-dimensions';
 
 const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -31,6 +32,9 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const handleLanguageButtonPress = () => {
     setShowLanguagePicker(true);
   };
+
+  const pkg = require('../../../../package.json');
+  const version = pkg.version;
 
   const handleCloseLanguagePicker = () => {
     setShowLanguagePicker(false);
@@ -49,7 +53,7 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const [loader, showLoader] = useState(false);
   const yellow = colors.yellow;
-  const placeholderColor = colors.grey;
+  const placeholderColor = colors.lightGrey;
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
@@ -128,21 +132,28 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           </Text>
 
           <View style={styles.formContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder={t('strings:lbl_registered_mobile_number_login')}
-              placeholderTextColor={placeholderColor}
-              value={username}
-              onChangeText={(text) => setUsername(text)}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder={t('strings:password')}
-              placeholderTextColor={placeholderColor}
-              secureTextEntry={true}
-              value={password}
-              onChangeText={(text) => setPassword(text)}
-            />
+            <View style={styles.inputContainer}>
+              <Image style={styles.icon} resizeMode='contain'  source={require('../../../assets/images/mobile_icon.png')} />
+              <TextInput
+                style={styles.input}
+                placeholder={t('strings:lbl_registered_mobile_number_login')}
+                placeholderTextColor={placeholderColor}
+                value={username}
+                onChangeText={(text) => setUsername(text)}
+              />
+            </View>
+            <View style={styles.inputContainer}>
+            <Image style={styles.icon} resizeMode='contain'  source={require('../../../assets/images/lock_icon.png')} />
+              <TextInput
+                style={styles.input}
+                placeholder={t('strings:password')}
+                placeholderTextColor={placeholderColor}
+                secureTextEntry={true}
+                value={password}
+                onChangeText={(text) => setPassword(text)}
+              />
+            </View>
+
             <View style={styles.updateAndForgot}>
               <TouchableOpacity style={styles.button}>
                 <Text style={styles.buttonText}>
@@ -172,7 +183,7 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
                 icon={arrowIcon}
               />
               <Buttons
-                label={t('strings:login_via_otp')}
+                label={t('strings:login_with_otp')}
                 variant="filled"
                 onPress={() => navigation.navigate('loginWithNumber')}
                 width="100%"
@@ -207,6 +218,9 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
           </TouchableOpacity>
+          <Text style={styles.versionText}>
+            V {version}
+          </Text>
           <View style={styles.footerContainer}>
             <Text style={styles.footergreyText}>
               {t('strings:powered_by_v_guard')}
@@ -286,14 +300,23 @@ const styles = StyleSheet.create({
     flex: 2,
   },
   input: {
-    height: 40,
-    marginBottom: 20,
-    padding: 10,
-    borderRadius: 5,
     color: colors.black,
+    height: 40,
+    padding: 10,
+  },
+  inputContainer: {
     backgroundColor: colors.white,
+    marginBottom: 20,
+    borderRadius: 5,
     shadowColor: 'rgba(0, 0, 0, 0.8)',
     elevation: 5,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  icon: {
+    marginHorizontal: 10,
+    width: 15,
+    height: 15,
   },
   forgotPasswordContainer: {
     alignItems: 'center',
@@ -343,7 +366,7 @@ const styles = StyleSheet.create({
   footerContainer: {
     display: 'flex',
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     gap: 10,
     justifyContent: 'center',
     backgroundColor: colors.lightGrey,
@@ -389,6 +412,12 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 5,
     fontWeight: 'bold',
+  },
+  versionText: {
+    textAlign: 'center',
+    color: colors.black,
+    fontSize: responsiveFontSize(1.3),
+    marginVertical: 30
   },
 });
 

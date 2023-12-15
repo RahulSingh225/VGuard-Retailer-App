@@ -76,7 +76,7 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
             const apiResponse = await triggerApiWithImage(fileData);
             console.log('API Response in ImagePickerField:', apiResponse);
             
-            onImageChange(response?.assets[0]?.uri, response?.assets[0]?.fileName || 'Image', apiResponse, label);
+            onImageChange(response?.assets[0]?.uri, response?.assets[0]?.fileName || 'Image', apiResponse, labe);
           } catch (error) {
             console.error('Error triggering API with image in ImagePickerField:', error);
           }
