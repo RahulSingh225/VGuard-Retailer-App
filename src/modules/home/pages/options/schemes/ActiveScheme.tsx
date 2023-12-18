@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Image } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity, Linking } from 'react-native';
 import colors from '../../../../../../colors';
 
 import {
@@ -12,11 +12,12 @@ import { useTranslation } from 'react-i18next';
 interface OfferItem {
   offerHeading: string;
   description: string;
+  fileName: string;
 }
 
 const ActiveScheme: React.FC = () => {
   const { t } = useTranslation();
-
+  const baseURL = "https://vguardrishta.com/";
   const [data, setData] = useState<OfferItem[]>([]);
 
   useEffect(() => {
@@ -30,6 +31,16 @@ const ActiveScheme: React.FC = () => {
         console.error('Error fetching data:', error);
       });
   }, []);
+
+  const openLink = async (link: string) => {
+    try {
+      console.log('Opening URL:', baseURL + link);
+      await Linking.openURL(baseURL + link);
+    } catch (error) {
+      console.error('Error opening URL:', error);
+    }
+  }
+
 
   return (
     <ScrollView style={styles.mainWrapper}>
@@ -45,10 +56,29 @@ const ActiveScheme: React.FC = () => {
               source={require('../../../../../assets/images/ic_active_offers.webp')}
             />
             <View style={styles.messageContainer}>
-              <Text style={styles.messageHeader}>{item.offerHeading}</Text>
-              <ScrollView style={styles.messageTextContainer} horizontal={true}>
-                <Text style={styles.messageText}>{item.description}</Text>
-              </ScrollView>
+              <View>
+                <Text style={styles.messageHeader}>{item.offerHeading}</Text>
+                <ScrollView style={styles.messageTextContainer} horizontal={true}>
+                  <Text style={styles.messageText}>{item.description}</Text>
+                </ScrollView>
+              </View>
+              <View style={{ flexDirection: 'row', marginTop: 10, alignItems: 'center', gap: 5 }}>
+                <Image
+                  style={styles.pdfimage}
+                  source={require('../../../../../assets/images/pdf.png')} />
+                <TouchableOpacity onPress={() => openLink(item.fileName)}>
+                  <Text
+                    style={{
+                      color: colors.yellow,
+                      fontSize: responsiveFontSize(1.5),
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    View
+                  </Text>
+                </TouchableOpacity>
+
+              </View>
             </View>
           </View>
         ))
@@ -104,6 +134,10 @@ const styles = StyleSheet.create({
   image: {
     height: responsiveFontSize(8),
     width: responsiveFontSize(8),
+  },
+  pdfimage: {
+    height: responsiveFontSize(3),
+    width: responsiveFontSize(3),
   },
   messageTextContainer: {
     maxWidth: responsiveWidth(65),

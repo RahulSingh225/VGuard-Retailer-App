@@ -12,7 +12,9 @@ interface InputFieldProps {
   isImage?: boolean;
   imageSource?: string;
   onPressImage?: () => void;
-  onChangeText: (value: string) => void; // Callback to handle text changes
+  onChangeText: (value: string) => void;
+  numeric?: boolean;
+  maxLength?: number;
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -23,6 +25,8 @@ const InputField: React.FC<InputFieldProps> = ({
   imageSource,
   onPressImage,
   onChangeText,
+  numeric,
+  maxLength,
   ...rest
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -50,6 +54,8 @@ const InputField: React.FC<InputFieldProps> = ({
           onFocus={handleFocus}
           onBlur={handleBlur}
           onChangeText={onChangeText}
+          keyboardType={numeric ? 'numeric' : 'default'}
+          maxLength={maxLength}
           {...rest}
         />
       )}

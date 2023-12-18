@@ -28,6 +28,7 @@ import { getFile, sendFile } from '../../../../../utils/apiservice';
 import Snackbar from 'react-native-snackbar';
 import { height, width } from '../../../../../utils/dimensions';
 import { Button } from 'react-native-paper';
+import Popup from '../../../../../components/Popup';
 
 const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
   const baseURL =
@@ -54,6 +55,14 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [entityUid, setEntityUid] = useState('');
   const [descriptionInput, setDescriptionInput] = useState('');
   const [select, setselect] = useState();
+  const [isPopupVisible, setPopupVisible] = useState(false);
+  const [popupContent, setPopupContent] = useState('');
+  const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
+
+  const handleImageClick = () => {
+    setShowImagePreviewModal(true);
+  };
+
 
   const handleImagePickerPress = () => {
     setShowImagePickerModal(true);
@@ -77,6 +86,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
             type: response.assets[0].type,
             name: response.assets[0].fileName,
           };
+          console.log("URI:===========", response.assets[0].uri)
           setSelectedImage(response.assets[0].uri);
           setSelectedImageName(response.assets[0].fileName);
           triggerApiWithImage(fileData);
@@ -103,6 +113,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
             type: response.assets[0].type,
             name: response.assets[0].fileName,
           };
+          console.log("URI:===========", response.assets[0].uri)
           setSelectedImage(response.assets[0].uri);
           setSelectedImageName(response.assets[0].fileName);
           triggerApiWithImage(fileData);
@@ -117,7 +128,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
     formData.append('image_related', 'TICKET');
     formData.append('file', fileData);
 
-    console.log("------------------",fileData)
+    console.log("------------------", fileData)
 
     try {
       const response = await sendFile(formData);
@@ -197,44 +208,49 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
       description: descriptionInput,
     };
 
-    console.log("Post Data========",postData)
+    console.log("Post Data========", postData)
 
-    // sendTicket(postData)
-    //   .then((response) => {
-    //     if (response.status === 200) {
-    //       setSelectedOption('');
-    //       setSelectedImage(null);
-    //       setSelectedImageName('');
-    //       setEntityUid('');
-    //       setDescriptionInput('');
-    //       showSnackbar('Ticket Created Successfully');
-    //     } else {
-    //       throw new Error('Failed to create ticket');
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.error('API Error:', error);
-    //   });
-  };
-
-  const showSnackbar = (message) => {
-    Snackbar.show({
-      text: message,
-      duration: Snackbar.LENGTH_SHORT,
-    });
+    if (postData.userId != '' && postData.issueTypeId != '' && postData.imagePath != '' && postData.description != '') {
+      sendTicket(postData)
+        .then((response) => {
+          if (response.status === 200) {
+            setSelectedOption('');
+            setSelectedImage(null);
+            setSelectedImageName('');
+            setEntityUid('');
+            setDescriptionInput('');
+            // showSnackbar('Ticket Created Successfully');
+            setPopupContent('Ticket Created Successfully');
+            setPopupVisible(true);
+          } else {
+            setPopupContent('Failed to create ticket');
+            setPopupVisible(true);
+            throw new Error('Failed to create ticket');
+          }
+        })
+        .catch((error) => {
+          setPopupContent('Failed to create ticket');
+          setPopupVisible(true);
+          console.error('API Error:', error);
+        });
+    }
+    else {
+      setPopupContent('Enter All Details');
+      setPopupVisible(true);
+    }
   };
 
   return (
     <ScrollView style={styles.mainWrapper}>
       <View style={styles.flexBox}>
         <View style={styles.profileDetails}>
-        <View style={styles.ImageProfile}>
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          ) : (
-            <Image source={require('../../../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          )}
-        </View>
+          <View style={styles.ImageProfile}>
+            {profileImage ? (
+              <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
+            ) : (
+              <Image source={require('../../../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
+            )}
+          </View>
           <View style={styles.profileText}>
             <Text style={styles.textDetail}>{userData.userName}</Text>
             <Text style={styles.textDetail}>{userData.userCode}</Text>
@@ -262,6 +278,11 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
             style={styles.picker}
             label={t('strings:select_ticket_type')}
           >
+            <Picker.Item
+              key={''}
+              label={'Select Issue Type'}
+              value={''}
+            />
             {options.map((option) => (
               <Picker.Item
                 key={option.issueTypeId}
@@ -276,6 +297,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
         onPress={handleImagePickerPress}
         style={styles.inputContainer}
       >
+
         {selectedImage ? (
           <TextInput
             style={styles.input}
@@ -291,24 +313,48 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
             editable={false}
           />
         )}
-        <View style={styles.inputImage}>
-          {selectedImage ? (
-            <Image
-              source={{ uri: selectedImage }}
-              style={{ width: '100%', height: '100%' }}
-              resizeMode="cover"
-            />
-          ) : (
-            <Image
-              source={require('../../../../../assets/images/photo_camera.png')}
-              style={{ width: '100%', height: '100%' }}
-              resizeMode="contain"
-            />
-          )}
-        </View>
+        <TouchableOpacity
+          onPress={handleImageClick}>
+          <View style={styles.inputImage}>
+            {selectedImage ? (
+              <Image
+                source={{ uri: selectedImage }}
+                style={{ width: '100%', height: '100%' }}
+                resizeMode="cover"
+              />
+            ) : (
+              <Image
+                source={require('../../../../../assets/images/photo_camera.png')}
+                style={{ width: '100%', height: '100%' }}
+                resizeMode="contain"
+              />
+            )}
+          </View>
+        </TouchableOpacity>
       </TouchableOpacity>
 
       {/* Modal for selecting camera or gallery */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showImagePreviewModal}
+        onRequestClose={() => setShowImagePreviewModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            onPress={() => setShowImagePreviewModal(false)}
+          >
+            <Image resizeMode='contain' style={{width: 50, height: 50}} source={require('../../../../../assets/images/ic_close.png')} />
+          </TouchableOpacity>
+
+          <Image
+            source={{ uri: selectedImage }}
+            style={{ width: '70%', height: '70%'}}
+            resizeMode="contain"
+          />
+        </View>
+      </Modal>
+
       <Modal
         animationType="slide"
         transparent={true}
@@ -367,7 +413,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
         </View>
       </Modal>
 
-      <Text style={styles.blackText}>{t('strings:description')}</Text>
+      <Text style={styles.blackText}>{t('strings:description_remarks')}</Text>
       <TextInput
         style={styles.descriptionInput}
         placeholder={t('strings:provide_description_in_the_box')}
@@ -384,21 +430,42 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
         onPress={handleSubmission}
         width="100%"
       />
-      <View style={styles.hyperlinks}>
-        <TouchableOpacity onPress={openTnC}>
-          <Text style={styles.linkText}>
-            {t('strings:terms_and_conditions')}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={openFaqS}>
-          <Text style={styles.linkText}>
-            {t('strings:frequently_asked_quetions_faq')}
-          </Text>
-        </TouchableOpacity>
+      <View style={styles.footerRow}>
+        <View style={styles.hyperlinks}>
+          <TouchableOpacity style={styles.link} onPress={openTnC}>
+            <Image
+              style={{
+                height: 30,
+                width: 30
+              }}
+              resizeMode='contain'
+              source={require('../../../../../assets/images/ic_tand_c.png')} />
+            <Text style={styles.linkText}>
+              {t('strings:terms_and_conditions')}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.link} onPress={openFaqS}>
+            <Image
+              style={{
+                height: 30,
+                width: 30
+              }}
+              resizeMode='contain'
+              source={require('../../../../../assets/images/ic_faq.png')} />
+            <Text style={styles.linkText}>
+              {t('strings:frequently_asked_quetions_faq')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.footer}>
+          <NeedHelp />
+        </View>
       </View>
-      <View style={styles.footer}>
-        <NeedHelp />
-      </View>
+      {isPopupVisible && (
+        <Popup isVisible={isPopupVisible} onClose={() => setPopupVisible(false)}>
+          {popupContent}
+        </Popup>
+      )}
     </ScrollView>
   );
 };
@@ -499,15 +566,24 @@ const styles = StyleSheet.create({
   },
   hyperlinks: {
     display: 'flex',
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'space-between',
-    width: '100%',
+    width: '40%',
+    marginRight: 25,
     marginTop: responsiveHeight(1)
+  },
+  footerRow: {
+    flexDirection: 'row'
   },
   linkText: {
     color: 'blue',
     textDecorationLine: 'underline',
-    fontSize: responsiveFontSize(1.5)
+    fontSize: responsiveFontSize(1.7)
+  },
+  link: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 5
   },
   modalContainer: {
     flex: 1,

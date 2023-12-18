@@ -85,7 +85,7 @@ export default {
         get_otp: "Get OTP",
         or: "or",
         powered_by_v_guard: "Powered by",
-        lbl_otp_through_phone_call: "Click Here to get OTP\nthrough phone call",
+        lbl_otp_through_phone_call: "Click Here to get OTP through phone call",
         call: "call",
         enter_your_mobile_number: "Enter your mobile number",
         lbl_otp_verification: "OTP Verification",
@@ -123,7 +123,7 @@ export default {
         lbl_email: "E-mail",
         lbl_address: "Address",
         lbl_relationship_with_you: "Relationship with you",
-        lbl_accept_terms: "I have read &amp; fully understood the <u> <b> terms and conditions </b> </u>  of V-Guard Rishta Loyalty Program and abide to follow them.",
+        lbl_accept_terms: "I have read & fully understood the terms and conditions of V-Guard Rishta Loyalty Program and abide to follow them.",
         lbl_terms_and_conditions_ul: "I agree to Terms And Conditions",
         preview: "Preview",
         agree: "Agree",
@@ -503,7 +503,7 @@ export default {
         },
         account_type: {
             type_of_account: "Type of Account",
-            cuurent: "Current",
+            current: "Current",
             saving: "Saving"
         },
         current_address_yes_no: {

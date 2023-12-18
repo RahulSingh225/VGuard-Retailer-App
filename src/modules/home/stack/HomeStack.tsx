@@ -117,7 +117,7 @@ const HomeStack: React.FC = () => {
           name="Profile"
           component={ProfileStack}
           options={{
-            headerShown: true,
+            headerShown: false,
           }}
         />
       </Stack.Navigator>

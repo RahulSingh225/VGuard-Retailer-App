@@ -43,6 +43,9 @@ const UpdatePAN: React.FC<BankProps> = () => {
     const [popupContent, setPopupContent] = useState('');
     const [userId, setUserId] = useState('');
     const [isPopupVisible, setPopupVisible] = useState(false);
+    const [isImagePreviewVisible, setImagePreviewVisible] = useState(false);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
+
 
     useEffect(() => {
         const fetchUserRole = async () => {
@@ -162,6 +165,12 @@ const UpdatePAN: React.FC<BankProps> = () => {
         });
     };
 
+    const handleImagePreview = () => {
+        setPreviewImage(selectedImage);
+        setImagePreviewVisible(true);
+    };
+
+
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.mainWrapper}>
@@ -185,7 +194,10 @@ const UpdatePAN: React.FC<BankProps> = () => {
                                     editable={false}
                                 />
                             )}
-                            <View style={styles.inputImage}>
+                            <TouchableOpacity
+                                style={styles.inputImage}
+                                onPress={handleImagePreview}
+                            >
                                 {selectedImage ? (
                                     <Image
                                         source={{ uri: selectedImage }}
@@ -199,8 +211,29 @@ const UpdatePAN: React.FC<BankProps> = () => {
                                         resizeMode="contain"
                                     />
                                 )}
-                            </View>
+                            </TouchableOpacity>
+
                         </TouchableOpacity>
+                        <Modal
+                            animationType="slide"
+                            transparent={true}
+                            visible={isImagePreviewVisible}
+                            onRequestClose={() => setImagePreviewVisible(false)}
+                        >
+                            <View style={styles.imagePreviewContainer}>
+                                <TouchableOpacity
+                                    style={styles.closeButton}
+                                    onPress={() => setImagePreviewVisible(false)}
+                                >
+                                    <Text style={styles.closeButtonText}>Close</Text>
+                                </TouchableOpacity>
+                                <Image
+                                    source={{ uri: previewImage }}
+                                    style={styles.imagePreview}
+                                    resizeMode="contain"
+                                />
+                            </View>
+                        </Modal>
 
                         {/* Modal for selecting camera or gallery */}
                         <Modal
@@ -375,6 +408,26 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     modalcontainer: { alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.7)' },
+    imagePreviewContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 20,
+        right: 20,
+    },
+    closeButtonText: {
+        color: 'white',
+        fontSize: 16,
+    },
+    imagePreview: {
+        width: '80%',
+        height: '80%',
+    },
+    
 
 });
 

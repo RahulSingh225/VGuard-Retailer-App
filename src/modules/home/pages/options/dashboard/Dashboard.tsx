@@ -14,6 +14,7 @@ import colors from '../../../../../../colors';
 import {
   responsiveFontSize,
   responsiveHeight,
+  responsiveWidth,
 } from 'react-native-responsive-dimensions';
 import { useTranslation } from 'react-i18next';
 import NeedHelp from '../../../../../components/NeedHelp';
@@ -23,8 +24,9 @@ import { getFile } from '../../../../../utils/apiservice';
 interface UserData {
   userName: string;
   userCode: string;
-  pointsBalance: string;
+  totalPointsEarned: string;
   redeemedPoints: string;
+  schemePoints: string;
   userImage: string;
   userRole: string;
 }
@@ -41,8 +43,9 @@ const Dashboard: React.FC = () => {
   const [userData, setUserData] = useState<UserData>({
     userName: '',
     userCode: '',
-    pointsBalance: '',
+    schemePoints: '',
     redeemedPoints: '',
+    totalPointsEarned: '',
     userImage: '',
     userRole: '',
   });
@@ -65,8 +68,9 @@ const Dashboard: React.FC = () => {
       const data: UserData = {
         userName: user.name,
         userCode: user.userCode,
-        pointsBalance: user.pointsSummary.pointsBalance,
         redeemedPoints: user.pointsSummary.redeemedPoints,
+        totalPointsEarned: user.pointsSummary.totalPointsEarned,
+        schemePoints: user.pointsSummary.schemePoints,
         userImage: user.kycDetails.selfie,
         userRole: user.professionId,
       };
@@ -131,18 +135,24 @@ const Dashboard: React.FC = () => {
 
       <View style={styles.points}>
         <View style={styles.leftPoint}>
-          <Text style={styles.greyText}>{t('strings:points_balance')}</Text>
+          <Text style={styles.greyText}>{t('strings:points_earned')}</Text>
+
+          <Text style={styles.point}>{userData?.totalPointsEarned ? userData?.totalPointsEarned : 0}</Text>
+        </View>
+        <View style={styles.middlePoint}>
+          <Text style={styles.greyText}>{t('strings:usp_scheme_points')}</Text>
           <Text style={styles.point}>
-            {userData.pointsBalance ? userData.pointsBalance : 0}
+            {userData?.schemePoints ? userData?.schemePoints : 0}
           </Text>
         </View>
         <View style={styles.rightPoint}>
           <Text style={styles.greyText}>{t('strings:points_redeemed')}</Text>
-          <Text style={styles.point}>
-            {userData.redeemedPoints ? userData.redeemedPoints : 0}
-          </Text>
+          <Text style={styles.point}>{userData?.redeemedPoints ? userData?.redeemedPoints: 0}</Text>
+
         </View>
       </View>
+
+      <Text style={{color: colors.grey, fontSize: responsiveFontSize(1.5), textAlign: 'center', marginTop: 5}}>*DUPS Scheme Points are non-redeemable</Text>
 
       <View style={styles.options}>
         <CustomTouchableOption
@@ -154,11 +164,13 @@ const Dashboard: React.FC = () => {
           text="strings:scheme_wise_earning"
           iconSource={require('../../../../../assets/images/ic_paytm_transfer.webp')}
           screenName="Scheme Wise Earning"
+          disabled={true}
         />
         <CustomTouchableOption
           text="strings:your_rewards"
           iconSource={require('../../../../../assets/images/ic_egift_cards.webp')}
           screenName="Your Rewards"
+          disabled={true}
         />
       </View>
 
@@ -207,24 +219,28 @@ const styles = StyleSheet.create({
     width: '100%',
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
     gap: 5,
     marginTop: 30,
   },
   leftPoint: {
-    width: '50%',
-    height: 100,
+    width: responsiveWidth(30),
+    height: responsiveHeight(15),
     backgroundColor: colors.lightYellow,
     borderTopLeftRadius: 50,
     borderBottomLeftRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
+  middlePoint: {
+    width: responsiveWidth(30),
+    height: responsiveHeight(15),
+    backgroundColor: colors.lightYellow,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   rightPoint: {
-    width: '50%',
-    height: 100,
+    width: responsiveWidth(30),
+    height: responsiveHeight(15),
     backgroundColor: colors.lightYellow,
     borderTopRightRadius: 50,
     borderBottomRightRadius: 30,

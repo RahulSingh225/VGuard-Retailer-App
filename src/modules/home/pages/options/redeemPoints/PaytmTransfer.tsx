@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, Image, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import colors from '../../../../../../colors';
 import { useTranslation } from 'react-i18next';
@@ -22,11 +22,16 @@ const PaytmTransfer = () => {
       setPopupVisible(true);
       return;
     }
+    if(!paytmSelected){
+      setPopupContent("Select Wallet");
+      setPopupVisible(true);
+      return;
+    }
     const transferData = {
       mobileNo: mobileNumber,
       points: points,
     };
-  
+
     paytmTransfer(transferData)
       .then(response => {
         return response.json();
@@ -34,7 +39,9 @@ const PaytmTransfer = () => {
       .then(jsonData => {
         console.log('API Response:', jsonData.message);
         setPopupContent(jsonData.message);
-            setPopupVisible(true);
+        setPopupVisible(true);
+        setMobileNumber('');
+        setPoints('');
       })
       .catch(error => {
         if (error.response && error.response.data) {
@@ -54,7 +61,11 @@ const PaytmTransfer = () => {
 
   const [mobileNumber, setMobileNumber] = useState('');
   const [points, setPoints] = useState('');
+  const [paytmSelected, setPaytmSelected] = useState(true);
 
+  const handlePaytmPress = () => {
+    setPaytmSelected(!paytmSelected);
+  }
   const handleMobileNumberChange = (text) => {
     setMobileNumber(text);
   };
@@ -103,6 +114,9 @@ const PaytmTransfer = () => {
               placeholderTextColor={colors.grey}
               textAlign="center"
               onChangeText={handleMobileNumberChange}
+              keyboardType={'numeric'}
+              maxLength={10}
+              value={mobileNumber}
             />
           </View>
         </View>
@@ -119,16 +133,27 @@ const PaytmTransfer = () => {
               placeholderTextColor={colors.grey}
               textAlign="center"
               onChangeText={handlePointsChange}
+              keyboardType={'numeric'}
+              maxLength={19}
+              value={points}
             />
           </View>
         </View>
         <Text style={styles.chooseWallet}>{t('strings:choose_wallet')}</Text>
-        <View style={styles.wallet}>
+        <TouchableOpacity onPress={handlePaytmPress} style={styles.wallet}>
           <Image resizeMode="contain" style={{ flex: 1, width: '100%', height: '100%' }} source={require('../../../../../assets/images/ic_paytm_logo.webp')} />
-          <Image resizeMode="contain" style={{ flex: 1, width: '100%', height: '100%' }} source={require('../../../../../assets/images/tick_1.png')} />
-        </View>
+          {
+            (paytmSelected == true) && (
+              <Image resizeMode="contain" style={{ flex: 1, width: '100%', height: '100%' }} source={require('../../../../../assets/images/tick_1.png')} />
+            )
+          }
+          {
+            (paytmSelected == false) && (
+              <Image resizeMode="contain" style={{ flex: 1, width: '100%', height: '100%' }} source={require('../../../../../assets/images/tick_1_notSelected.png')} />
+            )
+          }
+        </TouchableOpacity>
         <Buttons
-          style={styles.button}
           label={t('strings:proceed')}
           variant="filled"
           onPress={() => handleProceed()}
@@ -140,10 +165,10 @@ const PaytmTransfer = () => {
         />
       </View>
       {isPopupVisible && (
-                <Popup isVisible={isPopupVisible} onClose={() => setPopupVisible(false)}>
-                    {popupContent}
-                </Popup>
-            )}
+        <Popup isVisible={isPopupVisible} onClose={() => setPopupVisible(false)}>
+          {popupContent}
+        </Popup>
+      )}
     </ScrollView>
   )
 }

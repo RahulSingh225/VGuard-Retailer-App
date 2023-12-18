@@ -503,7 +503,7 @@ export default {
 
         account_type: {
             type_of_account: "खाता का प्रकार",
-            cuurent: "करंट",
+            current: "करंट",
             saving: "बचत"
         },
         current_address_yes_no: {

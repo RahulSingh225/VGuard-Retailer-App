@@ -588,9 +588,13 @@ export function getRedemptionHistory() {
     return createDigestGetRequest(path);
 }
 
-export function forgotPassword(vguardRishtaUser: any) {
+export function forgotPassword(number: string) {
     const path = "user/forgotPassword";
-    return createDigestPostRequest(path, vguardRishtaUser);
+    const body = {
+        mobileNo: number
+    }
+    console.log("BODY---", body);
+    return createDigestPostRequest(path, body);
 }
 
 export function getScanCodeHistory() {

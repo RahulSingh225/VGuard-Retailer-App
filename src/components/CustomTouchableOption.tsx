@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import {
   responsiveWidth,
   responsiveFontSize
 } from "react-native-responsive-dimensions";
+import Popup from './Popup';
 
 interface CustomTouchableOptionProps {
   text: string;
@@ -19,19 +20,30 @@ interface CustomTouchableOptionProps {
 const CustomTouchableOption: React.FC<CustomTouchableOptionProps> = ({ text, iconSource, screenName, disabled = false }) => {
   const { t } = useTranslation();
   const navigation = useNavigation();
-
+  const [isPopupVisible, setPopupVisible] = useState(false);
+  const [popupContent, setPopupContent] = useState('');
+  const handlePress = () => {
+    if (disabled == true) {
+      setPopupVisible(true);
+      setPopupContent("Coming Soon!")
+    }
+    else {
+      navigation.navigate(screenName)
+    }
+  }
   return (
+    <>
     <TouchableOpacity
       style={[
         styles.oval,
         disabled && styles.disabledOval // Apply disabled style if disabled is true
       ]}
-      onPress={() => navigation.navigate(screenName)}
-      disabled={disabled}
+      onPress={handlePress}
+    // disabled={disabled}
     >
       <View style={[
         styles.optionIcon,
-        disabled && styles.disabledOptionIcon // Apply disabled style if disabled is true
+        disabled && styles.disabledOptionIcon
       ]}>
         <Image
           source={iconSource}
@@ -49,6 +61,14 @@ const CustomTouchableOption: React.FC<CustomTouchableOptionProps> = ({ text, ico
         {t(text)}
       </Text>
     </TouchableOpacity>
+    {isPopupVisible && (
+      <Popup
+        isVisible={isPopupVisible}
+        onClose={() => setPopupVisible(false)}>
+        {popupContent}
+      </Popup>
+    )}
+    </>
   );
 };
 

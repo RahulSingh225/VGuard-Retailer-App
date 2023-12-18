@@ -6,20 +6,44 @@ import colors from '../../../../colors';
 import Buttons from '../../../components/Buttons';
 import arrowIcon from '../../../assets/images/arrow.png';
 import Popup from '../../../components/Popup';
+import { forgotPassword } from '../../../utils/apiservice';
 
 const ForgotPassword: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
-  const placeholderColor = colors.grey;
+  const placeholderColor = colors.lightGrey;
   const [number, setNumber] = useState('');
 
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
 
-  const handleSubmit = () => {
-    const message = 'Password has been sent through SMS to the mobile number ' + number;
-    setPopupContent(message);
+  const handleSubmit = async () => {
+    // Validate the entered number
+    const isValidNumber = /^\d{10}$/;  // Assuming 10 digits are required
+    if (!isValidNumber.test(number)) {
+      // Show a Snackbar or any other validation message
+      setPopupVisible(true);
+      setPopupContent(t('strings:enter_valid_mobileNo'));
+      return;
+    }
+  
     setPopupVisible(true);
+    forgotPassword(number)
+      .then(response => response.json())
+      .then(responsedata => {
+        console.log("responsedata:", responsedata)
+        const message = responsedata.message;
+        setPopupContent(message);
+        setNumber("");
+        if (message === "SMS sent for new password") {
+          setTimeout(() => {
+            navigation.navigate('login');
+          }, 1000);
+        } else {
+          return;
+        }
+      })
   };
+  
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -32,13 +56,21 @@ const ForgotPassword: React.FC<{ navigation: any }> = ({ navigation }) => {
           <Text style={styles.mainHeader}>{t('strings:lbl_forgot_password')}</Text>
           <Text style={styles.textHeader}>{t('strings:enter_registered_mobile_no_rishta_id')}</Text>
           <View style={styles.formContainer}>
+            <View style={styles.inputContainer}>
+            <Image style={styles.icon} source={require('../../../assets/images/mobile_icon.png')} resizeMode='contain' />
             <TextInput
               style={styles.input}
               placeholder={t('strings:lbl_registered_mobile_number_login')}
               placeholderTextColor={placeholderColor}
               value={number}
-              onChangeText={(text) => setNumber(text)}
+              onChangeText={(text) => {
+                // Allow only digits
+                const formattedText = text.replace(/[^0-9]/g, '');
+                setNumber(formattedText);
+              }}
+              keyboardType="numeric"
             />
+            </View>
             <View style={styles.buttonContainer}>
               <Buttons
                 label={t('strings:submit')}
@@ -118,14 +150,24 @@ const styles = StyleSheet.create({
     flex: 2,
   },
   input: {
-    height: 40,
-    marginBottom: 20,
-    padding: 10,
-    borderRadius: 5,
     color: colors.black,
-    backgroundColor: colors.white,
+    flex: 1
+  },
+  inputContainer: {
     shadowColor: 'rgba(0, 0, 0, 0.8)',
+    marginBottom: 20,
     elevation: 5,
+    height: 40,
+    backgroundColor: colors.white,
+    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    // padding: 5,
+  },
+  icon: {
+    marginHorizontal: 10,
+    width: 15,
+    height: 15
   },
   footergreyText: {
     textAlign: 'center',

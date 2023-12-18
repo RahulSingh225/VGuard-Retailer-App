@@ -15,7 +15,7 @@ const AirCoolerStack: React.FC = () => {
         headerShown: false,
       }}>
       <Stack.Screen
-        name="Air Cooler"
+        name="Redeem Points"
         component={AirCooler}
         options={{
           headerShown: true,

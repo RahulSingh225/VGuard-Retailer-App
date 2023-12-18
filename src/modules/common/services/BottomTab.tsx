@@ -111,7 +111,7 @@ const BottomTab: React.FC = () => {
       >
         <Tab.Screen name="Home" component={HomeStack} options={{ headerShown: false }} />
         <Tab.Screen
-          name="Notification"
+          name="Notifications"
           component={Notification}
           options={({ route }) => ({
             headerTitle: () => <CustomTabHeader handleLanguageButtonPress={handleLanguageButtonPress} route={route} />,
@@ -127,7 +127,7 @@ const BottomTab: React.FC = () => {
           })}
         />
         <Tab.Screen
-          name="Support"
+          name="Contact Us"
           component={ContactPage}
           options={({ route }) => ({
             headerTitle: () => <CustomTabHeader handleLanguageButtonPress={handleLanguageButtonPress} route={route} />,
