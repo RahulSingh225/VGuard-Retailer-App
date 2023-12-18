@@ -19,7 +19,7 @@ const SchemesStack: React.FC = () => {
         headerShown: false,
       }}>
       <Stack.Screen
-        name="Schemes"
+        name="Schemes/Offers"
         component={Schemes}
         options={{
           headerShown: true,
@@ -33,7 +33,7 @@ const SchemesStack: React.FC = () => {
         }}
       />
       <Stack.Screen
-        name="Active Schemes"
+        name="Active Schemes/Offers"
         component={ActiveScheme}
         options={{
           headerShown: true,

@@ -1,25 +1,35 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   TouchableOpacity,
   StyleSheet,
+  Text,
 } from 'react-native';
 import BottomTabLogo from './BottomTabLogo';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
+import colors from '../../colors';
+import { responsiveFontSize } from 'react-native-responsive-dimensions';
+import { getNotificationCount } from '../utils/apiservice';
 
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   const { routes = [], index: activeIndex } = state;
-
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    getNotificationCount().then(async r => {
+      const result = await r.json();
+      setCount(result.count);
+    });
+}, []);
   const getTabIcon = (routeName: string) => {
     switch (routeName) {
       case 'Home':
         return 'home-outline';
-      case 'Notification':
+      case 'Notifications':
         return 'notifications-outline';
       case 'Profile':
         return 'person-outline';
-      case 'Support':
+      case 'Contact Us':
         return 'call-outline';
       case 'Logout':
         return 'log-out-outline';
@@ -76,7 +86,19 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
               key={route.key}
             >
               <View style={{ alignItems: 'center' }}>
-                <Icon name={icon} size={24} color={isFocused ? '#673ab7' : '#222'} />
+                {route.name === 'Notifications' && (
+                  <View>
+                    <Icon name={icon} size={24} color={isFocused ? '#673ab7' : '#222'} />
+                    { count > 0 &&
+                      (<View style={styles.badge}>
+                      <Text style={styles.badgeText}>{count}</Text>
+                    </View>)
+                    }
+                  </View>
+                )}
+                {route.name !== 'Notifications' && (
+                  <Icon name={icon} size={24} color={isFocused ? '#673ab7' : '#222'} />
+                )}
               </View>
             </TouchableOpacity>
           );
@@ -100,6 +122,25 @@ const styles = StyleSheet.create({
     height: 60,
     backgroundColor: 'white',
     elevation: 15
+  },
+  badge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: colors.yellow,
+    borderRadius: 50,
+    width: 20,
+    height: 20,
+    padding: 2,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  badgeText: {
+    color: colors.black,
+    fontSize: responsiveFontSize(1),
+    fontWeight: 'bold',
+    textAlign: 'center'
   },
 });
 

@@ -88,6 +88,7 @@ const ContactPage: React.FC<{ navigation: any }> = ({ navigation }) => {
       <View style={styles.container}>
         <Text style={styles.text}>{t('strings:v_guard_corporate_office')}</Text>
         <View style={styles.smallContainer}>
+          <Text style={styles.smallDetail}>V-Guard Industries Ltd.</Text>
           <Text style={styles.smallDetail}>Regd. Office:</Text>
           <Text style={styles.smallDetail}>
             42/962. Vennala Highschool Road Vennala. Kochi-682028

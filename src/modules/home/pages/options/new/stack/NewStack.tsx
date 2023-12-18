@@ -17,7 +17,7 @@ const NewStack: React.FC = () => {
       }}
     >
       <Stack.Screen
-        name="What's New?"
+        name="What's New"
         component={New}
         options={{
           headerShown: true

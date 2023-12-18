@@ -31,33 +31,33 @@ const AddSubLogin: React.FC<{ navigation: any }> = ({ navigation }) => {
             mobileNo: contactNo
         }
         const isValidNumber = /^\d{10}$/.test(contactNo);
-        if(isValidNumber && inputName){
+        if (isValidNumber && inputName) {
             addLogin(data)
-            .then(response => response.json())
-            .then((responseData) => {
-                setPopupVisible(true);
-                setPopupContent(responseData.message);
-                setContactNo("");
-                setInputName("");
-                console.log("<><<><<><>><", responseData, "<><<<><><><><><><<><");
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
+                .then(response => response.json())
+                .then((responseData) => {
+                    setPopupVisible(true);
+                    setPopupContent(responseData.message);
+                    setContactNo("");
+                    setInputName("");
+                    console.log("<><<><<><>><", responseData, "<><<<><><><><><><<><");
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
         }
-        else if(inputName==""){
+        else if (inputName == "") {
             Snackbar.show({
                 text: 'Please enter name',
                 duration: Snackbar.LENGTH_SHORT,
-              });
+            });
         }
-        else if(!isValidNumber){
+        else if (!isValidNumber) {
             Snackbar.show({
                 text: 'Please enter a valid 10-digit mobile number',
                 duration: Snackbar.LENGTH_SHORT,
-              });
+            });
         }
-        
+
 
     }
 
@@ -82,6 +82,8 @@ const AddSubLogin: React.FC<{ navigation: any }> = ({ navigation }) => {
                     label={t('strings:lbl_contact_number_mandatory')}
                     value={contactNo}
                     onChangeText={(text) => handleInputChange(text, 'Contact Number')}
+                    numeric
+                    maxLength={10}
                 />
                 <View style={styles.buttonContainer}>
                     <Buttons

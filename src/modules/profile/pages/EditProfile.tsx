@@ -25,6 +25,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [postData, setPostData] = useState<UserData | any>();
   const [profileImage, setProfileImage] = useState(null);
   const [isShopAddressDifferent, setIsShopAddressDifferent] = useState('Yes');
+  const [enrolledOtherSchemeYesNo, setEnrolledOtherSchemeYesNo] = useState('Yes');
   const [retailerCategoryDealIn, setRetailerCategoryDealIn] = useState([]);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
@@ -76,7 +77,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const handleSubmit = async () => {
     console.log("Post Data:", postData?.dob);
 
-    // Check if dob is less than 18 years
     const currentDate = new Date();
     const dobDate = new Date(postData?.dob);
     const minAllowedDate = new Date(currentDate);
@@ -106,6 +106,9 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (label == "isShopDifferent") {
       setIsShopAddressDifferent(value)
     }
+    if (label == "enrolledOtherSchemeYesNo") {
+      setEnrolledOtherSchemeYesNo(value)
+    }
     else if (label == "maritalStatus") {
       setPostData((prevData: UserData) => ({
         ...prevData,
@@ -134,15 +137,18 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const genderpickerItems = [
-    { label: 'Male', value: 'Male' },
-    { label: 'Female', value: 'Female' },
-    { label: 'Other', value: 'Other' },
+    { label: 'Select Gender', value: ''},
+    { label: 'Male', value: 'Male ' },
+    { label: 'Female', value: 'Female ' },
+    { label: 'Other', value: 'Other ' },
   ];
-  const shopAddresspickerItems = [
+  const selectYesorNo = [
+    { label: 'Selct Option', value: '' },
     { label: 'Yes', value: 'Yes' },
     { label: 'No', value: 'No' }
   ];
   const maritalStatusItems = [
+    { label: 'Select Marital Status', value: '' },
     { label: 'Married', value: 'Married' },
     { label: 'UnMarried', value: 'UnMarried' }
   ];
@@ -250,6 +256,8 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           label={t('strings:pincode')}
           value={postData?.pinCode}
           onChangeText={(text) => handleInputChange(text, 'pinCode')}
+          numeric
+          maxLength = {6}
         />
         <InputField
           label={t('strings:lbl_state')}
@@ -271,7 +279,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           disabled={false} // Optional
           selectedValue={isShopAddressDifferent}
           onValueChange={(text: string) => handleChange("isShopDifferent", text)}
-          items={shopAddresspickerItems}
+          items={selectYesorNo}
         />
         <PickerField
           label={t('strings:lbl_marital_status')}
@@ -299,15 +307,18 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           }}
           items={retailerCategoryDealIn.map(category => ({ label: category.prodCatName, value: category.prodCatName }))}
         />
-
-        <InputField
+        <PickerField
           label={t('strings:already_enrolled_into_loyalty_scheme')}
-          value={isShopAddressDifferent}
+          disabled={false} // Optional
+          selectedValue={enrolledOtherSchemeYesNo}
+          onValueChange={(text: string) => handleChange("enrolledOtherSchemeYesNo", text)}
+          items={selectYesorNo}
         />
         <InputField
           label={t('strings:annual_business_potential')}
           value={postData?.annualBusinessPotential?.toString()}
           onChangeText={(text) => handleInputChange(text, 'annualBusinessPotential')}
+          numeric
         />
         <ImagePickerField label='Selfie'
         onImageChange={handleImageChange}

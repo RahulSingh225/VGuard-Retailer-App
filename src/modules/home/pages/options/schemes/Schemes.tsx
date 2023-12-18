@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import ReusableCarousel from '../../../../../components/ReusableCarousel';
 import colors from '../../../../../../colors';
 import CustomTouchableOption from '../../../../../components/CustomTouchableOption';
 import NeedHelp from '../../../../../components/NeedHelp';
+import { getSchemeImages } from '../../../../../utils/apiservice';
+import ReusableUrlCarousel from '../../../../../components/ReusableUrlCarousel';
 
 const Schemes: React.FC = () => {
   const carouselData = [
@@ -11,11 +13,29 @@ const Schemes: React.FC = () => {
     { imageUrl: require('../../../../../assets/images/banner.webp') },
     { imageUrl: require('../../../../../assets/images/banner_redeem_ppoints.webp') },
   ];
+  const [imageArray, setImageArray] = useState(null);
+  const imageUrl = "https://vguardrishta.com/";
+
+  useEffect(() => {
+    console.log("Image loading");
+    getSchemeImages()
+      .then(response => response.json()
+        .then(result => {
+          console.log("Result:", result)
+          var ar = [];
+          result.map(r => ar.push({ imageUrl: imageUrl + r.imgPath }));
+          setImageArray(ar)
+          const image = imageArray;
+          console.log("Image Array", image)
+        }))
+  }, [])
 
   return (
     <View style={styles.container}>
       <View style={styles.carousel}>
-        <ReusableCarousel data={carouselData} />
+      {imageArray &&
+          <ReusableUrlCarousel data={imageArray} />
+        }
       </View>
       <View style={styles.mainWrapper}>
         <View style={styles.options}>
@@ -27,7 +47,7 @@ const Schemes: React.FC = () => {
           <CustomTouchableOption
             text="strings:active_scheme_offers"
             iconSource={require('../../../../../assets/images/ic_active_offers.webp')}
-            screenName="Active Schemes"
+            screenName="Active Schemes/Offers"
           />
           <CustomTouchableOption
             text="strings:special_combo_offers"

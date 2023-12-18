@@ -1,13 +1,16 @@
 import { View, Text, StyleSheet } from 'react-native';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ReusableCarousel from '../../../../../components/ReusableCarousel';
 import colors from '../../../../../../colors';
 import CustomTouchableOption from '../../../../../components/CustomTouchableOption';
 import NeedHelp from '../../../../../components/NeedHelp';
 import { useTranslation } from 'react-i18next';
-
+import { getInfoDeskBanners } from '../../../../../utils/apiservice';
+import ReusableUrlCarousel from '../../../../../components/ReusableUrlCarousel';
 const Info: React.FC = () => {
   const { t } = useTranslation();
+
+  const imageUrl = "https://vguardrishta.com/";
 
   const carouselData = [
     { imageUrl: require('../../../../../assets/images/banner_redeem_ppoints.webp') },
@@ -15,10 +18,29 @@ const Info: React.FC = () => {
     { imageUrl: require('../../../../../assets/images/banner_redeem_ppoints.webp') },
   ];
 
+  const [imageArray, setImageArray] = useState(null);
+
+  useEffect(() => {
+    console.log("Image loading");
+    getInfoDeskBanners()
+      .then(response => response.json()
+        .then(result => {
+          console.log("Result:", result)
+          var ar = [];
+          result.map(r => ar.push({ imageUrl: imageUrl + r.imgPath }));
+          setImageArray(ar)
+          const image = imageArray;
+          console.log("Image Array", image)
+        }))
+  }, [])
+
+
   return (
     <View style={styles.container}>
       <View style={styles.carousel}>
-        <ReusableCarousel data={carouselData} />
+        {imageArray &&
+          <ReusableUrlCarousel data={imageArray} />
+        }
       </View>
       <View style={styles.mainWrapper}>
         <View style={styles.options}>
@@ -31,13 +53,13 @@ const Info: React.FC = () => {
             text="strings:downloads_small"
             iconSource={require('../../../../../assets/images/ic_downloads_.webp')}
             screenName="Downloads"
-            disabled = {true}
+            disabled={true}
           />
           <CustomTouchableOption
             text="strings:v_guard_product_catalog"
             iconSource={require('../../../../../assets/images/ic_vguard_product_catalog.webp')}
             screenName="Product Catalogue"
-            disabled = {true}
+            disabled={true}
           />
         </View>
         <NeedHelp />

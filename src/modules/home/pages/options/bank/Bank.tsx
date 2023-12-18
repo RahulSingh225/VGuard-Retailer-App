@@ -63,19 +63,18 @@ const Bank: React.FC<BankProps> = () => {
         if (response.status === 200) {
           const data = await response.json();
           console.log(data, '<><<error message<><>');
+          setAccHolder(data.bankAccHolderName);
+          setAccType(data.bankAccType);
+          setBankName(data.bankNameAndBranch);
+          setIfscCode(data.bankIfsc);
+          setAccNo(data.bankAccNo);
+          setSelectedImageName(data.checkPhoto);
+          setEntityUid(data.checkPhoto);
+
+          await getFileUri(data.checkPhoto);
           if (data.errorMessage) {
             setPopupContent(data.errorMessage);
             setPopupVisible(true);
-          } else {
-            setAccHolder(data.bankAccHolderName);
-            setAccType(data.bankAccType);
-            setBankName(data.bankNameAndBranch);
-            setIfscCode(data.bankIfsc);
-            setAccNo(data.bankAccNo);
-            setSelectedImageName(data.checkPhoto);
-            setEntityUid(data.checkPhoto);
-
-            await getFileUri(data.checkPhoto);
           }
         } else {
           throw new Error('Failed to get bank details');
@@ -200,22 +199,37 @@ const Bank: React.FC<BankProps> = () => {
       bankIfsc: ifscCode,
       checkPhoto: entityUid,
     };
-    updateBank(postData)
-      .then((response) => {
-        console.log(postData, '---------------postdata');
-        if (response.status === 200) {
-          const responses = response.json();
-          return responses;
-        } else {
-          throw new Error('Failed to create ticket');
-        }
-      })
-      .then((data) => {
-        showSnackbar(data.message);
-      })
-      .catch((error) => {
-        console.error('API Error:', error);
-      });
+    if (postData.bankAccNo != "" &&
+      postData.bankAccHolderName != "" &&
+      postData.bankAccType != "" &&
+      postData.bankAccType != "" &&
+      postData.bankNameAndBranch != "" &&
+      postData.bankIfsc != "" &&
+      postData.checkPhoto != ""
+    ) {
+      updateBank(postData)
+        .then((response) => {
+          console.log(postData, '---------------postdata');
+          if (response.status === 200) {
+            const responses = response.json();
+            return responses;
+          } else {
+            setPopupContent("Failed to update Bank Details");
+            setPopupVisible(true);
+          }
+        })
+        .then((data) => {
+          setPopupVisible(true);
+          setPopupContent(data.message)
+        })
+        .catch((error) => {
+          console.error('API Error:', error);
+        });
+    }
+    else {
+      setPopupContent("Enter all the details");
+      setPopupVisible(true);
+    }
   };
 
   const showSnackbar = (message: string) => {
@@ -279,6 +293,10 @@ const Bank: React.FC<BankProps> = () => {
               selectedValue={bankName}
               onValueChange={(itemValue) => setBankName(itemValue)}
               style={styles.picker}>
+              <Picker.Item
+                key="Select"
+                label="Select Bank Name"
+                value="" />
               {availableBanks.map((bank, index) => (
                 <Picker.Item
                   key={index}
@@ -400,10 +418,11 @@ const Bank: React.FC<BankProps> = () => {
         </View>
       </View>
       {isPopupVisible && (
-                <Popup isVisible={isPopupVisible} onClose={() => setPopupVisible(false)}>
-                    {popupContent}
-                </Popup>
-            )}
+        <Popup isVisible={isPopupVisible} onClose={() => setPopupVisible(false)}>
+          {popupContent}
+        </Popup>
+      )}
+
     </ScrollView>
   );
 };

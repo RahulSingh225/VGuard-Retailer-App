@@ -503,7 +503,7 @@ export default {
         },
         account_type: {
             type_of_account: "Type of Account",
-            cuurent: "Current",
+            current: "Current",
             saving: "Saving"
         },
         current_address_yes_no: {

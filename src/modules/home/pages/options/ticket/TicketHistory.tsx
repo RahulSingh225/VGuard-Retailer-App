@@ -4,6 +4,7 @@ import colors from '../../../../../../colors';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import { getTicketHistory } from '../../../../../utils/apiservice';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface TicketItem {
   createdDate: string;
@@ -13,9 +14,49 @@ interface TicketItem {
 
 const TicketHistory: React.FC = () => {
   const [data, setData] = useState<TicketItem[]>([]);
+  const [profileImage, setProfileImage] = useState(null);
+  const [userData, setUserData] = useState({
+    userName: '',
+    userId: '',
+    userCode: '',
+    userImage: '',
+    userRole: '',
+  });
   const { t } = useTranslation();
-
   useEffect(() => {
+    if (userData.userRole && userData.userImage) {
+      const getImage = async () => {
+        try {
+          const profileImageUrl = await getFile(userData.userImage, 'PROFILE', 2);
+          if (profileImageUrl.status === 500) {
+            setProfileImage(null);
+          }
+          else {
+            setProfileImage(profileImageUrl.url);
+          }
+          console.log(profileImage)
+        } catch (error) {
+          console.log('Error while fetching profile image:', error);
+        }
+      };
+
+      getImage();
+    }
+  }, [userData.userRole, userData.userImage]);
+  useEffect(() => {
+    AsyncStorage.getItem('USER').then((r) => {
+      const user = JSON.parse(r);
+      const data = {
+        userName: user.name,
+        userCode: user.userCode,
+        pointsBalance: user.pointsSummary.pointsBalance,
+        redeemedPoints: user.pointsSummary.redeemedPoints,
+        userImage: user.kycDetails.selfie,
+        userRole: user.professionId,
+        userId: user.contactNo
+      };
+      setUserData(data);
+    });
     getTicketHistory()
       .then(response => response.json())
       .then((responseData: TicketItem[]) => {
@@ -29,6 +70,19 @@ const TicketHistory: React.FC = () => {
 
   return (
     <ScrollView style={styles.container}>
+      <View style={styles.profileDetails}>
+        <View style={styles.ImageProfile}>
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
+          ) : (
+            <Image source={require('../../../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
+          )}
+        </View>
+          <View style={styles.profileText}>
+            <Text style={styles.textDetail}>{userData.userName}</Text>
+            <Text style={styles.textDetail}>{userData.userCode}</Text>
+          </View>
+        </View>
       {data.length === 0 ? (
         <View style={styles.noDataContainer}>
           <Text style={styles.noDataText}>{t('strings:no_data')}</Text>
@@ -56,6 +110,23 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 15,
     backgroundColor: colors.white,
+  },
+  profileDetails: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    fontSize: responsiveFontSize(1.7),
+  },
+  ImageProfile: {
+    height: 50,
+    width: 50,
+    borderRadius: 100
+  },
+  textDetail: {
+    color: colors.black,
+    fontWeight: 'bold',
+    fontSize: responsiveFontSize(1.7)
   },
   noDataContainer: {
     flex: 1,

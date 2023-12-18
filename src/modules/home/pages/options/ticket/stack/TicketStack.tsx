@@ -17,7 +17,7 @@ const TicketStack: React.FC = () => {
       }}
     >
       <Stack.Screen
-        name="Tickets"
+        name="Raise Tickets"
         component={Ticket}
         options={{
           headerShown: true,
