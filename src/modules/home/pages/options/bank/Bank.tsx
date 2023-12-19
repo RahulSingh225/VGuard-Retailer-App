@@ -49,6 +49,7 @@ const Bank: React.FC<BankProps> = () => {
   const [availableBanks, setAvailableBanks] = useState<string[]>([]);
   const [popupContent, setPopupContent] = useState('');
   const [isPopupVisible, setPopupVisible] = useState(false);
+  const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
 
   useEffect(() => {
     const getUserRoleFromAsyncStorage = async () => {
@@ -232,12 +233,10 @@ const Bank: React.FC<BankProps> = () => {
     }
   };
 
-  const showSnackbar = (message: string) => {
-    Snackbar.show({
-      text: message,
-      duration: Snackbar.LENGTH_SHORT,
-    });
+  const handleImageClick = () => {
+    setShowImagePreviewModal(true);
   };
+
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -278,8 +277,9 @@ const Bank: React.FC<BankProps> = () => {
               selectedValue={accType}
               onValueChange={(itemValue) => setAccType(itemValue)}
               style={styles.picker}>
-              <Picker.Item label={t('strings:account_type:saving')} value={'saving'} />
-              <Picker.Item label={t('strings:account_type:current')} value={'current'} />
+              <Picker.Item label={t('strings:select_account_type')} value={''} />
+              <Picker.Item label={t('strings:account_type:saving')} value={'Saving'} />
+              <Picker.Item label={t('strings:account_type:current')} value={'Current'} />
             </Picker>
 
             <Image
@@ -339,7 +339,7 @@ const Bank: React.FC<BankProps> = () => {
                   editable={false}
                 />
               )}
-              <View style={styles.inputImage}>
+              {/* <View style={styles.inputImage}>
                 {selectedImage ? (
                   <Image
                     source={{ uri: selectedImage }}
@@ -353,9 +353,46 @@ const Bank: React.FC<BankProps> = () => {
                     resizeMode="contain"
                   />
                 )}
-              </View>
+              </View> */}
+              <TouchableOpacity
+                onPress={handleImageClick}>
+                <View style={styles.inputImage}>
+                  {selectedImage ? (
+                    <Image
+                      source={{ uri: selectedImage }}
+                      style={{ width: '100%', height: '100%' }}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Image
+                      source={require('../../../../../assets/images/photo_camera.png')}
+                      style={{ width: '100%', height: '100%' }}
+                      resizeMode="contain"
+                    />
+                  )}
+                </View>
+              </TouchableOpacity>
             </TouchableOpacity>
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={showImagePreviewModal}
+              onRequestClose={() => setShowImagePreviewModal(false)}
+            >
+              <View style={styles.modalContainer}>
+                <TouchableOpacity
+                  onPress={() => setShowImagePreviewModal(false)}
+                >
+                  <Image resizeMode='contain' style={{ width: 50, height: 50 }} source={require('../../../../../assets/images/ic_close.png')} />
+                </TouchableOpacity>
 
+                <Image
+                  source={{ uri: selectedImage }}
+                  style={{ width: '70%', height: '70%' }}
+                  resizeMode="contain"
+                />
+              </View>
+            </Modal>
             {/* Modal for selecting camera or gallery */}
             <Modal
               animationType="slide"

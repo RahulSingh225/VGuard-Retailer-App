@@ -20,7 +20,7 @@ import ReusableCarousel from '../../../../../components/ReusableCarousel';
 interface PointData {
   pointsBalance: string;
   redeemedPoints: string;
-  numberOfScan: string;
+  tdsPoints: string;
 }
 
 const RedeemPoints: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -36,7 +36,7 @@ const RedeemPoints: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [pointData, setPointData] = useState<PointData>({
     pointsBalance: '',
     redeemedPoints: '',
-    numberOfScan: '',
+    tdsPoints: '',
   });
 
   useEffect(() => {
@@ -45,7 +45,7 @@ const RedeemPoints: React.FC<{ navigation: any }> = ({ navigation }) => {
       const data: PointData = {
         pointsBalance: user.pointsSummary.pointsBalance || 0,
         redeemedPoints: user.pointsSummary.redeemedPoints || 0,
-        numberOfScan: user.pointsSummary.numberOfScan || 0,
+        tdsPoints: user.pointsSummary.tdsPoints || 0,
       };
       setPointData(data);
     });
@@ -67,8 +67,8 @@ const RedeemPoints: React.FC<{ navigation: any }> = ({ navigation }) => {
             <Text style={styles.point}>{pointData.redeemedPoints ? pointData.redeemedPoints : '0'}</Text>
           </View>
           <View style={styles.rightPoint}>
-            <Text style={styles.greyText}>{t('strings:number_of_scans')}</Text>
-            <Text style={styles.point}>{pointData.numberOfScan}</Text>
+            <Text style={styles.greyText}>{t('strings:tds_deducted')}</Text>
+            <Text style={styles.point}>{pointData.tdsPoints ? pointData.tdsPoints : '0'}</Text>
           </View>
         </View>
         <View style={styles.dashboard}>
@@ -85,8 +85,9 @@ const RedeemPoints: React.FC<{ navigation: any }> = ({ navigation }) => {
             />
             <CustomTouchableOption
               text="UPI Transfer"
-              iconSource={require('../../../../../assets/images/upi_transfer.webp')}
-              screenName="UPI Transfer"
+              iconSource={require('../../../../../assets/images/ic_redeem_products.webp')}
+              screenName="Redeem Products"
+              disabled={true}
             />
           </View>
           <View style={styles.row}>

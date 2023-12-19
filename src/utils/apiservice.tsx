@@ -175,7 +175,7 @@ export function getUsers(filter: string) {
     return createDigestPostRequest(path, filter);
 }
 
-export function getFile(uuid: String, imageRelated: String, userRole: Number) {
+export function getFile(uuid: String, imageRelated: String, userRole: String) {
     const path = `file/${uuid}/${imageRelated}/${userRole}`;
     console.log(path);
     return createDigestGetRequest(path);
@@ -201,7 +201,6 @@ export const sendFile = async (formData: FormData): Promise<any> => {
       return response;
     } catch (error) {
         console.error('Error sending file:', error);
-        console.error('Error details:', error.response);
       throw error;
     }
   };

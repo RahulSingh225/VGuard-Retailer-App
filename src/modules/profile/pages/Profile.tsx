@@ -84,11 +84,13 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const renderField = async (fieldName: string): string => {
     if (fieldName === 'Cancelled Cheque Copy') {
-      const chequePhoto = await getFile(userData.bankDetail.checkPhoto, 'CHEQUE', 2);
+      const chequePhoto = await getFile(userData.bankDetail.checkPhoto, 'CHEQUE', "2");
+      console.log("CHEQUE PHOTO-------------", chequePhoto.url)
       return chequePhoto.url;
     }
     if (fieldName === 'GST Photo') {
-      const gstPhoto = await getFile(userData.kycDetails.gstFront, 'GST', 2);
+      const gstPhoto = await getFile(userData.kycDetails.gstFront, 'GST', "2");
+      console.log("GST PHOTO--------------", gstPhoto.url)
       return gstPhoto.url;
     }
     const fieldMap: Record<string, string> = {

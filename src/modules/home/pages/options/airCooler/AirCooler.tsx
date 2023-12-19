@@ -110,17 +110,17 @@ const AirCooler: React.FC<{ navigation: any }> = ({ navigation }) => {
 
                         <Text style={styles.point}>{userStarData?.pointsBalance ? userStarData?.pointsBalance : 0}</Text>
                     </View>
-                    <View style={styles.middlePoint}>
+                    <TouchableOpacity style={styles.middlePoint} onPress={()=>navigation.navigate("Redemption History")} >
                         <Text style={styles.greyText}>{t('strings:star_redeemed')}</Text>
                         <Text style={styles.point}>
                             {userStarData?.redeemedPoints ? userStarData?.redeemedPoints : 0}
                         </Text>
-                    </View>
-                    <View style={styles.rightPoint}>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.rightPoint} onPress={()=>navigation.navigate("Unique Code History")} >
                         <Text style={styles.greyText}>{t('strings:number_of_scans')}</Text>
                         <Text style={styles.point}>{userStarData?.numberOfScan ? userStarData?.numberOfScan : 0}</Text>
 
-                    </View>
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.dashboard}>
                     <View style={styles.row}>
