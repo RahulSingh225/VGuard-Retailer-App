@@ -89,22 +89,22 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         </View>
       </View>
       <View style={styles.points}>
-        <View style={styles.leftPoint}>
+        <TouchableOpacity style={styles.leftPoint} onPress={()=>navigation.navigate("Dashboard")} >
           <Text style={styles.greyText}>{t('strings:points_balance')}</Text>
 
           <Text style={styles.point}>{userData?.pointsBalance ? userData?.pointsBalance : 0}</Text>
-        </View>
-        <View style={styles.middlePoint}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.middlePoint} onPress={()=>navigation.navigate("Redemption History")} >
           <Text style={styles.greyText}>{t('strings:points_redeemed')}</Text>
           <Text style={styles.point}>
             {userData?.redeemedPoints ? userData?.redeemedPoints : 0}
           </Text>
-        </View>
-        <View style={styles.rightPoint}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.rightPoint} onPress={()=>navigation.navigate("Unique Code History")} >
           <Text style={styles.greyText}>{t('strings:number_of_scans')}</Text>
           <Text style={styles.point}>{userData?.numberOfScan}</Text>
 
-        </View>
+        </TouchableOpacity>
       </View>
       <View style={styles.dashboard}>
         <View style={styles.row}>

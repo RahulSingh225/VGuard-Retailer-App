@@ -19,6 +19,8 @@ import Engagement from '../pages/options/engagement/Engagement';
 import TDSStatement from '../pages/options/TDSStatement/TDSStatement';
 import UpdatePAN from '../pages/options/pan/UpdatePAN';
 import AirCoolerStack from '../pages/options/airCooler/stack/AirCoolerStack';
+import RedemptionHistory from '../pages/options/redeemPoints/RedemptionHistory';
+import UniqueCodeHistory from '../pages/options/scanQR/pages/UniqueCodeHistory';
 
 const HomeStack: React.FC = () => {
   type HomeStackParams = {
@@ -38,6 +40,8 @@ const HomeStack: React.FC = () => {
     'Air Cooler': undefined;
     Engagement: undefined;
     Profile: undefined;
+    'Unique Code History': undefined;
+    'Redemption History': undefined;
   };
 
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
@@ -79,6 +83,12 @@ const HomeStack: React.FC = () => {
         <Stack.Screen name="new" component={NewStack} />
         <Stack.Screen name="ticket" component={TicketStack} />
         <Stack.Screen name="Air Cooler" component={AirCoolerStack} />
+        <Stack.Screen name="Redemption History" component={RedemptionHistory} options={{
+            headerShown: true,
+          }}/>
+        <Stack.Screen name="Unique Code History" component={UniqueCodeHistory} options={{
+            headerShown: true,
+          }}/>
         <Stack.Screen
           name="Update PAN"
           component={UpdatePAN}
