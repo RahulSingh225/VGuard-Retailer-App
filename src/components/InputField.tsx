@@ -1,6 +1,6 @@
 // InputField.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import colors from '../../colors';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
@@ -15,6 +15,7 @@ interface InputFieldProps {
   onChangeText: (value: string) => void;
   numeric?: boolean;
   maxLength?: number;
+  imageName?: string;
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -23,6 +24,7 @@ const InputField: React.FC<InputFieldProps> = ({
   disabled,
   isImage,
   imageSource,
+  imageName,
   onPressImage,
   onChangeText,
   numeric,
@@ -37,16 +39,27 @@ const InputField: React.FC<InputFieldProps> = ({
   };
 
   const handleBlur = () => {
-    setIsFocused(false);
+    if (!isImage && !hasInput) {
+      setIsFocused(false);
+    }
   };
 
+
   return (
-    <View style={[styles.container, isFocused || hasInput ? styles.focusedContainer : null]}>
-      <Text style={[styles.label, isFocused || hasInput ? styles.focusedLabel : null]}>{label}</Text>
+    <View style={[styles.container, isFocused || hasInput ||  imageName ? styles.focusedContainer : null]}>
+      <Text style={[styles.label, isFocused || hasInput || imageName ? styles.focusedLabel : null]}>{label}</Text>
       {isImage ? (
-        <TouchableOpacity onPress={onPressImage}>
-          <Image source={{ uri: imageSource }} style={styles.image} resizeMode="cover" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row' }}>
+          <TextInput
+            style={[styles.input, disabled && styles.disabledInput, { flex: 1 }]}
+            editable={false}
+            value={imageName}
+            {...rest}
+          />
+          <TouchableOpacity onPress={onPressImage}>
+            <Image source={{ uri: imageSource }} style={styles.image} resizeMode="cover" />
+          </TouchableOpacity>
+        </View>
       ) : (
         <TextInput
           style={[styles.input, disabled && styles.disabledInput]}
@@ -99,13 +112,16 @@ const styles = StyleSheet.create({
     color: colors.grey,
   },
   image: {
-    width: 50,
-    height: 50,
-    borderRadius: 5,
+    width: 35,
+    height: 35,
+    alignSelf: 'flex-end',
   },
   error: {
     color: 'red',
     marginTop: 5,
+  },
+  imageName: {
+    color: colors.grey,
   },
 });
 

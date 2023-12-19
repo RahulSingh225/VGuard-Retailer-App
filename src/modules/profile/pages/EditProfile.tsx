@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, Linking, TouchableOpacity } from 'react-native';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getFile, getRetailerCategoryDealIn, updateProfile } from '../../../utils/apiservice';
+import { getCities, getDistricts, getFile, getRetailerCategoryDealIn, getRishtaUserProfile, getStates, updateProfile } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { UserData } from '../../../utils/modules/UserData';
@@ -32,13 +32,16 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [IdFrontUid, setIdFrontUid] = useState("");
   const [IdBackUid, setIdBackUid] = useState("");
   const [selfie, setSelfie] = useState("");
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [cities, setCities] = useState([]);
 
   useEffect(() => {
-    AsyncStorage.getItem('USER').then(r => {
-      const user = JSON.parse(r || '');
-      setUserData(user);
-      setPostData(user);
-    });
+    getRishtaUserProfile().then(response => response.json()
+      .then(res => {
+        setUserData(res);
+        setPostData(res);
+      }))
     getRetailerCategoryDealIn()
       .then(response => response.json())
       .then((responseData) => {
@@ -48,6 +51,41 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         console.error('Error fetching data:', error);
       });
   }, []);
+
+  useEffect(() => {
+    fetchData();
+    console.log("USER DATA--------------", userData)
+  }, [userData?.stateId])
+
+  const fetchData = async () => {
+    
+    try {
+      const statesResponse = await getStates();
+      const statesData = await statesResponse.json();
+      setStates(statesData);
+
+      const defaultState = postData.stateId;
+
+      const districtsResponse = await getDistricts(defaultState);
+      const districtsData = await districtsResponse.json();
+
+      if (Array.isArray(districtsData)) {
+        setDistricts(districtsData);
+
+        if (Array.isArray(districtsData) && districtsData.length > 0) {
+          const citiesResponse = await getCities(postData.distId);
+          const citiesData = await citiesResponse.json();
+          setCities(citiesData);
+        }
+      } else {
+        console.error('Error: Districts data is not an array.', districtsData);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+
 
   useEffect(() => {
     console.log("ID PROOF:", userData?.kycDetails?.aadharOrVoterOrDlNo)
@@ -75,7 +113,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const handleSubmit = async () => {
-    console.log("Post Data:", postData?.dob);
+    console.log("Post Data:", postData);
 
     const currentDate = new Date();
     const dobDate = new Date(postData?.dob);
@@ -137,33 +175,33 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const genderpickerItems = [
-    { label: 'Select Gender', value: ''},
+    { label: 'Select Gender', value: '' },
     { label: 'Male', value: 'Male ' },
     { label: 'Female', value: 'Female ' },
     { label: 'Other', value: 'Other ' },
   ];
   const selectYesorNo = [
-    { label: 'Selct Option', value: '' },
+    { label: 'Select Option', value: '' },
     { label: 'Yes', value: 'Yes' },
     { label: 'No', value: 'No' }
   ];
   const maritalStatusItems = [
     { label: 'Select Marital Status', value: '' },
-    { label: 'Married', value: 'Married' },
-    { label: 'UnMarried', value: 'UnMarried' }
+    { label: 'Married', value: '1' },
+    { label: 'UnMarried', value: '2' }
   ];
 
-  const handleImageChange = async (image: string, imageName: string, apiResponse: any, label:string) => {
+  const handleImageChange = async (image: string, imageName: string, apiResponse: any, label: string) => {
     console.log("Image Name:", label)
 
     try {
-      if(label=="Id Proof* (Front)"){
+      if (label == "Id Proof* (Front)") {
         setIdFrontUid(apiResponse.data.entityUid);
       }
-      else if(label=="Id Proof* (Back)"){
+      else if (label == "Id Proof* (Back)") {
         setIdBackUid(apiResponse.data.entityUid);
       }
-      else if(label=="Selfie"){
+      else if (label == "Selfie") {
         setSelfie(apiResponse.data.entityUid);
       }
       console.log('API Response in EditProfile:', apiResponse);
@@ -178,7 +216,47 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       [label]: value,
     }));
   }
-  
+
+  const handleStateSelect = async (text: string) => {
+    const selectedCategory = states.find(category => category.stateName === text);
+
+    setPostData((prevData: UserData) => ({
+      ...prevData,
+      state: text,
+      stateId: selectedCategory?.id || null,
+    }));
+
+    getDistricts(selectedCategory?.id)
+      .then(response => response.json())
+      .then((data) => {
+        setDistricts(data);
+      })
+  }
+  const handleDistrictSelect = async (text: string) => {
+    const selectedCategory = districts.find(category => category.districtName === text);
+
+    setPostData((prevData: UserData) => ({
+      ...prevData,
+      dist: text,
+      distId: selectedCategory?.id || null,
+    }));
+
+    getCities(selectedCategory?.id)
+      .then(response => response.json())
+      .then((data) => {
+        setCities(data);
+      })
+  }
+  const handleCitySelect = async (text: string) => {
+    const selectedCategory = cities.find(category => category.cityName === text);
+
+    setPostData((prevData: UserData) => ({
+      ...prevData,
+      city: text,
+      cityId: selectedCategory?.id || null,
+    }));
+  }
+
 
   return (
     <ScrollView style={styles.mainWrapper}>
@@ -257,26 +335,31 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           value={postData?.pinCode}
           onChangeText={(text) => handleInputChange(text, 'pinCode')}
           numeric
-          maxLength = {6}
+          maxLength={6}
         />
-        <InputField
+        <PickerField
           label={t('strings:lbl_state')}
-          value={postData?.state}
-          onChangeText={(text) => handleInputChange(text, 'state')}
+          disabled={false}
+          selectedValue={postData?.state}
+          onValueChange={(text: string) => handleStateSelect(text)}
+          items={states.map(state => ({ label: state.stateName, value: state.stateName }))}
         />
-        <InputField
+        <PickerField
           label={t('strings:district')}
-          value={postData?.pinCode}
-          onChangeText={(text) => handleInputChange(text, 'pinCode')}
+          disabled={false}
+          selectedValue={postData?.dist}
+          onValueChange={(text: string) => handleDistrictSelect(text)}
+          items={districts.map(district => ({ label: district.districtName, value: district.districtName }))}
         />
-        <InputField
+        <PickerField
           label={t('strings:city')}
-          value={postData?.city}
-          onChangeText={(text) => handleInputChange(text, 'city')}
+          disabled={false}
+          selectedValue={postData?.city}
+          onValueChange={(text: string) => handleCitySelect(text)}
+          items={cities.map(city => ({ label: city.cityName, value: city.cityName }))}
         />
         <PickerField
           label={t('strings:is_shop_address_different')}
-          disabled={false} // Optional
           selectedValue={isShopAddressDifferent}
           onValueChange={(text: string) => handleChange("isShopDifferent", text)}
           items={selectYesorNo}
@@ -321,19 +404,19 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           numeric
         />
         <ImagePickerField label='Selfie'
-        onImageChange={handleImageChange}
-        setImageData = {()=>setPostDataOfImage('kycDetails?.selfie', selfie)}
-        imageRelated='PROFILE' 
+          onImageChange={handleImageChange}
+          setImageData={() => setPostDataOfImage('kycDetails?.selfie', selfie)}
+          imageRelated='PROFILE'
         />
         <ImagePickerField label='Id Proof* (Front)'
-        onImageChange={handleImageChange} 
-        setImageData = {()=>setPostDataOfImage('kycDetails?.aadharOrVoterOrDLFront', IdFrontUid)}
-        imageRelated='ID_CARD_FRONT'
+          onImageChange={handleImageChange}
+          setImageData={() => setPostDataOfImage('kycDetails?.aadharOrVoterOrDLFront', IdFrontUid)}
+          imageRelated='ID_CARD_FRONT'
         />
         <ImagePickerField label='Id Proof* (Back)'
-        onImageChange={handleImageChange} 
-        setImageData = {()=>setPostDataOfImage('kycDetails?.aadharOrVoterOrDlBack', IdBackUid)}
-        imageRelated = "ID_CARD_BACK"
+          onImageChange={handleImageChange}
+          setImageData={() => setPostDataOfImage('kycDetails?.aadharOrVoterOrDlBack', IdBackUid)}
+          imageRelated="ID_CARD_BACK"
         />
         <InputField
           label={t('strings:id_proof_no')}

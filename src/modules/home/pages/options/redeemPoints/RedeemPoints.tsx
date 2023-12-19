@@ -84,7 +84,7 @@ const RedeemPoints: React.FC<{ navigation: any }> = ({ navigation }) => {
               screenName="Paytm Transfer"
             />
             <CustomTouchableOption
-              text="UPI Transfer"
+              text="strings:redeem_products"
               iconSource={require('../../../../../assets/images/ic_redeem_products.webp')}
               screenName="Redeem Products"
               disabled={true}

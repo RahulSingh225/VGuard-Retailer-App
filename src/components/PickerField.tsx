@@ -104,8 +104,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         top: -10,
-
-    }
+    },
+    
 });
 
 export default PickerField;

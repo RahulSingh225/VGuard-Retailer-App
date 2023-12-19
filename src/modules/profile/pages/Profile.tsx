@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableHighlight, Image, Linking, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableHighlight, Image, Linking, TouchableOpacity, Modal } from 'react-native';
 import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getFile } from '../../../utils/apiservice';
+import { getFile, getRishtaUserProfile } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { UserData } from '../../../utils/modules/UserData';
@@ -17,19 +17,44 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const [userData, setUserData] = useState<UserData | any>();
   const [profileImage, setProfileImage] = useState(null);
-
+  const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
+  const [gstImageName, setGstImageName] = useState("");
+  const [chequeImageName, setChequeImageName] = useState("");
+  const [imageOpen, setimageOpen] = useState("")
+  const handleImageClick = (imageSource: string | "") => {
+    console.log("opening model")
+    setShowImagePreviewModal(true);
+    setimageOpen(imageSource);
+  };
   useEffect(() => {
-    AsyncStorage.getItem('USER').then(r => {
-      const user = JSON.parse(r || '');
-      setUserData(user);
-    });
+    // AsyncStorage.getItem('USER').then(r => {
+    //   const user = JSON.parse(r || '');
+    //   setUserData(user);
+    // });
+    getRishtaUserProfile().then(response => response.json()
+      .then(res => {
+        const result = res;
+        setUserData(result);
+      }))
   }, []);
-
+  const fetchChequeCopy = async () => {
+    try {
+      const source = await renderField("Cancelled Cheque Copy");
+      setChequeCopySource(source);
+      const gstSource = await renderField("GST Photo");
+      setGstCopySource(gstSource);
+    } catch (error) {
+      console.error("Error fetching cheque copy:", error);
+    }
+  };
+  useEffect(() => {
+    fetchChequeCopy();
+  }, [userData?.roleId, userData?.kycDetails?.selfie]);
   useEffect(() => {
     if (userData?.roleId && userData?.kycDetails?.selfie) {
       const getImage = async () => {
         try {
-          const profileImageUrl = await getFile(userData.kycDetails.selfie, 'PROFILE', 2);
+          const profileImageUrl = await getFile(userData.kycDetails.selfie, 'PROFILE', "2");
           if (profileImageUrl.status === 500) {
             setProfileImage(null);
           }
@@ -84,14 +109,19 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const renderField = async (fieldName: string): string => {
     if (fieldName === 'Cancelled Cheque Copy') {
-      const chequePhoto = await getFile(userData.bankDetail.checkPhoto, 'CHEQUE', "2");
-      console.log("CHEQUE PHOTO-------------", chequePhoto.url)
-      return chequePhoto.url;
+      const checkPhoto = userData.bankDetail.checkPhoto
+      setChequeImageName(checkPhoto)
+      console.log("CHECK ", checkPhoto)
+      const chequePhoto = await getFile(checkPhoto, 'CHEQUE', "2");
+      const url = chequePhoto.url
+      return url;
     }
     if (fieldName === 'GST Photo') {
-      const gstPhoto = await getFile(userData.kycDetails.gstFront, 'GST', "2");
-      console.log("GST PHOTO--------------", gstPhoto.url)
-      return gstPhoto.url;
+      const gstFront = userData.kycDetails.gstFront;
+      setGstImageName(gstFront)
+      const gstPhoto = await getFile(gstFront, 'GST', "2");
+      const url = gstPhoto.url
+      return url;
     }
     const fieldMap: Record<string, string> = {
       'Date of Birth': 'dob',
@@ -113,7 +143,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
       'IFSC Code': 'bankDetail.bankIfsc',
       'GST Photo': 'kycDetails.gstFront',
     };
-    
+
 
     if (fieldName in fieldMap) {
       const mappedField = fieldMap[fieldName];
@@ -162,10 +192,8 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
       try {
         const source = await renderField("Cancelled Cheque Copy");
         const gstSource = await renderField("GST Photo");
-        // const facadeSource = await renderField("Front Facade");
         setChequeCopySource(source);
         setGstCopySource(gstSource);
-        // setFacadeCopySource(facadeSource);
       } catch (error) {
         console.error("Error fetching cheque copy:", error);
       }
@@ -233,10 +261,9 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
         <InputField
           label="GST Photo"
           isImage
+          imageName={gstImageName}
           imageSource={gstCopySource}
-          onPressImage={() => {
-            console.log("Image Pressed")
-          }}
+          onPressImage={() => handleImageClick(gstCopySource)}
         />
         <Text style={styles.subHeading}>{t('strings:permanent_address')}</Text>
         {addressLabels.map((label, index) => (
@@ -259,22 +286,54 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
         <InputField
           label="Cancelled Cheque Copy"
           isImage
+          imageName={chequeImageName}
           imageSource={chequeCopySource}
-          onPressImage={() => {
-            console.log("Image Pressed")
-          }}
+          onPressImage={() => handleImageClick(chequeCopySource)}
         />
       </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showImagePreviewModal}
+        onRequestClose={() => setShowImagePreviewModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            onPress={() => setShowImagePreviewModal(false)}
+          >
+            <Image resizeMode='contain' style={{ width: 50, height: 50 }} source={require('../../../assets/images/ic_close.png')} />
+          </TouchableOpacity>
+
+          <Image
+            source={{ uri: imageOpen }}
+            style={{ width: '70%', height: '70%'}}
+            resizeMode="contain"
+          />
+        </View>
+      </Modal>
       {isPopupVisible && (
-                <Popup isVisible={isPopupVisible} onClose={() => setPopupVisible(false)}>
-                    {popupContent}
-                </Popup>
-            )}
+        <Popup isVisible={isPopupVisible} onClose={() => setPopupVisible(false)}>
+          {popupContent}
+        </Popup>
+      )}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    gap: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
   mainWrapper: {
     padding: 15,
     flex: 1,
