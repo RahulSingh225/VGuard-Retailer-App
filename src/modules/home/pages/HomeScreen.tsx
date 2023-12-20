@@ -54,7 +54,7 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (userData?.userRole && userData.selfieImage) {
       const getImage = async () => {
         try {
-          const profileImageUrl = await getFile(userData.selfieImage, 'PROFILE', 2);
+          const profileImageUrl = await getFile(userData.selfieImage, 'PROFILE', "2");
           if (profileImageUrl.status === 500) {
             setProfileImage(null);
           }

@@ -13,6 +13,8 @@ import DatePickerField from '../../../components/DatePickerField';
 import Popup from '../../../components/Popup';
 import Snackbar from 'react-native-snackbar';
 import ImagePickerField from '../../../components/ImagePickerField';
+import MultiSelectField from '../../../components/MultiSelectField';
+import Loader from '../../../components/Loader';
 
 
 const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -31,17 +33,29 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [popupContent, setPopupContent] = useState('');
   const [IdFrontUid, setIdFrontUid] = useState("");
   const [IdBackUid, setIdBackUid] = useState("");
+  const [gstUid, setGstUid] = useState("");
   const [selfie, setSelfie] = useState("");
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [cities, setCities] = useState([]);
+  const [stateId, setStateId] = useState("");
 
   useEffect(() => {
-    getRishtaUserProfile().then(response => response.json()
+    // showLoader(true);
+    getRishtaUserProfile()
+      .then(response => response.json())
       .then(res => {
         setUserData(res);
         setPostData(res);
-      }))
+        setStateId(res.stateId);
+        setGstUid(res.kycDetails.gstFront);
+        setSelfie(res.kycDetails.selfie);
+        setIdBackUid(res.kycDetails.aadharOrVoterOrDlBack);
+        setIdFrontUid(res.kycDetails.aadharOrVoterOrDLFront);
+        const image = selfie;
+        console.log("SELFIE----------", image);
+      })
+
     getRetailerCategoryDealIn()
       .then(response => response.json())
       .then((responseData) => {
@@ -52,13 +66,18 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       });
   }, []);
 
+
   useEffect(() => {
-    fetchData();
-    console.log("USER DATA--------------", userData)
-  }, [userData?.stateId])
+    console.log("State ID:-------", stateId)
+    if (stateId !== undefined && stateId !== "") {
+      fetchData();
+      console.log("USER DATA--------------", userData);
+    }
+    console.log(">><><><><>SELFIE", selfie)
+  }, [stateId, selfie]);
+
 
   const fetchData = async () => {
-    
     try {
       const statesResponse = await getStates();
       const statesData = await statesResponse.json();
@@ -75,6 +94,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         if (Array.isArray(districtsData) && districtsData.length > 0) {
           const citiesResponse = await getCities(postData.distId);
           const citiesData = await citiesResponse.json();
+          console.log("CITIES-----------", citiesData);
           setCities(citiesData);
         }
       } else {
@@ -119,6 +139,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     const dobDate = new Date(postData?.dob);
     const minAllowedDate = new Date(currentDate);
     minAllowedDate.setFullYear(currentDate.getFullYear() - 18);
+
 
     if (dobDate < minAllowedDate) {
       updateProfile(postData)
@@ -192,17 +213,23 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   ];
 
   const handleImageChange = async (image: string, imageName: string, apiResponse: any, label: string) => {
-    console.log("Image Name:", label)
-
     try {
       if (label == "Id Proof* (Front)") {
         setIdFrontUid(apiResponse.data.entityUid);
+        setPostDataOfImage('aadharOrVoterOrDLFront', apiResponse.data.entityUid)
       }
       else if (label == "Id Proof* (Back)") {
         setIdBackUid(apiResponse.data.entityUid);
+        setPostDataOfImage('aadharOrVoterOrDlBack', apiResponse.data.entityUid)
       }
       else if (label == "Selfie") {
+        console.log("sELFIE", apiResponse.data.entityUid)
         setSelfie(apiResponse.data.entityUid);
+        setPostDataOfImage('selfie', apiResponse.data.entityUid);
+      }
+      else if (label == "GST Photo") {
+        setGstUid(apiResponse.data.entityUid);
+        setPostDataOfImage('gstFront', apiResponse.data.entityUid)
       }
       console.log('API Response in EditProfile:', apiResponse);
     } catch (error) {
@@ -211,9 +238,13 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const setPostDataOfImage = (label: string, value: string) => {
+    console.log("POST IMAGE------", label, value)
     setPostData((prevData: UserData) => ({
       ...prevData,
-      [label]: value,
+      kycDetails: {
+        ...prevData.kycDetails,
+        [label]: value,
+      }
     }));
   }
 
@@ -260,6 +291,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.mainWrapper}>
+      {/* {loader && <Loader />} */}
       <View style={styles.flexBox}>
         <View style={styles.ImageProfile}>
           {profileImage ? (
@@ -375,21 +407,37 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           value={postData?.aspireGift}
           onChangeText={(text) => handleInputChange(text, 'aspireGift')}
         />
-        <PickerField
+        <MultiSelectField
           label={t('strings:select_category_you_deal_in')}
-          disabled={false}
-          selectedValue={postData?.categoryDealIn}
-          onValueChange={(text: string) => {
-            const selectedCategory = retailerCategoryDealIn.find(category => category.prodCatName === text);
+          selectedValues={postData?.categoryDealIn ? postData.categoryDealIn.split(', ') : []}
+          onValuesChange={(selectedItems: string[]) => {
+            const selectedCategories = selectedItems.map(item => {
+              const category = retailerCategoryDealIn.find(cat => cat.prodCatName === item);
+              return category?.prodCatName || '';
+            });
 
-            setPostData((prevData: UserData) => ({
-              ...prevData,
-              categoryDealIn: text,
-              categoryDealInID: selectedCategory?.prodCatId || null, // Set to null if not found
-            }));
+            setPostData((prevData: UserData) => {
+              const categoryDealInIDArray = selectedItems.map(item => {
+                const category = retailerCategoryDealIn.find(cat => cat.prodCatName === item);
+                return category?.prodCatId || null;
+              });
+
+              const categoryDealInIDString = categoryDealInIDArray.join(', ');
+
+              return {
+                ...prevData,
+                categoryDealIn: selectedCategories.join(', '),
+                categoryDealInID: categoryDealInIDString,
+              };
+            });
           }}
-          items={retailerCategoryDealIn.map(category => ({ label: category.prodCatName, value: category.prodCatName }))}
+          items={retailerCategoryDealIn.map(category => ({
+            label: category.prodCatName,
+            value: category.prodCatName,
+          }))}
         />
+
+
         <PickerField
           label={t('strings:already_enrolled_into_loyalty_scheme')}
           disabled={false} // Optional
@@ -403,26 +451,44 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           onChangeText={(text) => handleInputChange(text, 'annualBusinessPotential')}
           numeric
         />
-        <ImagePickerField label='Selfie'
+        <ImagePickerField
+          label='Selfie'
           onImageChange={handleImageChange}
-          setImageData={() => setPostDataOfImage('kycDetails?.selfie', selfie)}
           imageRelated='PROFILE'
+          initialImage={userData?.kycDetails?.selfie}
         />
         <ImagePickerField label='Id Proof* (Front)'
           onImageChange={handleImageChange}
-          setImageData={() => setPostDataOfImage('kycDetails?.aadharOrVoterOrDLFront', IdFrontUid)}
           imageRelated='ID_CARD_FRONT'
+          initialImage={userData?.kycDetails?.aadharOrVoterOrDLFront}
         />
         <ImagePickerField label='Id Proof* (Back)'
           onImageChange={handleImageChange}
-          setImageData={() => setPostDataOfImage('kycDetails?.aadharOrVoterOrDlBack', IdBackUid)}
           imageRelated="ID_CARD_BACK"
+          initialImage={userData?.kycDetails?.aadharOrVoterOrDlBack}
         />
         <InputField
           label={t('strings:id_proof_no')}
           value={postData?.kycDetails?.aadharOrVoterOrDlNo}
-          onChangeText={(text) => handleInputChange(text, 'kycDetails?.aadharOrVoterOrDlNo')}
+          onChangeText={(text) => handleInputChange(text, 'kycDetails.aadharOrVoterOrDlNo')}
         />
+        <PickerField
+          label={t('strings:do_you_have_gst_number')}
+          selectedValue={postData?.kycDetails?.gstYesNo}
+          onValueChange={(text: string) => handleChange("kycDetails.gstYesNo", text)}
+          items={selectYesorNo}
+        />
+        <InputField
+          label={t('strings:gst_no')}
+          value={postData?.kycDetails?.gstNo}
+          onChangeText={(text) => handleInputChange(text, 'kycDetails.gstNo')}
+        />
+        <ImagePickerField label='GST Photo'
+          onImageChange={handleImageChange}
+          imageRelated="GST"
+          initialImage={userData?.kycDetails?.gstFront}
+        />
+
         <View style={styles.button}>
           <Buttons
             label={t('strings:submit')}

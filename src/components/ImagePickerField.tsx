@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Modal, Dimensions } from 'react-native';
 import { Button } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
 import { launchCamera, launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
 import colors from '../../colors';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
-import { sendFile } from '../utils/apiservice';
+import { getFile, sendFile } from '../utils/apiservice';
 
 const { width, height } = Dimensions.get('window');
 
 interface ImagePickerFieldProps {
     label: string;
     onImageChange: (image: string, imageName: string, apiResponse: any, label: string) => void;
-    setImageData: () => void;
     imageRelated: string;
+    initialImage?: string;
 }
 
 
-const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChange, imageRelated }) => {
+const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChange, imageRelated, initialImage }) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
     const [showImagePickerModal, setShowImagePickerModal] = useState(false);
@@ -25,6 +25,24 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
     const [isImageSelected, setIsImageSelected] = useState(false); // New state
     const [entityUid, setEntityUid] = useState<string>('');
     const [showImageModal, setShowImageModal] = useState(false);
+    useEffect(() => {
+        // Create an async function within useEffect to use await
+        const fetchImage = async () => {
+            if (initialImage) {
+                try {
+                    const image = await getFile(initialImage, imageRelated, "2");
+                    console.log("<><><><><");
+                    setSelectedImage(initialImage);
+                    setSelectedImageName(initialImage);
+                } catch (error) {
+                    console.error('Error fetching image:', error);
+                }
+            }
+        };
+
+        // Call the async function
+        fetchImage();
+    }, [initialImage]);
 
     const handleImagePickerPress = () => {
         setShowImagePickerModal(true);
