@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, Linking, TouchableOpacity } from 'react-native';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getFile, getRetailerCategoryDealIn, updateProfile } from '../../../utils/apiservice';
+import { getCities, getDistricts, getFile, getRetailerCategoryDealIn, getRishtaUserProfile, getStates, updateProfile } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { UserData } from '../../../utils/modules/UserData';
@@ -13,6 +13,8 @@ import DatePickerField from '../../../components/DatePickerField';
 import Popup from '../../../components/Popup';
 import Snackbar from 'react-native-snackbar';
 import ImagePickerField from '../../../components/ImagePickerField';
+import MultiSelectField from '../../../components/MultiSelectField';
+import Loader from '../../../components/Loader';
 
 
 const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -31,14 +33,29 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [popupContent, setPopupContent] = useState('');
   const [IdFrontUid, setIdFrontUid] = useState("");
   const [IdBackUid, setIdBackUid] = useState("");
+  const [gstUid, setGstUid] = useState("");
   const [selfie, setSelfie] = useState("");
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [stateId, setStateId] = useState("");
 
   useEffect(() => {
-    AsyncStorage.getItem('USER').then(r => {
-      const user = JSON.parse(r || '');
-      setUserData(user);
-      setPostData(user);
-    });
+    // showLoader(true);
+    getRishtaUserProfile()
+      .then(response => response.json())
+      .then(res => {
+        setUserData(res);
+        setPostData(res);
+        setStateId(res.stateId);
+        setGstUid(res.kycDetails.gstFront);
+        setSelfie(res.kycDetails.selfie);
+        setIdBackUid(res.kycDetails.aadharOrVoterOrDlBack);
+        setIdFrontUid(res.kycDetails.aadharOrVoterOrDLFront);
+        const image = selfie;
+        console.log("SELFIE----------", image);
+      })
+
     getRetailerCategoryDealIn()
       .then(response => response.json())
       .then((responseData) => {
@@ -48,6 +65,47 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         console.error('Error fetching data:', error);
       });
   }, []);
+
+
+  useEffect(() => {
+    console.log("State ID:-------", stateId)
+    if (stateId !== undefined && stateId !== "") {
+      fetchData();
+      console.log("USER DATA--------------", userData);
+    }
+    console.log(">><><><><>SELFIE", selfie)
+  }, [stateId, selfie]);
+
+
+  const fetchData = async () => {
+    try {
+      const statesResponse = await getStates();
+      const statesData = await statesResponse.json();
+      setStates(statesData);
+
+      const defaultState = postData.stateId;
+
+      const districtsResponse = await getDistricts(defaultState);
+      const districtsData = await districtsResponse.json();
+
+      if (Array.isArray(districtsData)) {
+        setDistricts(districtsData);
+
+        if (Array.isArray(districtsData) && districtsData.length > 0) {
+          const citiesResponse = await getCities(postData.distId);
+          const citiesData = await citiesResponse.json();
+          console.log("CITIES-----------", citiesData);
+          setCities(citiesData);
+        }
+      } else {
+        console.error('Error: Districts data is not an array.', districtsData);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+
 
   useEffect(() => {
     console.log("ID PROOF:", userData?.kycDetails?.aadharOrVoterOrDlNo)
@@ -75,12 +133,13 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const handleSubmit = async () => {
-    console.log("Post Data:", postData?.dob);
+    console.log("Post Data:", postData);
 
     const currentDate = new Date();
     const dobDate = new Date(postData?.dob);
     const minAllowedDate = new Date(currentDate);
     minAllowedDate.setFullYear(currentDate.getFullYear() - 18);
+
 
     if (dobDate < minAllowedDate) {
       updateProfile(postData)
@@ -137,34 +196,40 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const genderpickerItems = [
-    { label: 'Select Gender', value: ''},
+    { label: 'Select Gender', value: '' },
     { label: 'Male', value: 'Male ' },
     { label: 'Female', value: 'Female ' },
     { label: 'Other', value: 'Other ' },
   ];
   const selectYesorNo = [
-    { label: 'Selct Option', value: '' },
+    { label: 'Select Option', value: '' },
     { label: 'Yes', value: 'Yes' },
     { label: 'No', value: 'No' }
   ];
   const maritalStatusItems = [
     { label: 'Select Marital Status', value: '' },
-    { label: 'Married', value: 'Married' },
-    { label: 'UnMarried', value: 'UnMarried' }
+    { label: 'Married', value: '1' },
+    { label: 'UnMarried', value: '2' }
   ];
 
-  const handleImageChange = async (image: string, imageName: string, apiResponse: any, label:string) => {
-    console.log("Image Name:", label)
-
+  const handleImageChange = async (image: string, imageName: string, apiResponse: any, label: string) => {
     try {
-      if(label=="Id Proof* (Front)"){
+      if (label == "Id Proof* (Front)") {
         setIdFrontUid(apiResponse.data.entityUid);
+        setPostDataOfImage('aadharOrVoterOrDLFront', apiResponse.data.entityUid)
       }
-      else if(label=="Id Proof* (Back)"){
+      else if (label == "Id Proof* (Back)") {
         setIdBackUid(apiResponse.data.entityUid);
+        setPostDataOfImage('aadharOrVoterOrDlBack', apiResponse.data.entityUid)
       }
-      else if(label=="Selfie"){
+      else if (label == "Selfie") {
+        console.log("sELFIE", apiResponse.data.entityUid)
         setSelfie(apiResponse.data.entityUid);
+        setPostDataOfImage('selfie', apiResponse.data.entityUid);
+      }
+      else if (label == "GST Photo") {
+        setGstUid(apiResponse.data.entityUid);
+        setPostDataOfImage('gstFront', apiResponse.data.entityUid)
       }
       console.log('API Response in EditProfile:', apiResponse);
     } catch (error) {
@@ -173,15 +238,60 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const setPostDataOfImage = (label: string, value: string) => {
+    console.log("POST IMAGE------", label, value)
     setPostData((prevData: UserData) => ({
       ...prevData,
-      [label]: value,
+      kycDetails: {
+        ...prevData.kycDetails,
+        [label]: value,
+      }
     }));
   }
-  
+
+  const handleStateSelect = async (text: string) => {
+    const selectedCategory = states.find(category => category.stateName === text);
+
+    setPostData((prevData: UserData) => ({
+      ...prevData,
+      state: text,
+      stateId: selectedCategory?.id || null,
+    }));
+
+    getDistricts(selectedCategory?.id)
+      .then(response => response.json())
+      .then((data) => {
+        setDistricts(data);
+      })
+  }
+  const handleDistrictSelect = async (text: string) => {
+    const selectedCategory = districts.find(category => category.districtName === text);
+
+    setPostData((prevData: UserData) => ({
+      ...prevData,
+      dist: text,
+      distId: selectedCategory?.id || null,
+    }));
+
+    getCities(selectedCategory?.id)
+      .then(response => response.json())
+      .then((data) => {
+        setCities(data);
+      })
+  }
+  const handleCitySelect = async (text: string) => {
+    const selectedCategory = cities.find(category => category.cityName === text);
+
+    setPostData((prevData: UserData) => ({
+      ...prevData,
+      city: text,
+      cityId: selectedCategory?.id || null,
+    }));
+  }
+
 
   return (
     <ScrollView style={styles.mainWrapper}>
+      {/* {loader && <Loader />} */}
       <View style={styles.flexBox}>
         <View style={styles.ImageProfile}>
           {profileImage ? (
@@ -257,26 +367,31 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           value={postData?.pinCode}
           onChangeText={(text) => handleInputChange(text, 'pinCode')}
           numeric
-          maxLength = {6}
+          maxLength={6}
         />
-        <InputField
+        <PickerField
           label={t('strings:lbl_state')}
-          value={postData?.state}
-          onChangeText={(text) => handleInputChange(text, 'state')}
+          disabled={false}
+          selectedValue={postData?.state}
+          onValueChange={(text: string) => handleStateSelect(text)}
+          items={states.map(state => ({ label: state.stateName, value: state.stateName }))}
         />
-        <InputField
+        <PickerField
           label={t('strings:district')}
-          value={postData?.pinCode}
-          onChangeText={(text) => handleInputChange(text, 'pinCode')}
+          disabled={false}
+          selectedValue={postData?.dist}
+          onValueChange={(text: string) => handleDistrictSelect(text)}
+          items={districts.map(district => ({ label: district.districtName, value: district.districtName }))}
         />
-        <InputField
+        <PickerField
           label={t('strings:city')}
-          value={postData?.city}
-          onChangeText={(text) => handleInputChange(text, 'city')}
+          disabled={false}
+          selectedValue={postData?.city}
+          onValueChange={(text: string) => handleCitySelect(text)}
+          items={cities.map(city => ({ label: city.cityName, value: city.cityName }))}
         />
         <PickerField
           label={t('strings:is_shop_address_different')}
-          disabled={false} // Optional
           selectedValue={isShopAddressDifferent}
           onValueChange={(text: string) => handleChange("isShopDifferent", text)}
           items={selectYesorNo}
@@ -292,21 +407,37 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           value={postData?.aspireGift}
           onChangeText={(text) => handleInputChange(text, 'aspireGift')}
         />
-        <PickerField
+        <MultiSelectField
           label={t('strings:select_category_you_deal_in')}
-          disabled={false}
-          selectedValue={postData?.categoryDealIn}
-          onValueChange={(text: string) => {
-            const selectedCategory = retailerCategoryDealIn.find(category => category.prodCatName === text);
+          selectedValues={postData?.categoryDealIn ? postData.categoryDealIn.split(', ') : []}
+          onValuesChange={(selectedItems: string[]) => {
+            const selectedCategories = selectedItems.map(item => {
+              const category = retailerCategoryDealIn.find(cat => cat.prodCatName === item);
+              return category?.prodCatName || '';
+            });
 
-            setPostData((prevData: UserData) => ({
-              ...prevData,
-              categoryDealIn: text,
-              categoryDealInID: selectedCategory?.prodCatId || null, // Set to null if not found
-            }));
+            setPostData((prevData: UserData) => {
+              const categoryDealInIDArray = selectedItems.map(item => {
+                const category = retailerCategoryDealIn.find(cat => cat.prodCatName === item);
+                return category?.prodCatId || null;
+              });
+
+              const categoryDealInIDString = categoryDealInIDArray.join(', ');
+
+              return {
+                ...prevData,
+                categoryDealIn: selectedCategories.join(', '),
+                categoryDealInID: categoryDealInIDString,
+              };
+            });
           }}
-          items={retailerCategoryDealIn.map(category => ({ label: category.prodCatName, value: category.prodCatName }))}
+          items={retailerCategoryDealIn.map(category => ({
+            label: category.prodCatName,
+            value: category.prodCatName,
+          }))}
         />
+
+
         <PickerField
           label={t('strings:already_enrolled_into_loyalty_scheme')}
           disabled={false} // Optional
@@ -320,26 +451,44 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           onChangeText={(text) => handleInputChange(text, 'annualBusinessPotential')}
           numeric
         />
-        <ImagePickerField label='Selfie'
-        onImageChange={handleImageChange}
-        setImageData = {()=>setPostDataOfImage('kycDetails?.selfie', selfie)}
-        imageRelated='PROFILE' 
+        <ImagePickerField
+          label='Selfie'
+          onImageChange={handleImageChange}
+          imageRelated='PROFILE'
+          initialImage={userData?.kycDetails?.selfie}
         />
         <ImagePickerField label='Id Proof* (Front)'
-        onImageChange={handleImageChange} 
-        setImageData = {()=>setPostDataOfImage('kycDetails?.aadharOrVoterOrDLFront', IdFrontUid)}
-        imageRelated='ID_CARD_FRONT'
+          onImageChange={handleImageChange}
+          imageRelated='ID_CARD_FRONT'
+          initialImage={userData?.kycDetails?.aadharOrVoterOrDLFront}
         />
         <ImagePickerField label='Id Proof* (Back)'
-        onImageChange={handleImageChange} 
-        setImageData = {()=>setPostDataOfImage('kycDetails?.aadharOrVoterOrDlBack', IdBackUid)}
-        imageRelated = "ID_CARD_BACK"
+          onImageChange={handleImageChange}
+          imageRelated="ID_CARD_BACK"
+          initialImage={userData?.kycDetails?.aadharOrVoterOrDlBack}
         />
         <InputField
           label={t('strings:id_proof_no')}
           value={postData?.kycDetails?.aadharOrVoterOrDlNo}
-          onChangeText={(text) => handleInputChange(text, 'kycDetails?.aadharOrVoterOrDlNo')}
+          onChangeText={(text) => handleInputChange(text, 'kycDetails.aadharOrVoterOrDlNo')}
         />
+        <PickerField
+          label={t('strings:do_you_have_gst_number')}
+          selectedValue={postData?.kycDetails?.gstYesNo}
+          onValueChange={(text: string) => handleChange("kycDetails.gstYesNo", text)}
+          items={selectYesorNo}
+        />
+        <InputField
+          label={t('strings:gst_no')}
+          value={postData?.kycDetails?.gstNo}
+          onChangeText={(text) => handleInputChange(text, 'kycDetails.gstNo')}
+        />
+        <ImagePickerField label='GST Photo'
+          onImageChange={handleImageChange}
+          imageRelated="GST"
+          initialImage={userData?.kycDetails?.gstFront}
+        />
+
         <View style={styles.button}>
           <Buttons
             label={t('strings:submit')}

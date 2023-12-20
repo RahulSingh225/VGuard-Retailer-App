@@ -1,29 +1,48 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Modal, Dimensions } from 'react-native';
 import { Button } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
 import { launchCamera, launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
 import colors from '../../colors';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
-import { sendFile } from '../utils/apiservice';
+import { getFile, sendFile } from '../utils/apiservice';
 
 const { width, height } = Dimensions.get('window');
 
 interface ImagePickerFieldProps {
     label: string;
     onImageChange: (image: string, imageName: string, apiResponse: any, label: string) => void;
-    setImageData: () => void;
     imageRelated: string;
-  }
-  
+    initialImage?: string;
+}
 
-const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChange, imageRelated }) => {
+
+const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChange, imageRelated, initialImage }) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
     const [showImagePickerModal, setShowImagePickerModal] = useState(false);
     const [select, setSelect] = useState('');
     const [isImageSelected, setIsImageSelected] = useState(false); // New state
     const [entityUid, setEntityUid] = useState<string>('');
+    const [showImageModal, setShowImageModal] = useState(false);
+    useEffect(() => {
+        // Create an async function within useEffect to use await
+        const fetchImage = async () => {
+            if (initialImage) {
+                try {
+                    const image = await getFile(initialImage, imageRelated, "2");
+                    console.log("<><><><><");
+                    setSelectedImage(initialImage);
+                    setSelectedImageName(initialImage);
+                } catch (error) {
+                    console.error('Error fetching image:', error);
+                }
+            }
+        };
+
+        // Call the async function
+        fetchImage();
+    }, [initialImage]);
 
     const handleImagePickerPress = () => {
         setShowImagePickerModal(true);
@@ -58,30 +77,34 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
     const handleImageResponse = async (response: ImagePickerResponse) => {
         console.log('Response:', response);
         const fileData = {
-          uri: response.assets[0].uri,
-          type: response.assets[0].type,
-          name: response.assets[0].fileName,
+            uri: response.assets[0].uri,
+            type: response.assets[0].type,
+            name: response.assets[0].fileName,
         };
-    
+
         if (response.didCancel) {
-          console.log('Image picker was canceled');
+            console.log('Image picker was canceled');
         } else if (response.error) {
-          console.error('Image picker error: ', response.error);
+            console.error('Image picker error: ', response.error);
         } else {
-          setSelectedImage(response?.assets[0]?.uri);
-          setSelectedImageName(response?.assets[0]?.fileName || 'Image');
-          setIsImageSelected(true);
-    
-          try {
-            const apiResponse = await triggerApiWithImage(fileData);
-            console.log('API Response in ImagePickerField:', apiResponse);
-            
-            onImageChange(response?.assets[0]?.uri, response?.assets[0]?.fileName || 'Image', apiResponse, labe);
-          } catch (error) {
-            console.error('Error triggering API with image in ImagePickerField:', error);
-          }
+            setSelectedImage(response?.assets[0]?.uri);
+            setSelectedImageName(response?.assets[0]?.fileName || 'Image');
+            setIsImageSelected(true);
+
+            try {
+                const apiResponse = await triggerApiWithImage(fileData);
+                console.log('API Response in ImagePickerField:', apiResponse);
+                onImageChange(response?.assets[0]?.uri, response?.assets[0]?.fileName || 'Image', apiResponse, label);
+            } catch (error) {
+                console.error('Error triggering API with image in ImagePickerField:', error);
+            }
         }
-      };
+    };
+
+    const handleImageModalToggle = () => {
+        setShowImageModal(!showImageModal);
+    };
+
 
     const triggerApiWithImage = async (fileData: FormData) => {
         const formData = new FormData();
@@ -92,6 +115,7 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
         try {
             const response = await sendFile(formData);
             setEntityUid(response.data.entityUid);
+            return response;
         } catch (error) {
             console.error('API Error:', error);
         }
@@ -106,12 +130,14 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
                     </Text>
                 </View>
                 {selectedImage ? (
+
                     <View style={styles.imageContainer}>
-                        <Text style={styles.imageName}>
-                            {selectedImageName}
-                        </Text>
-                        <Image source={{ uri: selectedImage }} style={styles.image} resizeMode="cover" />
+                        <Text style={styles.imageName}>{selectedImageName}</Text>
+                        <TouchableOpacity onPress={handleImageModalToggle}>
+                            <Image source={{ uri: selectedImage }} style={styles.image} resizeMode="cover" />
+                        </TouchableOpacity>
                     </View>
+
                 ) : (
                     <View style={styles.cameraContainer}>
                         <Text style={styles.label}>
@@ -129,8 +155,23 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
             <Modal
                 animationType="slide"
                 transparent={true}
+                visible={showImageModal}
+                onRequestClose={handleImageModalToggle}
+
+            >
+                <View style={styles.modalcontainer}>
+                    <TouchableOpacity
+                        onPress={handleImageModalToggle}>
+                        <Image resizeMode='contain' style={{ width: 50, height: 50 }} source={require('../assets/images/ic_close.png')} />
+                    </TouchableOpacity>
+                    <Image source={{ uri: selectedImage }} style={{ width: '70%', height: '70%' }} resizeMode="contain" />
+                </View>
+            </Modal>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
                 visible={showImagePickerModal}
-                style={styles.modalcontainer}
                 hardwareAccelerated={true}
                 opacity={0.3}
             >
@@ -244,6 +285,19 @@ const styles = StyleSheet.create({
     selectedContainer: {
         borderColor: colors.grey,
     },
+    modalcontainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    },
+    modalImageContent: {
+        backgroundColor: 'white',
+        padding: 20,
+        gap: 10,
+        borderRadius: 10,
+        alignItems: 'center',
+    }
 });
 
 export default ImagePickerField;
