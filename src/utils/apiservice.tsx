@@ -127,15 +127,6 @@ export function loginWithPassword(username: string, password: string) {
     return loginPasswordDigest(path, username, password);
 }
 
-export function sendloginWithOtp(number: Number) {
-    const body = {
-        loginOtpUserName: number,
-        otpType: "SMS"
-    };
-    const path = "user/generateOtpForLogin"
-    return createDigestPostRequest(path, body)
-}
-
 interface NewUserOtpValidationResponse {
     data: {
         message: string;
@@ -601,9 +592,9 @@ export function getScanCodeHistory() {
     return createDigestGetRequest(path);
 }
 
-export function generateOtpForLogin(vru: any) {
+export function generateOtpForLogin(body: any) {
     const path = "user/generateOtpForLogin";
-    return createDigestPostRequest(path, vru);
+    return createDigestPostRequest(path, body);
 }
 
 export function generateOtpForReverify(vru: any) {
@@ -617,9 +608,10 @@ export function validateReverifyOtp(vguardRishtaUser: any) {
     return createDigestPostRequest(path, vguardRishtaUser);
 }
 
-export function validateLoginOtp(vguardRishtaUser: any) {
+export function validateLoginOtp(body: any) {
+    console.log("body----", body)
     const path = "user/validateLoginOtp";
-    return createDigestPostRequest(path, vguardRishtaUser);
+    return createDigestPostRequest(path, body);
 }
 
 export function updateProfile(vru: any) {

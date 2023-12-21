@@ -157,6 +157,7 @@ export default {
         click_here_to_scan_a_unique_code: 'ఒక అద్భుతమైన కోడ్ స్క్యాన్ చేయడానికి ఇక్కడ క్లిక్ చేయండి',
         paytm_transfer: 'Paytm రంగు',
         e_gift_cards: 'ఎలక్ట్రానిక్ గిఫ్ట్ వౌచర్',
+        update_cap_kyc: 'KYC నవీకరణ',
         update_kyc: 'KYC నవీకరణ',
         update_pan: 'PAN నవీకరణ',
         track_your_redemption: 'మీ రిడంప్షన్ ట్రాక్ చేయండి',
