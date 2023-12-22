@@ -155,9 +155,9 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
             </View>
 
             <View style={styles.updateAndForgot}>
-              <TouchableOpacity style={styles.button}>
+              <TouchableOpacity style={styles.button} onPress={()=>navigation.navigate('updatekyc')}>
                 <Text style={styles.buttonText}>
-                  {t('strings:update_kyc')}
+                  {t('strings:update_cap_kyc')}
                 </Text>
               </TouchableOpacity>
 
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.yellow,
     padding: 10,
     borderRadius: 5,
-    width: 100,
+    width: '50%',
     alignItems: 'center',
   },
   buttonText: {

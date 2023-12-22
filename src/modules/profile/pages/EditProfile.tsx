@@ -75,8 +75,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
     console.log(">><><><><>SELFIE", selfie)
   }, [stateId, selfie]);
-
-
+  
   const fetchData = async () => {
     try {
       const statesResponse = await getStates();
@@ -104,8 +103,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       console.error('Error fetching data:', error);
     }
   };
-
-
 
   useEffect(() => {
     console.log("ID PROOF:", userData?.kycDetails?.aadharOrVoterOrDlNo)

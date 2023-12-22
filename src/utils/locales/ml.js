@@ -158,6 +158,7 @@ export default {
         paytm_transfer: 'Paytm പരിഷ്കരണം',
         e_gift_cards: 'എലക്ട്രോണിക് ഗിഫ്റ്റ് വൗച്ചർ',
         update_kyc: 'KYC പരിഷ്കരിക്കുക',
+        update_cap_kyc: 'KYC പരിഷ്കരിക്കുക',
         update_pan: 'PAN പരിഷ്കരിക്കുക',
         track_your_redemption: 'നിനക്ക് Redemption ട്രാക്കുചെയ്യുക',
         redeem_products: 'പരിമാണങ്ങൾ വാങ്ങുക',

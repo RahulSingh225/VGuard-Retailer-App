@@ -31,6 +31,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const path = 'user/logoutUser';
       createDigestPostRequest(path, '');
       await AsyncStorage.removeItem('USER');
+      await AsyncStorage.removeItem('username');
+      await AsyncStorage.removeItem('password');
       setIsUserAuthenticated(false);
     } catch (error) {
       console.error('Error while logging out:', error);

@@ -157,6 +157,7 @@ export default {
         click_here_to_scan_a_unique_code: 'ஒரு பாரிக குறியீடை ஸ்கேன் செய்ய இங்கே கிளிக் செய்க',
         paytm_transfer: 'Paytm பரிவர்த்தனை',
         e_gift_cards: 'மின்னணு பரிசு அட்டைகள்',
+        update_cap_kyc: 'KYC ஐ புதுப்பிக்க',
         update_kyc: 'KYC ஐ புதுப்பிக்க',
         update_pan: 'PAN ஐ புதுப்பிக்க',
         track_your_redemption: 'உங்கள் மீட்டமைப்பை கண்காணிக்க',

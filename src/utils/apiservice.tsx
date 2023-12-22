@@ -45,6 +45,9 @@ export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
         const username = await AsyncStorage.getItem('username');
         const password = await AsyncStorage.getItem('password');
 
+        console.log("USERNAME", username);
+        console.log("PASSWORD", password)
+
         if (username && password) {
             const response = await digestFetch(url, {
                 method: 'POST',
@@ -53,7 +56,7 @@ export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
                 username,
                 password,
             });
-
+console.log("<><><<><", response)
             return response;
         } else {
             throw new Error('Username and/or password not found in AsyncStorage.');
@@ -62,6 +65,28 @@ export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
         throw error;
     }
 };
+
+export const createPostRequest = async (relativeUrl: string, data: any) => {
+    try {
+        const response = await api.post(relativeUrl, data);
+        console.log(response)
+        return response;
+      } catch (error) {
+          console.error('Error:', error);
+        throw error;
+      }
+}
+
+export const createGetRequest = async (relativeUrl: string) => {
+    try {
+        const response = await api.get(relativeUrl);
+        console.log(response)
+        return response;
+      } catch (error) {
+          console.error('Error:', error);
+        throw error;
+      }
+}
 
 export const createDigestPutRequest = async (relativeUrl = {}, data: any) => {
     try {
@@ -127,15 +152,6 @@ export function loginWithPassword(username: string, password: string) {
     return loginPasswordDigest(path, username, password);
 }
 
-export function sendloginWithOtp(number: Number) {
-    const body = {
-        loginOtpUserName: number,
-        otpType: "SMS"
-    };
-    const path = "user/generateOtpForLogin"
-    return createDigestPostRequest(path, body)
-}
-
 interface NewUserOtpValidationResponse {
     data: {
         message: string;
@@ -145,7 +161,7 @@ interface NewUserOtpValidationResponse {
 }
 
 const api = axios.create({
-    baseURL: API_LINK,
+    baseURL: BASE_URL,
 });
 
 export const Newuserotpvalidation = async (
@@ -158,7 +174,7 @@ export const Newuserotpvalidation = async (
             otp: otp,
         };
         console.log({ mobileNo, otp });
-        const response = await api.post('/vguard/api/user/validateNewUserOtp', {
+        const response = await api.post('user/validateNewUserOtp', {
             mobileNo: mobileNo,
             otp: otp,
         });
@@ -196,7 +212,7 @@ export function getFile(uuid: String, imageRelated: String, userRole: String) {
 export const sendFile = async (formData: FormData): Promise<any> => {
     console.log(formData)
     try {
-      const response = await api.post('/vguard/api/file', formData);
+      const response = await api.post('file', formData);
       console.log(response.status);
       return response;
     } catch (error) {
@@ -233,17 +249,17 @@ export function getProductListing(productRequest: string) {
 
 export function getStates() {
     const path = "state/";
-    return createDigestGetRequest(path);
+    return createGetRequest(path);
 }
 
 export function getDistricts(stateId: string) {
     const path = `district/${stateId}`;
-    return createDigestGetRequest(path);
+    return createGetRequest(path);
 }
 
 export function getCities(districtId: string) {
     const path = `city/${districtId}`;
-    return createDigestGetRequest(path);
+    return createGetRequest(path);
 }
 
 export function checkMobileNumber(user: string) {
@@ -458,6 +474,7 @@ export function updateKyc(kycDetails: any) {
 }
 
 export function updateKycReatiler(kycDetails: any) {
+    console.log("KYC Details", kycDetails)
     const path = "user/updateKycReatiler";
     return createDigestPostRequest(path, kycDetails);
 }
@@ -601,25 +618,26 @@ export function getScanCodeHistory() {
     return createDigestGetRequest(path);
 }
 
-export function generateOtpForLogin(vru: any) {
+export function generateOtpForLogin(body: any) {
     const path = "user/generateOtpForLogin";
-    return createDigestPostRequest(path, vru);
+    return createDigestPostRequest(path, body);
 }
 
 export function generateOtpForReverify(vru: any) {
     const path = "user/generateOtpForReverify";
-    return createDigestPostRequest(path, vru);
+    return createPostRequest(path, vru);
 }
 
 
 export function validateReverifyOtp(vguardRishtaUser: any) {
     const path = "user/validateReverifyOtp";
-    return createDigestPostRequest(path, vguardRishtaUser);
+    return createPostRequest(path, vguardRishtaUser);
 }
 
-export function validateLoginOtp(vguardRishtaUser: any) {
+export function validateLoginOtp(body: any) {
+    console.log("body----", body)
     const path = "user/validateLoginOtp";
-    return createDigestPostRequest(path, vguardRishtaUser);
+    return createDigestPostRequest(path, body);
 }
 
 export function updateProfile(vru: any) {

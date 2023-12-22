@@ -13,9 +13,10 @@ import { useTranslation } from 'react-i18next';
 import colors from '../../../../colors';
 import Buttons from '../../../components/Buttons';
 import arrowIcon from '../../../assets/images/arrow.png';
-import { Newuserotpvalidation } from '../../../utils/apiservice';
+import { Newuserotpvalidation, generateOtpForLogin, validateLoginOtp } from '../../../utils/apiservice';
 import Popup from '../../../components/Popup';
 import Loader from '../../../components/Loader';
+import { useAuth } from '../../../components/AuthContext';
 
 interface LoginWithOtpProps {
   navigation: any;
@@ -39,17 +40,64 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [popupMessage, setPopupMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [countdown, setCountdown] = useState(60);
+  const { login } = useAuth();
 
   const placeholderColor = colors.grey;
+  useEffect(() => {
+    let timer;
+  
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        console.log('Countdown tick:', countdown);
+        setCountdown((prevCountdown) => prevCountdown - 1);
+      }, 1000); // The interval is set to 1000 milliseconds (1 second)
+    }
+  
+    return () => {
+      clearInterval(timer);
+      console.log('Timer cleared');
+    };
+  }, [countdown]);
 
-  async function validateotp() {
+  const callToGetOtp = async () => {
+    try {
+      const body = {
+        loginOtpUserName: number,
+        otpType: "Voice"
+      };
+      let validationResponse = await generateOtpForLogin(body);
+      validationResponse = await validationResponse.json();
+      console.log(validationResponse.code, '<><><><><');
+      if (validationResponse.code === 200) {
+        const successMessage = validationResponse.message;
+        setIsPopupVisible(true);
+        setPopupMessage(successMessage);
+      } else {
+        const errorMessage = validationResponse.message;
+        setIsPopupVisible(true);
+        setPopupMessage(errorMessage);
+      }
+    } catch (error) {
+      console.error('Error during validation:', error);
+    }
+  }
+  
+  const validateotp = async () => {
     try {
       if (!otp) {
         setIsPopupVisible(true);
         setPopupMessage('Please Enter the otp to proceed ');
       } else {
-        const verification = await Newuserotpvalidation(number, otp);
-        const successMessage = verification.data.message;
+        const body = {
+          loginOtpUserName: number,
+          otp: otp
+        }
+        let verification = await validateLoginOtp(body);
+        verification = await verification.json()
+
+        console.log("VERIFICATION", verification)
+        const successMessage = verification.message;
         console.log(successMessage);
         if (
           successMessage ===
@@ -57,30 +105,36 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
         ) {
           setPopupMessage(successMessage);
           setIsPopupVisible(true);
-          setTimeout(() => {
-            navigation.navigate('newUser', {
-              passedNo: number,
-              jobprofession: jobprofession,
-              preferedLanguage: preferedLanguage,
-            });
-          }, 1200);
+          
         } else {
           setIsPopupVisible(true);
-          setPopupMessage(verification.data.message);
+          setPopupMessage(verification.message);
         }
       }
     } catch (error) {
-      console.log('=====+++>>>>', error);
+      console.log(error);
     } finally {
     }
   }
 
-  useEffect(() => {}, [otp, number]);
+  useEffect(() => { }, [otp, number]);
+
+  const handleClose = async () => {
+    setIsPopupVisible(false);
+    if(isPopupVisible==false){
+      console.log("<><><<><")
+    }
+  }
 
   const { t } = useTranslation();
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
+      {isPopupVisible && (
+                <Popup isVisible={isPopupVisible} onClose={() => setIsPopupVisible(false)}>
+                    {popupMessage}
+                </Popup>
+            )}
       <View style={styles.registerUser}>
         {isLoading == true ? (
           <View style={{ flex: 1 }}>
@@ -100,26 +154,37 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
               {isPopupVisible && (
                 <Popup
                   isVisible={isPopupVisible}
-                  onClose={() => setIsPopupVisible(false)}>
+                  onClose={handleClose}>
                   <Text>{popupMessage}</Text>
                 </Popup>
               )}
               <Text style={styles.textHeader}>
                 {t('strings:enter_otp_description')}
               </Text>
-              <TextInput
-                style={styles.input}
-                placeholder={t('strings:enter_otp')}
-                placeholderTextColor={placeholderColor}
-                keyboardType="number-pad"
-                value={otp}
-                onChangeText={(text) => setOtp(text)}
-                maxLength={4}
-              />
+              <View style={styles.inputContainer}>
+                <Image style={styles.icon} resizeMode='contain' source={require('../../../assets/images/mobile_icon.png')} />
+                <TextInput
+                  style={styles.input}
+                  value={number}
+                  editable={false}
+                />
+              </View>
+              <View style={styles.inputContainer}>
+                <Image style={styles.icon} resizeMode='contain' source={require('../../../assets/images/lock_icon.png')} />
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('strings:enter_otp')}
+                  placeholderTextColor={placeholderColor}
+                  keyboardType="number-pad"
+                  value={otp}
+                  onChangeText={(text) => setOtp(text)}
+                  maxLength={4}
+                />
+              </View>
             </View>
             <View>
               <Buttons
-                label={t('strings:submit')}
+                label={t('strings:login_with_otp')}
                 variant="filled"
                 onPress={() => validateotp()}
                 width="100%"
@@ -129,15 +194,20 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
                 icon={arrowIcon}
               />
             </View>
-            <Text style={styles.or}>{t('strings:or')}</Text>
-            <View style={styles.otpPhone}>
-              <Image
-                source={require('../../../assets/images/group_501.png')}
-                style={styles.phone}
-              />
-              <Text style={styles.greyText}>
-                {t('strings:call_to_get_otp')}
-              </Text>
+            <View style={{ flexDirection: 'column', alignItems: 'center', marginTop: 30 }}>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <Text style={styles.greyText}>{t('strings:otp_not_received')}</Text>
+                <TouchableOpacity onPress={() => validateotp()}><Text style={{ color: colors.yellow }}>{t('strings:resend_otp')}</Text></TouchableOpacity>
+              </View>
+              <Text style={styles.greyText}>{t('strings:or')}</Text>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity onPress={callToGetOtp}>
+                  <Text style={{ color: colors.yellow }}>{t('strings:call_to_get_otp')}</Text>
+                </TouchableOpacity>
+                {countdown > 0 ? (
+                  <Text style={styles.greyText}>in {countdown} seconds</Text>
+                ) : null}
+              </View>
             </View>
           </View>
         </View>
@@ -201,14 +271,24 @@ const styles = StyleSheet.create({
     flex: 2,
   },
   input: {
-    height: 40,
-    width: '100%',
-    padding: 10,
-    borderRadius: 5,
     color: colors.black,
+    height: 40,
+    padding: 10,
+  },
+  inputContainer: {
     backgroundColor: colors.white,
+    marginBottom: 10,
+    borderRadius: 5,
     shadowColor: 'rgba(0, 0, 0, 0.8)',
     elevation: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%'
+  },
+  icon: {
+    marginHorizontal: 10,
+    width: 15,
+    height: 15,
   },
   or: {
     textAlign: 'center',

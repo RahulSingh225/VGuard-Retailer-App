@@ -157,6 +157,7 @@ export default {
         paytm_transfer: 'Paytm हस्तांतर',
         e_gift_cards: 'इलेक्ट्रॉनिक गिफ्ट वाउचर',
         update_kyc: 'KYC अद्यतनित करा',
+        update_cap_kyc: 'KYC अद्यतनित करा',
         update_pan: 'PAN अद्यतनित करा',
         track_your_redemption: 'तुमचं रिडेंप्शन ट्रॅक करा',
         redeem_products: 'सामान रिडेंप करा',

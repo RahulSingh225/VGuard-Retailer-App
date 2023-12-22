@@ -158,6 +158,7 @@ export default {
         paytm_transfer: 'Paytm ವರ್ಗಾವಣೆ ',
         e_gift_cards: 'ಎಲೆಕ್ಟ್ರಾನಿಕ್ ಗಿಫ್ಟ್ ವೌಚರ್ ',
         update_kyc: 'KYC ಅನ್ನು ನವೀಕರಿಸಿ ',
+        update_cap_kyc: 'KYC ಅನ್ನು ನವೀಕರಿಸಿ ',
         track_your_redemption: 'ನಿಮ್ಮ ರಿಡೆಂಪ್ಷನ್ ಅನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ ',
         redeem_products: 'ಉತ್ಪನ್ನಗಳನ್ನು ರಿಡೀಮ್ ಮಾಡಿಕೊಳ್ಳಿ',
         redeemed_points: 'ರಿಡೀಮ್ ಮಾಡಿಕೊಂಡಿರುವ ಪಾಯಿಂಟ್ಸ್ ',
