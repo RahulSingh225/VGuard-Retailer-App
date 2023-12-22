@@ -4,6 +4,7 @@ import colors from '../../../../../../../colors';
 import AirCooler from '../AirCooler';
 import RedemptionHistory from '../../redeemPoints/RedemptionHistory';
 import UniqueCodeHistory from '../../scanQR/pages/UniqueCodeHistory';
+import { Image } from 'react-native';
 
 const AirCoolerStack: React.FC = () => {
   const Stack = createNativeStackNavigator();
@@ -21,6 +22,12 @@ const AirCoolerStack: React.FC = () => {
         component={AirCooler}
         options={{
           headerShown: true,
+          headerRight: () => (
+            <Image
+              style={{ width: 70, height: 50 }}
+              resizeMode="contain"
+              source={require('../../../../../../assets/images/group_910.png')}
+            />),
         }}
       />
       <Stack.Screen

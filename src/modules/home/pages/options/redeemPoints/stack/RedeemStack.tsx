@@ -12,6 +12,7 @@ import AddAddress from '../AddAddress';
 import UpiTransfer from '../UpiTransfer';
 import colors from '../../../../../../../colors';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Image } from 'react-native';
 
 type RedeemStackParamList = {
   'Redeem Products': undefined;
@@ -42,6 +43,12 @@ const RedeemStack: React.FC = () => {
         component={RedeemPoints}
         options={{
           headerShown: true,
+          headerRight: () => (
+            <Image
+              style={{ width: 70, height: 50 }}
+              resizeMode="contain"
+              source={require('../../../../../../assets/images/group_910.png')}
+            />),
         }}
       />
       <Stack.Screen
@@ -56,6 +63,12 @@ const RedeemStack: React.FC = () => {
         component={PaytmTransfer}
         options={{
           headerShown: true,
+          headerRight: () => (
+            <Image
+              style={{ width: 70, height: 50 }}
+              resizeMode="contain"
+              source={require('../../../../../../assets/images/group_910.png')}
+            />),
         }}
       />
       <Stack.Screen
@@ -84,6 +97,12 @@ const RedeemStack: React.FC = () => {
         component={RedemptionHistory}
         options={{
           headerShown: true,
+          headerRight: () => (
+            <Image
+              style={{ width: 70, height: 50 }}
+              resizeMode="contain"
+              source={require('../../../../../../assets/images/group_910.png')}
+            />),
         }}
       />
       <Stack.Screen

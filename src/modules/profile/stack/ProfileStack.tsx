@@ -4,7 +4,7 @@ import Profile from '../pages/Profile';
 import EditProfile from '../pages/EditProfile';
 import { CustomTabHeader } from '../../common/services/BottomTab';
 import LanguagePicker from '../../../components/LanguagePicker';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import colors from '../../../../colors';
 import AddSubLogin from '../pages/AddSubLogin';
 import ViewSubLogins from '../pages/ViewSubLogins';
@@ -36,11 +36,17 @@ const ProfileStack: React.FC = () => {
             headerBackVisible: false,
             headerTitle: () => <CustomTabHeader handleLanguageButtonPress={handleLanguageButtonPress} route={route} />,
             headerShown: true,
-            
+
           })} />
         <Stack.Screen name="Edit Profile" component={EditProfile}
           options={{
             headerShown: true,
+            headerRight: () => (
+              <Image
+                style={{ width: 70, height: 50 }} // Adjust width and height as needed
+                resizeMode="contain"
+                source={require('../../../assets/images/group_910.png')}
+              />),
           }} />
         <Stack.Screen name="Add Sub-Login" component={AddSubLogin}
           options={{

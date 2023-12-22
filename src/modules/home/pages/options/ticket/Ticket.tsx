@@ -124,7 +124,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const triggerApiWithImage = async (fileData) => {
     const formData = new FormData();
-    formData.append('USER_ROLE', 2);
+    formData.append('USER_ROLE', "2");
     formData.append('image_related', 'TICKET');
     formData.append('file', fileData);
 

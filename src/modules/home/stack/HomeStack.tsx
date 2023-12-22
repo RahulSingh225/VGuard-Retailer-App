@@ -3,7 +3,7 @@ import HomeScreen from '../pages/HomeScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import colors from '../../../../colors';
 import { CustomTabHeader } from '../../common/services/BottomTab';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LanguagePicker from '../../../components/LanguagePicker';
 import ProfileStack from '../../profile/stack/ProfileStack';
 import ScanStack from '../pages/options/scanQR/stack/ScanStack';
@@ -94,12 +94,24 @@ const HomeStack: React.FC = () => {
           component={UpdatePAN}
           options={{
             headerShown: true,
+            headerRight: () => (
+              <Image
+                style={{ width: 70, height: 50 }}
+                resizeMode="contain"
+                source={require('../../../assets/images/group_910.png')}
+              />),
           }} />
         <Stack.Screen
           name="Update Bank"
           component={Bank}
           options={{
             headerShown: true,
+            headerRight: () => (
+              <Image
+                style={{ width: 70, height: 50 }}
+                resizeMode="contain"
+                source={require('../../../assets/images/group_910.png')}
+              />),
           }}
         />
         <Stack.Screen
@@ -107,6 +119,12 @@ const HomeStack: React.FC = () => {
           component={TDS}
           options={{
             headerShown: true,
+            headerRight: () => (
+              <Image
+                style={{ width: 70, height: 50 }}
+                resizeMode="contain"
+                source={require('../../../assets/images/group_910.png')}
+              />),
           }}
         />
         <Stack.Screen
@@ -114,6 +132,12 @@ const HomeStack: React.FC = () => {
           component={Engagement}
           options={{
             headerShown: true,
+            headerRight: () => (
+              <Image
+                style={{ width: 70, height: 50 }}
+                resizeMode="contain"
+                source={require('../../../assets/images/group_910.png')}
+              />),
           }}
         />
         <Stack.Screen
@@ -121,6 +145,12 @@ const HomeStack: React.FC = () => {
           component={TDSStatement}
           options={{
             headerShown: true,
+            headerRight: () => (
+              <Image
+                style={{ width: 70, height: 50 }}
+                resizeMode="contain"
+                source={require('../../../assets/images/group_910.png')}
+              />),
           }}
         />
         <Stack.Screen

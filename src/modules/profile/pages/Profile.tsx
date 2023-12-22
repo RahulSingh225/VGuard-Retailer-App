@@ -125,7 +125,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
     const fieldMap: Record<string, string> = {
       'Date of Birth': 'dob',
-      'Contact Number': 'mobileNo',
+      'Contact Number': 'contactNo',
       'Email': 'emailId',
       'Store/Firm Name': 'firmName',
       'Permanent Address House/Flat/Block No.': 'permanentAddress',
@@ -148,6 +148,9 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (fieldName in fieldMap) {
       const mappedField = fieldMap[fieldName];
       const fieldValue = mappedField.split('.').reduce((obj, key) => obj[key], userData);
+      if (fieldName === 'Marital Status') {
+        return fieldValue == 1 ? 'Married' : fieldValue == 2 ? 'Unmarried' : '';
+      }
       const formattedValue =
         typeof fieldValue === 'number' ? fieldValue.toString() : fieldValue;
       return formattedValue === true ? 'Yes' : formattedValue === false ? 'No' : formattedValue;

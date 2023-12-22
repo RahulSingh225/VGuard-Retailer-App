@@ -79,20 +79,20 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const fetchData = async () => {
     try {
       const statesResponse = await getStates();
-      const statesData = await statesResponse.json();
+      const statesData = await statesResponse.data;
       setStates(statesData);
 
       const defaultState = postData.stateId;
 
       const districtsResponse = await getDistricts(defaultState);
-      const districtsData = await districtsResponse.json();
+      const districtsData = await districtsResponse.data;
 
       if (Array.isArray(districtsData)) {
         setDistricts(districtsData);
 
         if (Array.isArray(districtsData) && districtsData.length > 0) {
           const citiesResponse = await getCities(postData.distId);
-          const citiesData = await citiesResponse.json();
+          const citiesData = await citiesResponse.data;
           console.log("CITIES-----------", citiesData);
           setCities(citiesData);
         }
@@ -255,7 +255,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     }));
 
     getDistricts(selectedCategory?.id)
-      .then(response => response.json())
+      .then(response => response.data)
       .then((data) => {
         setDistricts(data);
       })
@@ -270,7 +270,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     }));
 
     getCities(selectedCategory?.id)
-      .then(response => response.json())
+      .then(response => response.data)
       .then((data) => {
         setCities(data);
       })

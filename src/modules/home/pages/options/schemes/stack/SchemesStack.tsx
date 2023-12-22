@@ -6,6 +6,7 @@ import ActiveScheme from '../ActiveScheme';
 import SpecialCombo from '../SpecialCombo';
 import ProductWiseOfferTable from '../ProductWiseOfferTable';
 import colors from '../../../../../../../colors';
+import { Image } from 'react-native';
 
 const SchemesStack: React.FC = () => {
   const Stack = createNativeStackNavigator();
@@ -23,6 +24,12 @@ const SchemesStack: React.FC = () => {
         component={Schemes}
         options={{
           headerShown: true,
+          headerRight: () => (
+            <Image
+              style={{ width: 70, height: 50 }}
+              resizeMode="contain"
+              source={require('../../../../../../assets/images/group_910.png')}
+            />),
         }}
       />
       <Stack.Screen
@@ -37,6 +44,12 @@ const SchemesStack: React.FC = () => {
         component={ActiveScheme}
         options={{
           headerShown: true,
+          headerRight: () => (
+            <Image
+              style={{ width: 70, height: 50 }}
+              resizeMode="contain"
+              source={require('../../../../../../assets/images/group_910.png')}
+            />),
         }}
       />
       <Stack.Screen

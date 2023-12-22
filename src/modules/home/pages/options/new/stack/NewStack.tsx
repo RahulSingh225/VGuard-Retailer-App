@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import New from '../New';
 import DailyWinner from '../DailyWinner';
 import colors from '../../../../../../../colors';
+import { Image } from 'react-native';
 
 const NewStack: React.FC = () => {
   const Stack = createNativeStackNavigator();
@@ -20,7 +21,13 @@ const NewStack: React.FC = () => {
         name="What's New"
         component={New}
         options={{
-          headerShown: true
+          headerShown: true,
+          headerRight: () => (
+            <Image
+              style={{ width: 70, height: 50 }}
+              resizeMode="contain"
+              source={require('../../../../../../assets/images/group_910.png')}
+            />),
         }}
       />
       <Stack.Screen
