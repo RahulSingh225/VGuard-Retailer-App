@@ -130,6 +130,11 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
+      {isPopupVisible && (
+                <Popup isVisible={isPopupVisible} onClose={() => setIsPopupVisible(false)}>
+                    {popupMessage}
+                </Popup>
+            )}
       <View style={styles.registerUser}>
         {isLoading == true ? (
           <View style={{ flex: 1 }}>
@@ -192,7 +197,7 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
             <View style={{ flexDirection: 'column', alignItems: 'center', marginTop: 30 }}>
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <Text style={styles.greyText}>{t('strings:otp_not_received')}</Text>
-                <TouchableOpacity><Text style={{ color: colors.yellow }}>{t('strings:resend_otp')}</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => validateotp()}><Text style={{ color: colors.yellow }}>{t('strings:resend_otp')}</Text></TouchableOpacity>
               </View>
               <Text style={styles.greyText}>{t('strings:or')}</Text>
               <View style={{ flexDirection: 'row', gap: 10 }}>

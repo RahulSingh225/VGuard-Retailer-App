@@ -21,6 +21,7 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [preferedLanguage, setpreferedLanguage] = useState(1);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [popupMessage, setPopupMessage] = useState('');
+  const [message, setMessage] = useState('')
   const handleValidation = async () => {
     try {
       const body = {
@@ -30,7 +31,8 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
       let validationResponse = await generateOtpForLogin(body);
       validationResponse = await validationResponse.json();
       console.log(validationResponse.code, '<><><><><');
-      if (validationResponse.code === 200) {
+      setMessage(validationResponse.message);
+      if (validationResponse.message === "Please enter OTP to proceed with the login process") {
         const successMessage = validationResponse.message;
         setIsPopupVisible(true);
         setPopupMessage(successMessage);
@@ -72,18 +74,21 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
   const placeholderColor = colors.grey;
 
   const { t } = useTranslation();
-  const [selectedOption, setSelectedOption] = useState('retailer');
+  
 
-  const handleOptionSelect = (option: string) => {
-    setSelectedOption(option);
-  };
+  const handleClose = () => {
+    if(message == "Please enter OTP to proceed with the login process"){
+      navigation.navigate('loginwithotp', { usernumber: number })
+    }
+    setIsPopupVisible(false);
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       {isPopupVisible && (
         <Popup
           isVisible={isPopupVisible}
-          onClose={() => navigation.navigate('loginwithotp', { usernumber: number })}>
+          onClose={handleClose}>
       <Text>{popupMessage}</Text>
     </Popup>
   )
@@ -113,9 +118,8 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
           />
         </View>
       </View>
-      <View style={styles.buttonContainer}>
+      <View>
         <Buttons
-          style={styles.button}
           label={t('strings:send_otp')}
           variant="filled"
           onPress={() => handleValidation()}
@@ -147,7 +151,7 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
       </View>
     </View>
   </View>
-  <View style={styles.footer}>
+  <View>
     <View style={styles.footerContainer}>
       <Text style={styles.footergreyText}>
         {t('strings:powered_by_v_guard')}
