@@ -56,7 +56,7 @@ export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
                 username,
                 password,
             });
-console.log("<><><<><", response)
+            console.log("<><><<><", response)
             return response;
         } else {
             throw new Error('Username and/or password not found in AsyncStorage.');
@@ -71,10 +71,10 @@ export const createPostRequest = async (relativeUrl: string, data: any) => {
         const response = await api.post(relativeUrl, data);
         console.log(response)
         return response;
-      } catch (error) {
-          console.error('Error:', error);
+    } catch (error) {
+        console.error('Error:', error);
         throw error;
-      }
+    }
 }
 
 export const createGetRequest = async (relativeUrl: string) => {
@@ -82,10 +82,10 @@ export const createGetRequest = async (relativeUrl: string) => {
         const response = await api.get(relativeUrl);
         console.log(response)
         return response;
-      } catch (error) {
-          console.error('Error:', error);
+    } catch (error) {
+        console.error('Error:', error);
         throw error;
-      }
+    }
 }
 
 export const createDigestPutRequest = async (relativeUrl = {}, data: any) => {
@@ -212,15 +212,15 @@ export function getFile(uuid: String, imageRelated: String, userRole: String) {
 export const sendFile = async (formData: FormData): Promise<any> => {
     console.log(formData)
     try {
-      const response = await api.post('file', formData);
-      console.log(response.status);
-      return response;
+        const response = await api.post('file', formData);
+        console.log(response.status);
+        return response;
     } catch (error) {
         console.error('Error sending file:', error);
-      throw error;
+        throw error;
     }
-  };
-  
+};
+
 
 export function getDistributorList() {
     const path = "user/dist/";
@@ -828,11 +828,11 @@ export function getDistrictsFromCrmApi(stateId: string) {
 export function getDailyWinner(date: string) {
     const path = "user/dailyWinners";
     const data = {
-      date: date
+        date: date
     };
     return createDigestPostRequest(path, data);
-  }
-  
+}
+
 
 export function getDailyWinnerDates() {
     const path = "user/getDailyWinnerDates/";

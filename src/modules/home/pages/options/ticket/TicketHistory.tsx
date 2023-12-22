@@ -10,6 +10,7 @@ interface TicketItem {
   createdDate: string;
   name: string;
   status: string;
+  ticketNo: string;
 }
 
 const TicketHistory: React.FC = () => {
@@ -68,6 +69,16 @@ const TicketHistory: React.FC = () => {
       });
   }, []);
 
+  const [expandedRows, setExpandedRows] = useState([]);
+
+  const toggleRow = (index) => {
+    if (expandedRows.includes(index)) {
+      setExpandedRows(expandedRows.filter((rowIndex) => rowIndex !== index));
+    } else {
+      setExpandedRows([...expandedRows, index]);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.profileDetails}>
@@ -78,27 +89,35 @@ const TicketHistory: React.FC = () => {
             <Image source={require('../../../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
           )}
         </View>
-          <View style={styles.profileText}>
-            <Text style={styles.textDetail}>{userData.userName}</Text>
-            <Text style={styles.textDetail}>{userData.userCode}</Text>
-          </View>
+        <View style={styles.profileText}>
+          <Text style={styles.textDetail}>{userData.userName}</Text>
+          <Text style={styles.textDetail}>{userData.userCode}</Text>
         </View>
+      </View>
       {data.length === 0 ? (
         <View style={styles.noDataContainer}>
           <Text style={styles.noDataText}>{t('strings:no_data')}</Text>
         </View>
       ) : (
         data.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.listItem}>
+          <View key={index} style={styles.listItem}>
             <View style={styles.messageContainer}>
               <Text style={styles.messageText}>{item.createdDate}</Text>
               <Text style={styles.messageText}>{item.name}</Text>
+              <TouchableOpacity  onPress={() => toggleRow(index)}>
+                <Image resizeMode='contain' style={{ height: 20, width: 20 }} source={require('../../../../../assets/images/ic_ticket_drop_down2.png')} />
+              </TouchableOpacity>
               <View style={styles.statusContainer}>
-                {/* <Image style={styles.downImage} source={require('../../../../../assets/images/ic_ticket_drop_donw1.png')} /> */}
                 <Text style={styles.status}>{item.status}</Text>
               </View>
             </View>
-          </TouchableOpacity>
+            {expandedRows.includes(index) && (
+              <View style={styles.expandedContent}>
+                <Text style={styles.messageText}>Ticket NO.: {item.ticketNo}</Text>
+                <Text style={styles.messageText}>Status: {item.status}</Text>
+              </View>
+            )}
+          </View>
         ))
       )}
     </ScrollView>
@@ -146,8 +165,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   listItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    // flexDirection: 'row',
+    // justifyContent: 'space-between',
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.lightGrey,
@@ -163,6 +182,14 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(1.6),
     textAlign: 'left',
     color: colors.black,
+  },
+  expandedContent: {
+    backgroundColor: colors.lightYellow,
+    alignSelf: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 5,
+    marginTop: 5
   },
   status: {
     backgroundColor: colors.yellow,
