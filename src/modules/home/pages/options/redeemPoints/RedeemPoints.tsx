@@ -109,6 +109,13 @@ const RedeemPoints: React.FC<{ navigation: any }> = ({ navigation }) => {
               screenName="Redemption History"
             />
           </View>
+          <View style={styles.lastrow}>
+          <CustomTouchableOption
+            text="UPI Transfer"
+            iconSource={require('../../../../../assets/images/upi_transfer.webp')}
+            screenName="UPI Transfer"
+          />
+        </View>
         </View>
         <NeedHelp />
       </View>
@@ -183,6 +190,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 20,
     justifyContent: 'space-around',
+  },
+  lastrow: {
+    marginLeft: 5,
   },
 });
 
