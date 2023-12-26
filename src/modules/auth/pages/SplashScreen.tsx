@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Image, Modal, TouchableOpacity } from 'react-native';
 import Buttons from '../../../components/Buttons';
 import colors from '../../../../colors';
@@ -6,36 +6,23 @@ import language from '../../../assets/images/language.png';
 import arrowIcon from '../../../assets/images/arrow.png';
 import { useTranslation } from 'react-i18next';
 import LanguagePicker from '../../../components/LanguagePicker';
+import { useFocusEffect } from '@react-navigation/native';
 
 const SplashScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t, i18n } = useTranslation();
-  const [showLanguagePicker, setShowLanguagePicker] = useState(false);
-
-  const handleLanguageButtonPress = () => {
-    setShowLanguagePicker(true);
-  };
-
-  const handleCloseLanguagePicker = () => {
-    setShowLanguagePicker(false);
-  };
 
   useEffect(() => {
     console.log('Language changed:', i18n.language);
+
+    const timeoutId = setTimeout(() => {
+      navigation.navigate('login');
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
   }, [i18n.language]);
 
   return (
     <View style={styles.mainWrapper}>
-      <View style={styles.buttonContainer}>
-        <Buttons
-          label=""
-          variant="outlined"
-          onPress={handleLanguageButtonPress}
-          iconHeight={30}
-          iconWidth={30}
-          iconGap={0}
-          icon={language}
-        />
-      </View>
       <View style={styles.imageContainer}>
         <Image
           source={require('../../../assets/images/group_910.png')}
@@ -46,7 +33,7 @@ const SplashScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           style={styles.imageSaathi}
         />
       </View>
-      <View style={styles.startButtonContainer}>
+      {/* <View style={styles.startButtonContainer}>
         <Buttons
           label={t('strings:start')}
           variant={'filled'}
@@ -57,21 +44,7 @@ const SplashScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           icon={arrowIcon}
           width="90%"
         />
-      </View>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showLanguagePicker}
-        onRequestClose={handleCloseLanguagePicker}
-      >
-        <View style={styles.languagePickerContainer}>
-          <LanguagePicker onCloseModal={handleCloseLanguagePicker} />
-          <TouchableOpacity onPress={handleCloseLanguagePicker}>
-            <Text style={styles.closeText}>Close</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+      </View> */}
     </View>
   );
 };

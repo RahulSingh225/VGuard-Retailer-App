@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import colors from '../../../../colors';
 import Buttons from '../../../components/Buttons';
 import arrowIcon from '../../../assets/images/arrow.png';
-import { generateOtpForLogin } from '../../../utils/apiservice';
+import { generateOtpForLogin, loginWithOtp } from '../../../utils/apiservice';
 import Popup from '../../../components/Popup';
 
 const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -22,6 +22,7 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [popupMessage, setPopupMessage] = useState('');
   const [message, setMessage] = useState('')
+
   const handleValidation = async () => {
     try {
       const body = {
@@ -29,16 +30,15 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
         otpType: "SMS"
       };
       let validationResponse = await generateOtpForLogin(body);
-      validationResponse = await validationResponse.json();
-      console.log(validationResponse.code, '<><><><><');
-      setMessage(validationResponse.message);
-      if (validationResponse.message === "Please enter OTP to proceed with the login process") {
-        const successMessage = validationResponse.message;
+      console.log(validationResponse.status, '<><><><><');
+      setMessage(validationResponse.data.message);
+      if (validationResponse.data.message === "Please enter OTP to proceed with the login process") {
+        const successMessage = validationResponse.data.message;
         setIsPopupVisible(true);
         setPopupMessage(successMessage);
 
       } else {
-        const errorMessage = validationResponse.message;
+        const errorMessage = validationResponse.data.message;
         setIsPopupVisible(true);
         setPopupMessage(errorMessage);
       }

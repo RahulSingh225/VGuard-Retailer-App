@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
         width: 25,
         height: 20,
         marginRight: 10,
-        backgroundColor: 'yellow'
+        backgroundColor: colors.lightGrey
     },
     modalContent: {
         width: width / 1.8,

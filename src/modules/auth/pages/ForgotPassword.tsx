@@ -28,10 +28,9 @@ const ForgotPassword: React.FC<{ navigation: any }> = ({ navigation }) => {
   
     setPopupVisible(true);
     forgotPassword(number)
-      .then(response => response.json())
       .then(responsedata => {
         console.log("responsedata:", responsedata)
-        const message = responsedata.message;
+        const message = responsedata.data.message;
         setPopupContent(message);
         setNumber("");
         if (message === "SMS sent for new password") {

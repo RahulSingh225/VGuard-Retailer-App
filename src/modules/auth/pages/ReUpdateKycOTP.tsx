@@ -191,7 +191,7 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
                         {otpsentflag && (
                             <View style={styles.buttonContainer2}>
                                 <Buttons
-                                    label={t('strings:login_with_otp')}
+                                    label={t('strings:submit')}
                                     variant="filled"
                                     onPress={() => loginUserWithOtp()}
                                     width="100%"

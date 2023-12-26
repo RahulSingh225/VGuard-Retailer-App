@@ -8,17 +8,21 @@ const imageURL = 'https://vguardrishta.com/';
 
 const BASE_URL = 'http://34.100.133.239:18092/vguard/api/';
 
+const TEST_BASE_URL = 'http://192.168.29.60:5000/vguard/api/';
+
 export const createDigestGetRequest = async (relativeUrl = {}) => {
     try {
         const url = BASE_URL + relativeUrl;
-        const headers = {
-            'Content-Type': 'application/json',
-        };
-
         const username = await AsyncStorage.getItem('username');
         const password = await AsyncStorage.getItem('password');
+        const authType = await AsyncStorage.getItem('authtype');
 
-        if (username && password) {
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authtype': authType,
+        };
+
+        if (username && password && authType) {
             const response = await digestFetch(url, {
                 method: 'GET',
                 headers,
@@ -39,16 +43,17 @@ export const createDigestGetRequest = async (relativeUrl = {}) => {
 export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
     try {
         const url = BASE_URL + relativeUrl;
-        const headers = {
-            'Content-Type': 'application/json',
-        };
+        
         const username = await AsyncStorage.getItem('username');
         const password = await AsyncStorage.getItem('password');
+        const authType = await AsyncStorage.getItem('authtype');
 
-        console.log("USERNAME", username);
-        console.log("PASSWORD", password)
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authtype': authType,
+        };
 
-        if (username && password) {
+        if (username && password && authType) {
             const response = await digestFetch(url, {
                 method: 'POST',
                 headers,
@@ -56,7 +61,6 @@ export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
                 username,
                 password,
             });
-            console.log("<><><<><", response)
             return response;
         } else {
             throw new Error('Username and/or password not found in AsyncStorage.');
@@ -87,6 +91,39 @@ export const createGetRequest = async (relativeUrl: string) => {
         throw error;
     }
 }
+
+export const testingcreateGetRequest = async (relativeUrl = {}) => {
+    try {
+        const url = TEST_BASE_URL + relativeUrl;
+        // const url = BASE_URL + relativeUrl;
+        console.log("URL-------------------", url)
+        
+
+        const username = await AsyncStorage.getItem('username');
+        const password = await AsyncStorage.getItem('password');
+        const authType = await AsyncStorage.getItem('authtype');
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authtype': authType,
+        };
+
+        if (username && password && authType) {
+            const response = await digestFetch(url, {
+                method: 'GET',
+                headers,
+                username,
+                password,
+            });
+            return response;
+        } else {
+            throw new Error('Username and/or password not found in AsyncStorage.');
+        }
+    } catch (error) {
+        throw error;
+    }
+
+};
 
 export const createDigestPutRequest = async (relativeUrl = {}, data: any) => {
     try {
@@ -141,6 +178,36 @@ export const loginPasswordDigest = async (relativeUrl: string, username: string,
 
         await AsyncStorage.setItem('username', userName);
         await AsyncStorage.setItem('password', Password);
+        await AsyncStorage.setItem('authtype', 'password');
+        return response;
+    } catch (error) {
+        throw error;
+    }
+};
+export const loginOtpDigest = async (relativeUrl: string, username: string, password: string) => {
+    try {
+        const url = BASE_URL + relativeUrl;
+        const headers = {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            authType: 'otp',
+        };
+        await AsyncStorage.clear();
+        let response = null;
+        console.log(response);
+        response = await digestFetch(url, {
+            method: 'GET',
+            headers,
+            username,
+            password,
+        });
+
+        const userName = username;
+        const Password = password;
+
+        await AsyncStorage.setItem('username', userName);
+        await AsyncStorage.setItem('password', Password);
+        await AsyncStorage.setItem('authtype', 'otp');
         return response;
     } catch (error) {
         throw error;
@@ -150,6 +217,11 @@ export function loginWithPassword(username: string, password: string) {
     const path = "user/userDetails/login";
     console.log("<><><><", username)
     return loginPasswordDigest(path, username, password);
+}
+export function loginWithOtp(username: string, otp: string) {
+    const path = "user/userDetails/login";
+    console.log("<><><><", username)
+    return loginOtpDigest(path, username, otp);
 }
 
 interface NewUserOtpValidationResponse {
@@ -162,6 +234,9 @@ interface NewUserOtpValidationResponse {
 
 const api = axios.create({
     baseURL: BASE_URL,
+});
+const testapi = axios.create({
+    baseURL: TEST_BASE_URL,
 });
 
 export const Newuserotpvalidation = async (
@@ -609,8 +684,7 @@ export function forgotPassword(number: string) {
     const body = {
         mobileNo: number
     }
-    console.log("BODY---", body);
-    return createDigestPostRequest(path, body);
+    return createPostRequest(path, body);
 }
 
 export function getScanCodeHistory() {
@@ -620,7 +694,7 @@ export function getScanCodeHistory() {
 
 export function generateOtpForLogin(body: any) {
     const path = "user/generateOtpForLogin";
-    return createDigestPostRequest(path, body);
+    return createPostRequest(path, body);
 }
 
 export function generateOtpForReverify(vru: any) {
@@ -637,7 +711,7 @@ export function validateReverifyOtp(vguardRishtaUser: any) {
 export function validateLoginOtp(body: any) {
     console.log("body----", body)
     const path = "user/validateLoginOtp";
-    return createDigestPostRequest(path, body);
+    return createPostRequest(path, body);
 }
 
 export function updateProfile(vru: any) {
@@ -683,6 +757,7 @@ export function getany() {
 export function getBanks() {
     const path = "banks/";
     return createDigestGetRequest(path);
+    // return testingcreateGetRequest(path);
 }
 
 export function getKycDetails() {

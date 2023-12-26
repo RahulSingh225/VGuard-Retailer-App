@@ -165,7 +165,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (label == "isShopDifferent") {
       setIsShopAddressDifferent(value)
     }
-    if (label == "enrolledOtherSchemeYesNo") {
+    else if (label == "enrolledOtherSchemeYesNo") {
       setEnrolledOtherSchemeYesNo(value)
     }
     else if (label == "maritalStatus") {
@@ -173,6 +173,15 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         ...prevData,
         [label]: value,
       }));
+    }
+    else if(label == "gstYesNo"){
+      setPostData((prevData: UserData) => ({
+        ...prevData,
+        kycDetails: {
+          ...prevData.kycDetails,
+          [label]: value
+        }
+      }))
     }
 
     console.log("Changed")
@@ -475,7 +484,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         <PickerField
           label={t('strings:do_you_have_gst_number')}
           selectedValue={postData?.kycDetails?.gstYesNo}
-          onValueChange={(text: string) => handleChange("kycDetails.gstYesNo", text)}
+          onValueChange={(text: string) => handleChange("gstYesNo", text)}
           items={selectYesorNo}
         />
         <InputField
