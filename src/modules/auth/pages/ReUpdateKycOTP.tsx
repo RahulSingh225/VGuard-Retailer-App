@@ -80,9 +80,11 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
             let response = await validateReverifyOtp(userCredentials);
             let message = response.data.message;
             if (response.status === 200) {
-                AsyncStorage.setItem('username', JSON.stringify(number)).then(r => {
-                    AsyncStorage.setItem('password', JSON.stringify(otp)).then(r => {
-                        navigation.navigate('ReUpdateKyc', { usernumber: number });
+                AsyncStorage.setItem('username', number).then(r => {
+                    AsyncStorage.setItem('password', otp).then(r => {
+                        AsyncStorage.setItem('authtype', 'otp').then(r => {
+                            navigation.navigate('ReUpdateKyc', { usernumber: number });
+                        });
                     });
                 });
             } else {
