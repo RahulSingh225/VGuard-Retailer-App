@@ -100,7 +100,8 @@ const UpdatePAN: React.FC<BankProps> = () => {
                 <View style={styles.form}>
                         <ImagePickerField label='Pan Card* (Front)'
                             onImageChange={handleImageChange}
-                            imageRelated='ID_CARD_FRONT'
+                            imageRelated='PAN_CARD_FRONT'
+                            initialImage={entityUid}
                         />
                         <InputField
                             label={t('strings:update_pan_number_manually')}

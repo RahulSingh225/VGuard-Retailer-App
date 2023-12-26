@@ -19,6 +19,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [profileImage, setProfileImage] = useState(null);
   const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
   const [gstImageName, setGstImageName] = useState("");
+  const [frontFacadeImageName, setFrontFacadeImageName] = useState("");
   const [chequeImageName, setChequeImageName] = useState("");
   const [imageOpen, setimageOpen] = useState("")
   const handleImageClick = (imageSource: string | "") => {
@@ -34,6 +35,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     getRishtaUserProfile().then(response => response.json()
       .then(res => {
         const result = res;
+        console.log(result)
         setUserData(result);
       }))
   }, []);
@@ -83,9 +85,11 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     'Store/Firm Name',
     // 'Front Facade',
     // 'GST Photo',
+  ];
+  const label2 = [
     'Date of Birth',
     'Email'
-  ];
+  ]
 
   const addressLabels = [
     'Permanent Address House/Flat/Block No.',
@@ -188,6 +192,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const [chequeCopySource, setChequeCopySource] = useState<string | null>(null);
   const [gstCopySource, setGstCopySource] = useState<string | null>(null);
+  const [frontFacadeCopySource, setFrontFacadeCopySource] = useState<string | null>(null);
   // const [facadeCopySource, setFacadeCopySource] = useState<string | null>(null);
 
   useEffect(() => {
@@ -262,12 +267,29 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
           }}
         /> */}
         <InputField
-          label="GST Photo"
+          label="Front Facade"
           isImage
           imageName={gstImageName}
           imageSource={gstCopySource}
           onPressImage={() => handleImageClick(gstCopySource)}
         />
+        <InputField
+          label="GST Photo"
+          isImage
+          imageName={frontFacadeImageName}
+          imageSource={frontFacadeCopySource}
+          onPressImage={() => handleImageClick(frontFacadeCopySource)}
+        />
+        {label2.map((label, index) => (
+          <InputField
+            key={index}
+            label={label}
+            value={renderedFields ? renderedFields[index] : ''}
+            disabled={true}
+            isImage={false}
+          />
+        ))}
+        
         <Text style={styles.subHeading}>{t('strings:permanent_address')}</Text>
         {addressLabels.map((label, index) => (
           <InputField

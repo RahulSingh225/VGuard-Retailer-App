@@ -29,6 +29,7 @@ import Snackbar from 'react-native-snackbar';
 import { height, width } from '../../../../../utils/dimensions';
 import { Button } from 'react-native-paper';
 import Popup from '../../../../../components/Popup';
+import ImagePickerField from '../../../../../components/ImagePickerField';
 
 const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
   const baseURL =
@@ -49,95 +50,10 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [options, setOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState('');
   const [isOptionsLoading, setIsOptionsLoading] = useState(true);
-  const [showImagePickerModal, setShowImagePickerModal] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [selectedImageName, setSelectedImageName] = useState('');
   const [entityUid, setEntityUid] = useState('');
   const [descriptionInput, setDescriptionInput] = useState('');
-  const [select, setselect] = useState();
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
-  const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
-
-  const handleImageClick = () => {
-    setShowImagePreviewModal(true);
-  };
-
-
-  const handleImagePickerPress = () => {
-    setShowImagePickerModal(true);
-  };
-
-  const handleCameraUpload = () => {
-    setShowImagePickerModal(false);
-    launchCamera(
-      {
-        mediaType: 'photo',
-        includeBase64: false,
-      },
-      (response) => {
-        if (response.didCancel) {
-          console.log('Camera was canceled');
-        } else if (response.error) {
-          console.error('Camera error: ', response.error);
-        } else {
-          const fileData = {
-            uri: response.assets[0].uri,
-            type: response.assets[0].type,
-            name: response.assets[0].fileName,
-          };
-          console.log("URI:===========", response.assets[0].uri)
-          setSelectedImage(response.assets[0].uri);
-          setSelectedImageName(response.assets[0].fileName);
-          triggerApiWithImage(fileData);
-        }
-      },
-    );
-  };
-
-  const handleGalleryUpload = () => {
-    setShowImagePickerModal(false);
-    launchImageLibrary(
-      {
-        mediaType: 'photo',
-        includeBase64: false,
-      },
-      (response) => {
-        if (response.didCancel) {
-          console.log('Image picker was canceled');
-        } else if (response.error) {
-          console.error('Image picker error: ', response.error);
-        } else {
-          const fileData = {
-            uri: response.assets[0].uri,
-            type: response.assets[0].type,
-            name: response.assets[0].fileName,
-          };
-          console.log("URI:===========", response.assets[0].uri)
-          setSelectedImage(response.assets[0].uri);
-          setSelectedImageName(response.assets[0].fileName);
-          triggerApiWithImage(fileData);
-        }
-      },
-    );
-  };
-
-  const triggerApiWithImage = async (fileData) => {
-    const formData = new FormData();
-    formData.append('USER_ROLE', "2");
-    formData.append('image_related', 'TICKET');
-    formData.append('file', fileData);
-
-    console.log("------------------", fileData)
-
-    try {
-      const response = await sendFile(formData);
-      console.log("response of image--------", response)
-      setEntityUid(response.data.entityUid);
-    } catch (error) {
-      console.error('API Error:', error);
-    }
-  };
 
   useEffect(() => {
     AsyncStorage.getItem('USER').then((r) => {
@@ -210,16 +126,13 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
 
     console.log("Post Data========", postData)
 
-    if (postData.userId != '' && postData.issueTypeId != '' && postData.imagePath != '' && postData.description != '') {
+    if (postData.userId != '' && postData.issueTypeId != '' && postData.description != '') {
       sendTicket(postData)
         .then((response) => {
           if (response.status === 200) {
             setSelectedOption('');
-            setSelectedImage(null);
-            setSelectedImageName('');
             setEntityUid('');
             setDescriptionInput('');
-            // showSnackbar('Ticket Created Successfully');
             setPopupContent('Ticket Created Successfully');
             setPopupVisible(true);
           } else {
@@ -239,6 +152,15 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
       setPopupVisible(true);
     }
   };
+
+  const handleImageChange = async (image: string, imageName: string, apiResponse: any, label: string) => {
+    try {
+        setEntityUid(apiResponse.data.entityUid)
+        console.log('API Response in Raise Ticket:', apiResponse);
+    } catch (error) {
+        console.error('Error handling image change in EditProfile:', error);
+    }
+};
 
   return (
     <ScrollView style={styles.mainWrapper}>
@@ -265,7 +187,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
           </Text>
         </TouchableHighlight>
       </View>
-      <Text style={styles.blackText}>{t('strings:issue_type')}</Text>
+      <Text style={[styles.blackText, {marginTop: responsiveFontSize(2)}]}>{t('strings:issue_type')}</Text>
       {isOptionsLoading ? (
         <Text style={styles.blackText}>Loading options...</Text>
       ) : options.length === 0 ? (
@@ -293,126 +215,10 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
           </Picker>
         </View>
       )}
-      <TouchableOpacity
-        onPress={handleImagePickerPress}
-        style={styles.inputContainer}
-      >
-
-        {selectedImage ? (
-          <TextInput
-            style={styles.input}
-            placeholder={selectedImageName}
-            placeholderTextColor={colors.grey}
-            editable={false}
-          />
-        ) : (
-          <TextInput
-            style={styles.input}
-            placeholder={t('strings:upload_picture_optional')}
-            placeholderTextColor={colors.grey}
-            editable={false}
-          />
-        )}
-        <TouchableOpacity
-          onPress={handleImageClick}>
-          <View style={styles.inputImage}>
-            {selectedImage ? (
-              <Image
-                source={{ uri: selectedImage }}
-                style={{ width: '100%', height: '100%' }}
-                resizeMode="cover"
-              />
-            ) : (
-              <Image
-                source={require('../../../../../assets/images/photo_camera.png')}
-                style={{ width: '100%', height: '100%' }}
-                resizeMode="contain"
-              />
-            )}
-          </View>
-        </TouchableOpacity>
-      </TouchableOpacity>
-
-      {/* Modal for selecting camera or gallery */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showImagePreviewModal}
-        onRequestClose={() => setShowImagePreviewModal(false)}
-      >
-        <View style={styles.modalContainer}>
-          <TouchableOpacity
-            onPress={() => setShowImagePreviewModal(false)}
-          >
-            <Image resizeMode='contain' style={{width: 50, height: 50}} source={require('../../../../../assets/images/ic_close.png')} />
-          </TouchableOpacity>
-
-          <Image
-            source={{ uri: selectedImage }}
-            style={{ width: '70%', height: '70%'}}
-            resizeMode="contain"
-          />
-        </View>
-      </Modal>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showImagePickerModal}
-        style={styles.modalcontainer}
-        hardwareAccelerated={true}
-        opacity={0.3}
-      >
-        <View
-          style={{
-            width: width / 1.80,
-            borderRadius: 5,
-            alignSelf: 'center',
-            height: height / 8,
-            top: height / 2.8,
-            margin: 20,
-            backgroundColor: '#D3D3D3',
-            borderRadius: 20,
-            padding: 10,
-            shadowColor: '#000',
-            shadowOffset: {
-              width: 100,
-              height: 2,
-            },
-            shadowOpacity: 0.25,
-            shadowRadius: 4,
-            elevation: 5,
-          }}
-        >
-          <Picker
-            mode="dropdown"
-            placeholder={'Update Your Selfie *'}
-            style={{ color: 'black' }}
-            selectedValue={select}
-            onValueChange={(itemValue, itemIndex) => {
-              if (itemValue === 'Open camera') {
-                handleCameraUpload();
-              } else if (itemValue === 'Open Image picker') {
-                handleGalleryUpload();
-              }
-            }}
-          >
-            <Picker.Item label="Select Action" value="" />
-            <Picker.Item
-              label="Select Photo from gallery"
-              value="Open Image picker"
-            />
-            <Picker.Item
-              label="Capture Photo from camera"
-              value="Open camera"
-            />
-          </Picker>
-          <Button mode="text" onPress={() => setShowImagePickerModal(false)}>
-            Close
-          </Button>
-        </View>
-      </Modal>
-
+      <ImagePickerField label='Upload Picture (optional)'
+        onImageChange={handleImageChange}
+        imageRelated='ID_CARD_FRONT'
+      />
       <Text style={styles.blackText}>{t('strings:description_remarks')}</Text>
       <TextInput
         style={styles.descriptionInput}
@@ -525,14 +331,14 @@ const styles = StyleSheet.create({
   inputContainer: {
     borderColor: colors.lightGrey,
     borderWidth: 2,
-    borderRadius: 10,
+    borderRadius: 5,
     height: responsiveHeight(5),
     width: '100%',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: responsiveHeight(1)
+    marginVertical: responsiveHeight(1)
   },
   input: {
     width: '90%',
@@ -546,7 +352,7 @@ const styles = StyleSheet.create({
     height: responsiveHeight(20),
     borderColor: colors.lightGrey,
     borderWidth: 2,
-    borderRadius: 10,
+    borderRadius: 5,
     padding: 5,
     fontSize: responsiveFontSize(1.8),
     color: colors.black,
@@ -562,7 +368,6 @@ const styles = StyleSheet.create({
   blackText: {
     color: colors.black,
     fontWeight: 'bold',
-    marginTop: responsiveHeight(2),
   },
   hyperlinks: {
     display: 'flex',

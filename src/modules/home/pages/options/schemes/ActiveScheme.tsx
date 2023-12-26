@@ -62,23 +62,20 @@ const ActiveScheme: React.FC = () => {
                   <Text style={styles.messageText}>{item.description}</Text>
                 </ScrollView>
               </View>
-              <View style={{ flexDirection: 'row', marginTop: 10, alignItems: 'center', gap: 5 }}>
+              <TouchableOpacity style={{ flexDirection: 'row', marginTop: 10, alignItems: 'center', gap: 5 }} onPress={() => openLink(item.fileName)}>
                 <Image
                   style={styles.pdfimage}
                   source={require('../../../../../assets/images/pdf.png')} />
-                <TouchableOpacity onPress={() => openLink(item.fileName)}>
-                  <Text
-                    style={{
-                      color: colors.yellow,
-                      fontSize: responsiveFontSize(1.5),
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    View
-                  </Text>
-                </TouchableOpacity>
-
-              </View>
+                <Text
+                  style={{
+                    color: colors.yellow,
+                    fontSize: responsiveFontSize(1.5),
+                    fontWeight: 'bold',
+                  }}
+                >
+                  View
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         ))

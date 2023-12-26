@@ -32,7 +32,7 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
                 try {
                     const image = await getFile(initialImage, imageRelated, "2");
                     console.log("<><><><><");
-                    setSelectedImage(initialImage);
+                    setSelectedImage(image.url);
                     setSelectedImageName(initialImage);
                 } catch (error) {
                     console.error('Error fetching image:', error);
@@ -46,6 +46,10 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
 
     const handleImagePickerPress = () => {
         setShowImagePickerModal(true);
+    };
+    
+    const handleImageModalToggle = () => {
+        setShowImageModal(!showImageModal);
     };
 
     const handleCameraUpload = () => {
@@ -100,11 +104,6 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
             }
         }
     };
-
-    const handleImageModalToggle = () => {
-        setShowImageModal(!showImageModal);
-    };
-
 
     const triggerApiWithImage = async (fileData: FormData) => {
         const formData = new FormData();
@@ -251,16 +250,16 @@ const styles = StyleSheet.create({
     imageContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        position: 'relative', // Ensure the relative position for the focused label
+        position: 'relative',
     },
     image: {
         width: 25,
         height: 20,
         marginRight: 10,
+        backgroundColor: 'yellow'
     },
     modalContent: {
         width: width / 1.8,
-        borderRadius: 5,
         alignSelf: 'center',
         height: height / 8,
         top: height / 2.8,

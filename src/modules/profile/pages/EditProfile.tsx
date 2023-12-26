@@ -15,6 +15,7 @@ import Snackbar from 'react-native-snackbar';
 import ImagePickerField from '../../../components/ImagePickerField';
 import MultiSelectField from '../../../components/MultiSelectField';
 import Loader from '../../../components/Loader';
+import moment from 'moment';
 
 
 const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -133,10 +134,12 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     console.log("Post Data:", postData);
 
     const currentDate = new Date();
-    const dobDate = new Date(postData?.dob);
+    const dobDate = moment(postData?.dob, 'DD MMM YYYY').toDate();
     const minAllowedDate = new Date(currentDate);
     minAllowedDate.setFullYear(currentDate.getFullYear() - 18);
 
+    console.log(postData?.dob)
+    console.log(dobDate)
 
     if (dobDate < minAllowedDate) {
       updateProfile(postData)
