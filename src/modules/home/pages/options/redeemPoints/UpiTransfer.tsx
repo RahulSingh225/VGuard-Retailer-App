@@ -7,14 +7,40 @@ import Buttons from '../../../../../components/Buttons';
 import arrowIcon from '../../../../../assets/images/arrow.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PopupWithButton from '../../../../../components/PopupWithButton';
+import Popup from '../../../../../components/Popup';
+import { checkVPA, verifyVPA } from '../../../../../utils/apiservice';
 
 const UpiTransfer = () => {
     const { t } = useTranslation();
-    const [isPopupVisible, setPopupVisible] = useState(true);
+    const [isPopupVisible, setPopupVisible] = useState(false);
+    const [isNormalPopupVisible, setNormalPopupVisible] = useState(false);
     const [isUpiFound, setUpiFound] = useState(false);
     const [isUpiNotFound, setUpiNotFound] = useState(false);
-    const handleProceed = () => {
-        console.log('Pressed')
+    const [upiSelected, setUpiSelected] = useState(true);
+    const [popupContent, setPopupContent] = useState("");
+    const [upiId, setUpiId] = useState("");
+    const [points, setPoints] = useState(0);
+
+    const handleUpiPress = () => {
+        setUpiSelected(!upiSelected);
+    }
+    const handleProceed = async () => {
+        if (!upiSelected) {
+            setNormalPopupVisible(true);
+            setPopupContent("Please select Wallet");
+        }
+        else if (upiId == "") {
+            setNormalPopupVisible(true);
+            setPopupContent("No UPI-VPA linked. Please Contact Admin.");
+        }
+        else if (points == 0 || points < 250 || points > 5000) {
+            console.log("POINTS", points)
+            setNormalPopupVisible(true);
+            setPopupContent("Kindly enter points between 250-5000");
+        }
+        else if (upiId != "" && upiSelected && points != 0 && points >= 250 && points <= 5000) {
+            console.log("YOU CAN PROCEED");
+        }
     }
     const [pointData, setPointData] = useState({
         pointsBalance: '',
@@ -23,7 +49,6 @@ const UpiTransfer = () => {
     });
 
     useEffect(() => {
-        setPopupVisible(true);
         AsyncStorage.getItem('USER').then(r => {
             const user = JSON.parse(r);
             const data = {
@@ -33,7 +58,36 @@ const UpiTransfer = () => {
             };
             setPointData(data);
         });
+        checkVPA()
+            .then(response => response.json())
+            .then(res => {
+                const result = res;
+                if (result.code == 404) {
+                    setPopupVisible(true);
+                }
+                else if (result.code == 200) {
+                    setUpiId(result.upi);
+                }
+            })
     }, []);
+
+    const findUpi = async () => {
+        verifyVPA()
+            .then(response => response.json())
+            .then(res => {
+                const result = res;
+                setPopupVisible(false);
+                if (result.code == 200) {
+                    setUpiFound(true);
+                    setUpiId(result.upi)
+                }
+                else {
+                    setUpiNotFound(true);
+                }
+            })
+    }
+
+
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.mainWrapper}>
@@ -62,6 +116,8 @@ const UpiTransfer = () => {
                             placeholder="UPI ID"
                             placeholderTextColor={colors.grey}
                             textAlign="center"
+                            value={upiId}
+                            editable={false}
                         />
                     </View>
                 </View>
@@ -77,14 +133,26 @@ const UpiTransfer = () => {
                             placeholder={t('strings:enter_points')}
                             placeholderTextColor={colors.grey}
                             textAlign="center"
+                            value={points}
+                            onChangeText={(text) => setPoints(text)}
+                            keyboardType='numeric'
                         />
                     </View>
                 </View>
                 <Text style={styles.chooseWallet}>{t('strings:choose_wallet')}</Text>
-                <View style={styles.wallet}>
+                <TouchableOpacity onPress={handleUpiPress} style={styles.wallet}>
                     <Image resizeMode="contain" style={{ flex: 1, width: '100%', height: '100%' }} source={require('../../../../../assets/images/upi_transfer.webp')} />
-                    <Image resizeMode="contain" style={{ flex: 1, width: '100%', height: '100%' }} source={require('../../../../../assets/images/tick_1.png')} />
-                </View>
+                    {
+                        (upiSelected == true) && (
+                            <Image resizeMode="contain" style={{ flex: 1, width: '100%', height: '100%' }} source={require('../../../../../assets/images/tick_1.png')} />
+                        )
+                    }
+                    {
+                        (upiSelected == false) && (
+                            <Image resizeMode="contain" style={{ flex: 1, width: '100%', height: '100%' }} source={require('../../../../../assets/images/tick_1_notSelected.png')} />
+                        )
+                    }
+                </TouchableOpacity>
                 <Buttons
                     style={styles.button}
                     label={t('strings:proceed')}
@@ -97,23 +165,26 @@ const UpiTransfer = () => {
                     icon={arrowIcon}
                 />
             </View>
-            <PopupWithButton buttonText="Find UPI ID" isVisible={isPopupVisible} onClose={() => setPopupVisible(false)} onConfirm={() => console.log("Finding UPI ID")}>
-            Please click on find to get UPI ID linked with your registered mobile number.
+            <PopupWithButton buttonText="Find UPI ID" isVisible={isPopupVisible} onClose={() => setPopupVisible(false)} onConfirm={() => findUpi()}>
+                Please click on find to get UPI id linked with your registered mobile.
             </PopupWithButton>
-            <PopupWithButton buttonText="Proceed" isVisible={isUpiFound} onClose={() => setUpiFound(false)} onConfirm={() => console.log("Finding UPI ID")}>
+            <PopupWithButton buttonText="Proceed" isVisible={isUpiFound} onClose={() => setUpiFound(false)} onConfirm={() => setUpiFound(false)}>
                 Below UPI-VPA found linked. {'\n'}
-                <Text style={styles.italics}>testvguardrishta@okhdfcbank</Text>
+                <Text style={styles.italics}>{upiId}</Text>
             </PopupWithButton>
-            <PopupWithButton buttonText="Ok" isVisible={isUpiNotFound} onClose={() => setUpiNotFound(false)} onConfirm={() => console.log("Finding UPI ID")}>
-                No UPI-VPA linked found.
+            <PopupWithButton buttonText="Ok" isVisible={isUpiNotFound} onClose={() => setUpiNotFound(false)} onConfirm={() => setUpiNotFound(false)}>
+                No UPI-VPA linked found. Please Contact Admin.
             </PopupWithButton>
+            <Popup isVisible={isNormalPopupVisible} onClose={() => setNormalPopupVisible(false)}>
+                {popupContent}
+            </Popup>
         </ScrollView>
     )
 }
 
 const styles = StyleSheet.create({
     italics: {
-        fontWeight: 200,
+        fontWeight: "200",
         fontStyle: 'italic'
     },
     scrollContainer: {
