@@ -989,6 +989,16 @@ export function getSubLoginList() {
     return createDigestGetRequest(path);
 }
 
+export function checkVPA() {
+    const path = "order/checkVPA";
+    return createDigestGetRequest(path);
+}
+
+export function verifyVPA() {
+    const path = "order/verifyVPA";
+    return createDigestGetRequest(path);
+}
+
 export function sendScanInCoupon(couponData: any) {
     const path = "coupon/scanIn";
     return createDigestPostRequest(path, couponData);
