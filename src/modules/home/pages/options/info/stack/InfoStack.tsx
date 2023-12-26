@@ -5,6 +5,7 @@ import Downloads from '../Downloads';
 import ProductCatalogue from '../ProductCatalogue';
 import VGuardInfo from '../VGuardInfo';
 import colors from '../../../../../../../colors';
+import { Image } from 'react-native';
 
 const InfoStack: React.FC = () => {
   const Stack = createNativeStackNavigator();
@@ -22,6 +23,12 @@ const InfoStack: React.FC = () => {
         component={Info}
         options={{
           headerShown: true,
+          headerRight: () => (
+            <Image
+              style={{ width: 70, height: 50 }}
+              resizeMode="contain"
+              source={require('../../../../../../assets/images/group_910.png')}
+            />),
         }}
       />
       <Stack.Screen
@@ -43,6 +50,12 @@ const InfoStack: React.FC = () => {
         component={VGuardInfo}
         options={{
           headerShown: true,
+          headerRight: () => (
+            <Image
+              style={{ width: 70, height: 50 }}
+              resizeMode="contain"
+              source={require('../../../../../../assets/images/group_910.png')}
+            />),
         }}
       />
     </Stack.Navigator>

@@ -135,11 +135,6 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
                     value={userData?.contactNo}
                     disabled={true}
                 />
-                <InputField
-                    label={t('strings:store_firm_name')}
-                    value={postData?.firmName}
-                    disabled={true}
-                />
                 <Text style={styles.subHeading}>{t('strings:permanent_address')}</Text>
                 <InputField
                     label={t('strings:lbl_permanent_address_mandatory')}

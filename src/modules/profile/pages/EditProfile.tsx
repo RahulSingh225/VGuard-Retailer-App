@@ -15,6 +15,7 @@ import Snackbar from 'react-native-snackbar';
 import ImagePickerField from '../../../components/ImagePickerField';
 import MultiSelectField from '../../../components/MultiSelectField';
 import Loader from '../../../components/Loader';
+import moment from 'moment';
 
 
 const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -79,20 +80,20 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const fetchData = async () => {
     try {
       const statesResponse = await getStates();
-      const statesData = await statesResponse.json();
+      const statesData = await statesResponse.data;
       setStates(statesData);
 
       const defaultState = postData.stateId;
 
       const districtsResponse = await getDistricts(defaultState);
-      const districtsData = await districtsResponse.json();
+      const districtsData = await districtsResponse.data;
 
       if (Array.isArray(districtsData)) {
         setDistricts(districtsData);
 
         if (Array.isArray(districtsData) && districtsData.length > 0) {
           const citiesResponse = await getCities(postData.distId);
-          const citiesData = await citiesResponse.json();
+          const citiesData = await citiesResponse.data;
           console.log("CITIES-----------", citiesData);
           setCities(citiesData);
         }
@@ -133,10 +134,12 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     console.log("Post Data:", postData);
 
     const currentDate = new Date();
-    const dobDate = new Date(postData?.dob);
+    const dobDate = moment(postData?.dob, 'DD MMM YYYY').toDate();
     const minAllowedDate = new Date(currentDate);
     minAllowedDate.setFullYear(currentDate.getFullYear() - 18);
 
+    console.log(postData?.dob)
+    console.log(dobDate)
 
     if (dobDate < minAllowedDate) {
       updateProfile(postData)
@@ -162,7 +165,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (label == "isShopDifferent") {
       setIsShopAddressDifferent(value)
     }
-    if (label == "enrolledOtherSchemeYesNo") {
+    else if (label == "enrolledOtherSchemeYesNo") {
       setEnrolledOtherSchemeYesNo(value)
     }
     else if (label == "maritalStatus") {
@@ -170,6 +173,15 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         ...prevData,
         [label]: value,
       }));
+    }
+    else if(label == "gstYesNo"){
+      setPostData((prevData: UserData) => ({
+        ...prevData,
+        kycDetails: {
+          ...prevData.kycDetails,
+          [label]: value
+        }
+      }))
     }
 
     console.log("Changed")
@@ -255,7 +267,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     }));
 
     getDistricts(selectedCategory?.id)
-      .then(response => response.json())
+      .then(response => response.data)
       .then((data) => {
         setDistricts(data);
       })
@@ -270,7 +282,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     }));
 
     getCities(selectedCategory?.id)
-      .then(response => response.json())
+      .then(response => response.data)
       .then((data) => {
         setCities(data);
       })
@@ -472,7 +484,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         <PickerField
           label={t('strings:do_you_have_gst_number')}
           selectedValue={postData?.kycDetails?.gstYesNo}
-          onValueChange={(text: string) => handleChange("kycDetails.gstYesNo", text)}
+          onValueChange={(text: string) => handleChange("gstYesNo", text)}
           items={selectYesorNo}
         />
         <InputField

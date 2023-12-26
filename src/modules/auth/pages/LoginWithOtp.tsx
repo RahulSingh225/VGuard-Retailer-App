@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import colors from '../../../../colors';
 import Buttons from '../../../components/Buttons';
 import arrowIcon from '../../../assets/images/arrow.png';
-import { Newuserotpvalidation, generateOtpForLogin, validateLoginOtp } from '../../../utils/apiservice';
+import { Newuserotpvalidation, generateOtpForLogin, loginOtpDigest, loginWithOtp, validateLoginOtp } from '../../../utils/apiservice';
 import Popup from '../../../components/Popup';
 import Loader from '../../../components/Loader';
 import { useAuth } from '../../../components/AuthContext';
@@ -31,10 +31,6 @@ interface LoginWithOtpProps {
 
 const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
   const { usernumber, jobprofession, preferedLanguage } = route.params;
-
-  console.log('====>>>>', usernumber);
-  console.log('====>>>>', jobprofession);
-  console.log('====>>>>', preferedLanguage);
   const [otp, setOtp] = useState('');
   const [number, setnumber] = useState(usernumber);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
@@ -67,14 +63,13 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
         otpType: "Voice"
       };
       let validationResponse = await generateOtpForLogin(body);
-      validationResponse = await validationResponse.json();
-      console.log(validationResponse.code, '<><><><><');
-      if (validationResponse.code === 200) {
-        const successMessage = validationResponse.message;
+      console.log(validationResponse);
+      if (validationResponse.data.status === 200) {
+        const successMessage = validationResponse.data.message;
         setIsPopupVisible(true);
         setPopupMessage(successMessage);
       } else {
-        const errorMessage = validationResponse.message;
+        const errorMessage = validationResponse.data.message;
         setIsPopupVisible(true);
         setPopupMessage(errorMessage);
       }
@@ -94,10 +89,9 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
           otp: otp
         }
         let verification = await validateLoginOtp(body);
-        verification = await verification.json()
 
         console.log("VERIFICATION", verification)
-        const successMessage = verification.message;
+        const successMessage = verification.data.message;
         console.log(successMessage);
         if (
           successMessage ===
@@ -105,10 +99,15 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
         ) {
           setPopupMessage(successMessage);
           setIsPopupVisible(true);
-          
+          const response = await loginWithOtp(number, otp);;
+          if (response.status === 200) {
+            var r = await response.json();
+            console.log(r);
+            login(r);
+          }          
         } else {
           setIsPopupVisible(true);
-          setPopupMessage(verification.message);
+          setPopupMessage(verification.data.message);
         }
       }
     } catch (error) {

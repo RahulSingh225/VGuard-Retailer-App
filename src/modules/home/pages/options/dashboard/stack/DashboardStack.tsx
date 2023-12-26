@@ -5,6 +5,7 @@ import Dashboard from '../Dashboard';
 import ProductWiseEarning from '../ProductWiseEarning';
 import SchemeWiseEarning from '../SchemeWiseEarning';
 import YourRewards from '../YourRewards';
+import { Image } from 'react-native';
 
 const DashboardStack: React.FC = () => {
   const Stack = createNativeStackNavigator();
@@ -22,6 +23,12 @@ const DashboardStack: React.FC = () => {
         component={Dashboard}
         options={{
           headerShown: true,
+          headerRight: () => (
+            <Image
+              style={{ width: 70, height: 50 }}
+              resizeMode="contain"
+              source={require('../../../../../../assets/images/group_910.png')}
+            />),
         }}
       />
       <Stack.Screen
@@ -29,6 +36,12 @@ const DashboardStack: React.FC = () => {
         component={ProductWiseEarning}
         options={{
           headerShown: true,
+          headerRight: () => (
+            <Image
+              style={{ width: 70, height: 50 }}
+              resizeMode="contain"
+              source={require('../../../../../../assets/images/group_910.png')}
+            />),
         }}
       />
       <Stack.Screen

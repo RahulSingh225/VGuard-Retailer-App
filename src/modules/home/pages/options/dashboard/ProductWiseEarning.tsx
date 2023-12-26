@@ -9,6 +9,8 @@ interface ProductDetails {
   slNo: number;
   partDesc: string;
   points: number;
+  couponCode: string;
+  createdDate: string;
 }
 
 const ProductWiseEarning: React.FC = () => {
@@ -19,6 +21,7 @@ const ProductWiseEarning: React.FC = () => {
       .then(response => response.json())
       .then(responseData => {
         setProductDetails(responseData);
+        console.log(responseData)
       })
       .catch(error => {
         console.error('Error fetching data:', error);
@@ -28,23 +31,27 @@ const ProductWiseEarning: React.FC = () => {
   const data = productDetails.map(product => [
     product?.slNo.toString(),
     product?.partDesc,
-    product?.points.toString()
+    product?.points.toString(),
+    product?.couponCode,
+    product?.createdDate,
   ]);
 
-  const tableHead = ["Sl No.", "Product Description", "Points"];
+  const tableHead = ["Sl No.", "Material Description", "Points", "Coupon Code", "Created Date"];
 
   return (
     <ScrollView style={styles.container}>
-      <Table borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
-        {data.length === 0 ? (
-          <Rows data={[['No Data']]} textStyle={[styles.text, { color: colors.grey, fontWeight: 'bold', textAlign: 'center' }]} />
-        ) : (
-          <>
-            <Row data={tableHead} style={styles.head} textStyle={styles.text} />
-            <Rows data={data} textStyle={styles.text} />
-          </>
-        )}
-      </Table>
+      <ScrollView horizontal={true}>
+        <Table borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9'}}>
+          {data.length === 0 ? (
+            <Rows data={[['No Data']]} textStyle={[styles.text, { color: colors.grey, fontWeight: 'bold', textAlign: 'center' }]} />
+          ) : (
+            <>
+              <Row data={tableHead} style={styles.head} widthArr={[50, 250, 80, 100, 120]}  textStyle={styles.text} />
+              <Rows data={data} textStyle={styles.text} style={styles.row} widthArr={[50, 250, 80, 100, 120]} />
+            </>
+          )}
+        </Table>
+      </ScrollView>
     </ScrollView>
   );
 }
@@ -56,19 +63,15 @@ const styles = StyleSheet.create({
   },
   head: {
     height: responsiveHeight(7),
-    backgroundColor: colors.lightGrey
+    backgroundColor: colors.lightGrey,
   },
   text: {
     margin: 10,
-    color: colors.black
-  },
-  title: {
-    fontSize: responsiveFontSize(2.5),
-    textAlign: 'center',
-    marginBottom: 10,
     color: colors.black,
-    fontWeight: 'bold'
-  }
+  },
+  row: {
+    height: 40,
+  },
 });
 
 export default ProductWiseEarning;

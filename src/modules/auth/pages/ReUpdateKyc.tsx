@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getCities, getDistricts, getStates } from '../../../utils/apiservice';
+import { getCities, getDistricts, getRishtaUserProfile, getStates } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { UserData } from '../../../utils/modules/UserData';
@@ -34,24 +34,68 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
     useEffect(() => {
-        fetchState();
+        fetchData();
         setPostData((prevData: UserData) => ({
             ...prevData,
             contactNo: usernumber
         }));
     }, []);
 
-    const fetchState = async () => {
+    useEffect(() => {
+        getRishtaUserProfile()
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(res => {
+                const result = res;
+                setPostData(result);
+            })
+            .catch(error => {
+                console.error('Error fetching user profile:', error);
+            });
+    }, [usernumber]);
+
+    // const fetchState = async () => {
+    //     try {
+    //         const statesResponse = await getStates();
+    //         const statesData = await statesResponse.data;
+    //         setStates(statesData);
+    //     }
+    //     catch (error) {
+    //         console.error('Error fetching data:', error);
+    //     }
+    // }
+
+    const fetchData = async () => {
         try {
-            const statesResponse = await getStates();
-            const statesData = await statesResponse.data;
-            setStates(statesData);
-            console.log("StatesData", statesData)
+          const statesResponse = await getStates();
+          const statesData = await statesResponse.data;
+          setStates(statesData);
+    
+          const defaultState = postData.stateId;
+    
+          const districtsResponse = await getDistricts(defaultState);
+          const districtsData = await districtsResponse.data;
+    
+          if (Array.isArray(districtsData)) {
+            setDistricts(districtsData);
+    
+            if (Array.isArray(districtsData) && districtsData.length > 0) {
+              const citiesResponse = await getCities(postData.distId);
+              const citiesData = await citiesResponse.data;
+              console.log("CITIES-----------", citiesData);
+              setCities(citiesData);
+            }
+          } else {
+            console.error('Error: Districts data is not an array.', districtsData);
+          }
+        } catch (error) {
+          console.error('Error fetching data:', error);
         }
-        catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    }
+      };
 
     const validateField = (label: string, value: string, postData: UserData | any) => {
         const errors: string[] = [];
@@ -98,7 +142,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     errors.push('Aadhaar Number should not be empty');
                 }
             case 'kycDetails.gstNo':
-                console.log(postData?.kycDetails?.gstYesNo)
                 if (postData?.kycDetails?.gstYesNo == "Yes" && value == "") {
                     errors.push('GST No. should not be empty');
                 }
@@ -127,6 +170,21 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     const handleChange = (label: string, value: string) => {
         if (label === 'isShopDifferent') {
             setIsShopAddressDifferent(value);
+            if (value == "Yes") {
+                setPostData((prevData: UserData) => ({
+                    ...prevData,
+                    currentAddress: postData.permanentAddress,
+                    currStreetAndLocality: postData.streetAndLocality,
+                    currLandmark: postData.landmark,
+                    currCity: postData.city,
+                    currCityId: postData.cityId,
+                    currDistId: postData.distId,
+                    currDist: postData.dist,
+                    currStateId: postData.stateId,
+                    currState: postData.state,
+                    currPinCode: postData.pinCode
+                }))
+            }
         } else if (label === 'kycDetails.gstYesNo') {
             setPostData((prevData: UserData) => ({
                 ...prevData,
@@ -136,31 +194,27 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 },
             }));
         }
-        console.log('Changed');
     };
-
-
 
     const handleInputChange = (value: string, label: string) => {
         const updatedData: UserData | any = { ...postData };
-      
+
         if (label.startsWith('kycDetails.')) {
-            console.log("<><><><><><><><")
-          const kycLabel = label.replace('kycDetails.', '');
-          updatedData.kycDetails = {
-            ...updatedData.kycDetails,
-            [kycLabel]: value,
-          };
+            const kycLabel = label.replace('kycDetails.', '');
+            updatedData.kycDetails = {
+                ...updatedData.kycDetails,
+                [kycLabel]: value,
+            };
         } else {
-          updatedData[label] = value;
+            updatedData[label] = value;
         }
-      
+
         const errors: string[] = validateField(label, value, updatedData);
         setValidationErrors(errors);
-      
+
         setPostData(updatedData);
-      };
-      
+    };
+
 
 
     const selectYesorNo = [
@@ -182,8 +236,8 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             }
             else if (label == "Pan Card* (Front)") {
                 setPostDataOfImage('panCardFront', apiResponse.data.entityUid)
+                console.log("<><><><<", apiResponse.data.entityUid)
             }
-            console.log('API Response in EditProfile:', apiResponse);
         } catch (error) {
             console.error('Error handling image change in EditProfile:', error);
         }
@@ -199,39 +253,66 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         }));
     }
 
-    const handleStateSelect = async (text: string) => {
+    const handleStateSelect = async (text: string, type: string) => {
         const selectedCategory = states.find(category => category.stateName === text);
-        setPostData((prevData: UserData) => ({
-            ...prevData,
-            state: text,
-            stateId: selectedCategory?.id || null,
-        }));
+        if (type == "permanent") {
+            setPostData((prevData: UserData) => ({
+                ...prevData,
+                state: text,
+                stateId: selectedCategory?.id || null,
+            }));
+        }
+        else if (type == "current") {
+            setPostData((prevData: UserData) => ({
+                ...prevData,
+                currState: text,
+                currStateId: selectedCategory?.id || null,
+            }));
+        }
         getDistricts(selectedCategory?.id)
             .then(response => response.data)
             .then((data) => {
                 setDistricts(data);
             })
     }
-    const handleDistrictSelect = async (text: string) => {
+    const handleDistrictSelect = async (text: string, type: string) => {
         const selectedCategory = districts.find(category => category.districtName === text);
-        setPostData((prevData: UserData) => ({
-            ...prevData,
-            dist: text,
-            distId: selectedCategory?.id || null,
-        }));
+        if (type == "permanent") {
+            setPostData((prevData: UserData) => ({
+                ...prevData,
+                dist: text,
+                distId: selectedCategory?.id || null,
+            }));
+        }
+        else if (type == "current") {
+            setPostData((prevData: UserData) => ({
+                ...prevData,
+                currDist: text,
+                currDistId: selectedCategory?.id || null,
+            }));
+        }
         getCities(selectedCategory?.id)
             .then(response => response.data)
             .then((data) => {
                 setCities(data);
             })
     }
-    const handleCitySelect = async (text: string) => {
+    const handleCitySelect = async (text: string, type: string) => {
         const selectedCategory = cities.find(category => category.cityName === text);
-        setPostData((prevData: UserData) => ({
-            ...prevData,
-            city: text,
-            cityId: selectedCategory?.id || null,
-        }));
+        if (type == "permanent") {
+            setPostData((prevData: UserData) => ({
+                ...prevData,
+                city: text,
+                cityId: selectedCategory?.id || null,
+            }));
+        }
+        else if (type == "current") {
+            setPostData((prevData: UserData) => ({
+                ...prevData,
+                currCity: text,
+                currCityId: selectedCategory?.id || null,
+            }));
+        }
     }
 
     return (
@@ -316,21 +397,21 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     label={t('strings:lbl_state')}
                     disabled={false}
                     selectedValue={postData?.state}
-                    onValueChange={(text: string) => handleStateSelect(text)}
+                    onValueChange={(text: string) => handleStateSelect(text, "permanent")}
                     items={states.map(state => ({ label: state.stateName, value: state.stateName }))}
                 />
                 <PickerField
                     label={t('strings:district')}
                     disabled={false}
                     selectedValue={postData?.dist}
-                    onValueChange={(text: string) => handleDistrictSelect(text)}
+                    onValueChange={(text: string) => handleDistrictSelect(text, "permanent")}
                     items={districts.map(district => ({ label: district.districtName, value: district.districtName }))}
                 />
                 <PickerField
                     label={t('strings:city')}
                     disabled={false}
                     selectedValue={postData?.city}
-                    onValueChange={(text: string) => handleCitySelect(text)}
+                    onValueChange={(text: string) => handleCitySelect(text, "permanent")}
                     items={cities.map(city => ({ label: city.cityName, value: city.cityName }))}
                 />
                 <PickerField
@@ -339,6 +420,55 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     onValueChange={(text: string) => handleChange("isShopDifferent", text)}
                     items={selectYesorNo}
                 />
+                {isShopAddressDifferent == "No" ? (
+                    <>
+                        <Text style={styles.subHeading}>{t('strings:current_address')}</Text>
+
+                        <InputField
+                            label={t('strings:lbl_current_address_mandatory')}
+                            value={postData?.currentAddress}
+                            onChangeText={(text) => handleInputChange(text, 'currentAddress')}
+                        />
+                        <InputField
+                            label={t('strings:lbl_street_locality')}
+                            value={postData?.currStreetAndLocality}
+                            onChangeText={(text) => handleInputChange(text, 'currStreetAndLocality')}
+                        />
+                        <InputField
+                            label={t('strings:lbl_landmark')}
+                            value={postData?.currLandmark}
+                            onChangeText={(text) => handleInputChange(text, 'currLandmark')}
+                        />
+                        <InputField
+                            label={t('strings:pincode')}
+                            value={postData?.currPinCode}
+                            onChangeText={(text) => handleInputChange(text, 'currPinCode')}
+                            numeric
+                            maxLength={6}
+                        />
+                        <PickerField
+                            label={t('strings:lbl_state')}
+                            disabled={false}
+                            selectedValue={postData?.currState}
+                            onValueChange={(text: string) => handleStateSelect(text, 'current')}
+                            items={states.map(state => ({ label: state.stateName, value: state.stateName }))}
+                        />
+                        <PickerField
+                            label={t('strings:district')}
+                            disabled={false}
+                            selectedValue={postData?.currDist}
+                            onValueChange={(text: string) => handleDistrictSelect(text, 'current')}
+                            items={districts.map(district => ({ label: district.districtName, value: district.districtName }))}
+                        />
+                        <PickerField
+                            label={t('strings:city')}
+                            disabled={false}
+                            selectedValue={postData?.currCity}
+                            onValueChange={(text: string) => handleCitySelect(text, 'current')}
+                            items={cities.map(city => ({ label: city.cityName, value: city.cityName }))}
+                        />
+                    </>
+                ) : null}
                 <InputField
                     label={t('strings:aadhar_card_no')}
                     value={postData?.kycDetails?.aadharOrVoterOrDlNo}
@@ -349,14 +479,17 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 <ImagePickerField label='Aadhar Card* (Front)'
                     onImageChange={handleImageChange}
                     imageRelated='ID_CARD_FRONT'
+                    initialImage={postData?.kycDetails?.aadharOrVoterOrDLFront}
                 />
                 <ImagePickerField label='Aadhar Card* (Back)'
                     onImageChange={handleImageChange}
                     imageRelated="ID_CARD_BACK"
+                    initialImage={postData?.kycDetails?.aadharOrVoterOrDlBack}
                 />
                 <ImagePickerField label='Pan Card* (Front)'
                     onImageChange={handleImageChange}
                     imageRelated="PAN_CARD_FRONT"
+                    initialImage={postData?.kycDetails?.panCardFront}
                 />
                 <InputField
                     label={t('strings:update_pan_number_manually')}
@@ -369,15 +502,21 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     onValueChange={(text: string) => handleChange("kycDetails.gstYesNo", text)}
                     items={selectYesorNo}
                 />
-                <InputField
-                    label={t('strings:gst_no')}
-                    value={postData?.kycDetails?.gstNo}
-                    onChangeText={(text) => handleInputChange(text, 'kycDetails.gstNo')}
-                />
-                <ImagePickerField label='GST Photo'
-                    onImageChange={handleImageChange}
-                    imageRelated="GST"
-                />
+                {postData?.kycDetails?.gstYesNo == "Yes" ? (
+                    <>
+                        <InputField
+                            label={t('strings:gst_no')}
+                            value={postData?.kycDetails?.gstNo}
+                            onChangeText={(text) => handleInputChange(text, 'kycDetails.gstNo')}
+                        />
+                        <ImagePickerField
+                            label='GST Photo'
+                            onImageChange={handleImageChange}
+                            imageRelated="GST"
+                            initialImage={postData?.kycDetails?.gstFront}
+                        />
+                    </>
+                ) : null}
 
                 <View style={styles.button}>
                     <Buttons

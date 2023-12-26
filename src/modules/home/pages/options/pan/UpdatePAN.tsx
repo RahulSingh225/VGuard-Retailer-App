@@ -1,51 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    TextInput,
-    Text,
     StyleSheet,
     ScrollView,
-    TouchableOpacity,
-    Image,
-    Modal,
 } from 'react-native';
-import { Button } from 'react-native-paper';
 import {
     responsiveFontSize,
     responsiveHeight,
 } from 'react-native-responsive-dimensions';
 import { useTranslation } from 'react-i18next';
-import { launchCamera, launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
 import Snackbar from 'react-native-snackbar';
-import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     updateKycReatiler
 } from '../../../../../utils/apiservice';
-import { getFile, sendFile } from '../../../../../utils/apiservice';
-import { width, height } from '../../../../../utils/dimensions';
 import colors from '../../../../../../colors';
 import Buttons from '../../../../../components/Buttons';
 import arrowIcon from '../../../../../assets/images/arrow.png';
 import Popup from '../../../../../components/Popup';
 import NeedHelp from '../../../../../components/NeedHelp';
+import ImagePickerField from '../../../../../components/ImagePickerField';
+import InputField from '../../../../../components/InputField';
 
 type BankProps = {};
 
 const UpdatePAN: React.FC<BankProps> = () => {
     const { t } = useTranslation();
-    const [select, setSelect] = useState<string | null>(null);
     const [panNumber, setPanNumber] = useState<string>('');
-    const [showImagePickerModal, setShowImagePickerModal] = useState<boolean>(false);
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    const [selectedImageName, setSelectedImageName] = useState<string>('');
     const [entityUid, setEntityUid] = useState<string>('');
     const [popupContent, setPopupContent] = useState('');
     const [userId, setUserId] = useState('');
     const [isPopupVisible, setPopupVisible] = useState(false);
-    const [isImagePreviewVisible, setImagePreviewVisible] = useState(false);
-    const [previewImage, setPreviewImage] = useState<string | null>(null);
-
 
     useEffect(() => {
         const fetchUserRole = async () => {
@@ -54,9 +39,13 @@ const UpdatePAN: React.FC<BankProps> = () => {
                 if (userString) {
                     const user = JSON.parse(userString);
                     const shapedUser = {
-                        userId: user?.contactNo || ''
+                        userId: user?.contactNo || '',
+                        entityUid: user?.kycDetails?.panCardFront,
+                        panNumber: user?.kycDetails?.panCardNo
                     };
                     setUserId(shapedUser.userId);
+                    setPanNumber(shapedUser.panNumber);
+                    setEntityUid(shapedUser.entityUid);
                 }
             } catch (error) {
                 console.error('Error fetching user role:', error);
@@ -65,76 +54,6 @@ const UpdatePAN: React.FC<BankProps> = () => {
 
         fetchUserRole();
     }, []);
-
-    const handleImagePickerPress = () => {
-        setShowImagePickerModal(true);
-    };
-
-    const handleCameraUpload = () => {
-        setShowImagePickerModal(false);
-        launchCamera(
-            {
-                mediaType: 'photo',
-                includeBase64: false,
-            },
-            (response: ImagePickerResponse) => {
-                if (response.didCancel) {
-                    console.log('Camera was canceled');
-                } else if (response.error) {
-                    console.error('Camera error: ', response.error);
-                } else {
-                    const fileData = {
-                        uri: response.assets[0].uri,
-                        type: response.assets[0].type,
-                        name: response.assets[0].fileName,
-                    };
-                    setSelectedImage(response.assets[0].uri);
-                    setSelectedImageName(response.assets[0].fileName);
-                    triggerApiWithImage(fileData);
-                }
-            },
-        );
-    };
-
-    const handleGalleryUpload = () => {
-        setShowImagePickerModal(false);
-        launchImageLibrary(
-            {
-                mediaType: 'photo',
-                includeBase64: false,
-            },
-            (response: ImagePickerResponse) => {
-                if (response.didCancel) {
-                    console.log('Image picker was canceled');
-                } else if (response.error) {
-                    console.error('Image picker error: ', response.error);
-                } else {
-                    const fileData = {
-                        uri: response.assets[0].uri,
-                        type: response.assets[0].type,
-                        name: response.assets[0].fileName,
-                    };
-                    setSelectedImage(response.assets[0].uri);
-                    setSelectedImageName(response.assets[0].fileName);
-                    triggerApiWithImage(fileData);
-                }
-            },
-        );
-    };
-
-    const triggerApiWithImage = async (fileData: FormData) => {
-        const formData = new FormData();
-        formData.append('USER_ROLE', 2);
-        formData.append('image_related', 'PAN_CARD_FRONT');
-        formData.append('file', fileData);
-
-        try {
-            const response = await sendFile(formData);
-            setEntityUid(response.data.entityUid);
-        } catch (error) {
-            console.error('API Error:', error);
-        }
-    };
 
     const handleProceed = async () => {
         const postData = {
@@ -165,9 +84,13 @@ const UpdatePAN: React.FC<BankProps> = () => {
         });
     };
 
-    const handleImagePreview = () => {
-        setPreviewImage(selectedImage);
-        setImagePreviewVisible(true);
+    const handleImageChange = async (image: string, imageName: string, apiResponse: any, label: string) => {
+        try {
+            setEntityUid(apiResponse.data.entityUid)
+            console.log('API Response in Update Pan:', apiResponse);
+        } catch (error) {
+            console.error('Error handling image change in EditProfile:', error);
+        }
     };
 
 
@@ -175,121 +98,16 @@ const UpdatePAN: React.FC<BankProps> = () => {
         <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.mainWrapper}>
                 <View style={styles.form}>
-                    <View>
-                        <TouchableOpacity
-                            style={styles.inputContainer}
-                            onPress={handleImagePickerPress}>
-                            {selectedImage ? (
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder={selectedImageName}
-                                    placeholderTextColor={colors.grey}
-                                    editable={false}
-                                />
-                            ) : (
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder={t('strings:update_pan_card_front')}
-                                    placeholderTextColor={colors.grey}
-                                    editable={false}
-                                />
-                            )}
-                            <TouchableOpacity
-                                style={styles.inputImage}
-                                onPress={handleImagePreview}
-                            >
-                                {selectedImage ? (
-                                    <Image
-                                        source={{ uri: selectedImage }}
-                                        style={{ width: '100%', height: '100%' }}
-                                        resizeMode="cover"
-                                    />
-                                ) : (
-                                    <Image
-                                        source={require('../../../../../assets/images/photo_camera.png')}
-                                        style={{ width: '100%', height: '100%' }}
-                                        resizeMode="contain"
-                                    />
-                                )}
-                            </TouchableOpacity>
-
-                        </TouchableOpacity>
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={isImagePreviewVisible}
-                            onRequestClose={() => setImagePreviewVisible(false)}
-                        >
-                            <View style={styles.imagePreviewContainer}>
-                                <TouchableOpacity
-                                    style={styles.closeButton}
-                                    onPress={() => setImagePreviewVisible(false)}
-                                >
-                                    <Text style={styles.closeButtonText}>Close</Text>
-                                </TouchableOpacity>
-                                <Image
-                                    source={{ uri: previewImage }}
-                                    style={styles.imagePreview}
-                                    resizeMode="contain"
-                                />
-                            </View>
-                        </Modal>
-
-                        {/* Modal for selecting camera or gallery */}
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={showImagePickerModal}
-                            style={styles.modalcontainer}
-                            hardwareAccelerated={true}
-                            opacity={0.3}>
-                            <View style={{
-                                width: width / 1.80, borderRadius: 5, alignSelf: 'center', height: height / 8, top: height / 2.8,
-                                margin: 20,
-                                backgroundColor: '#D3D3D3',
-                                borderRadius: 20,
-                                padding: 10,
-                                shadowColor: '#000',
-                                shadowOffset: {
-                                    width: 100,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 4,
-                                elevation: 5,
-                            }}>
-                                <Picker
-                                    mode="dropdown"
-                                    style={{ color: 'black' }}
-                                    selectedValue={select}
-                                    onValueChange={(itemValue, itemIndex) => {
-                                        if (itemValue === "Open camera") {
-                                            handleCameraUpload()
-                                        } else if (itemValue === "Open Image picker") {
-                                            handleGalleryUpload();
-                                        }
-                                    }}
-                                >
-                                    <Picker.Item label="Select Action" value="" />
-                                    <Picker.Item label="Select Photo from gallery" value="Open Image picker" />
-                                    <Picker.Item label="Capture Photo from camera" value="Open camera" />
-
-                                </Picker>
-                                <Button mode="text" onPress={() => setShowImagePickerModal(false)}>
-                                    Close
-                                </Button>
-                            </View>
-                        </Modal>
-                    </View>
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            style={styles.input}
-                            placeholder={t('strings:update_pan_number_manually')}
+                        <ImagePickerField label='Pan Card* (Front)'
+                            onImageChange={handleImageChange}
+                            imageRelated='PAN_CARD_FRONT'
+                            initialImage={entityUid}
+                        />
+                        <InputField
+                            label={t('strings:update_pan_number_manually')}
                             value={panNumber}
-                            placeholderTextColor={colors.grey}
                             onChangeText={(value) => setPanNumber(value)}
                         />
-                    </View>
 
                 </View>
                 <View style={styles.button}>
@@ -324,9 +142,6 @@ const styles = StyleSheet.create({
         padding: 15,
     },
     form: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10,
         marginTop: 20,
     },
     header: {
@@ -352,11 +167,6 @@ const styles = StyleSheet.create({
     },
     container: {
         height: responsiveHeight(8),
-    },
-    selectedImage: {
-        width: 200,
-        height: 200,
-        marginVertical: 20,
     },
     buttonText: {
         color: colors.white,
@@ -427,7 +237,7 @@ const styles = StyleSheet.create({
         width: '80%',
         height: '80%',
     },
-    
+
 
 });
 
