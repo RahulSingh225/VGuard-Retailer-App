@@ -8,6 +8,8 @@ const imageURL = 'https://vguardrishta.com/';
 
 const BASE_URL = 'http://34.100.133.239:18092/vguard/api/';
 
+// const BASE_URL = 'http://202.66.175.34:18091/vguard/api/';
+
 const TEST_BASE_URL = 'http://192.168.29.60:5000/vguard/api/';
 
 export const createDigestGetRequest = async (relativeUrl = {}) => {
@@ -284,17 +286,22 @@ export function getFile(uuid: String, imageRelated: String, userRole: String) {
 //     }
 //   };
 
-export const sendFile = async (formData: FormData): Promise<any> => {
-    console.log(formData)
-    try {
-        const response = await api.post('file', formData);
-        console.log(response.status);
-        return response;
-    } catch (error) {
-        console.error('Error sending file:', error);
-        throw error;
-    }
+export const sendFile = (formData: FormData): Promise<any> => {
+    // console.log(formData);
+
+    return api.post('file', formData)
+        .then(response => {
+            // console.log(response.status);
+            // console.log("IMAGE RESPONSE", response);
+            return response;
+        })
+        .catch(error => {
+            console.error('Error sending file:', error);
+            throw error;
+        });
 };
+
+
 
 
 export function getDistributorList() {

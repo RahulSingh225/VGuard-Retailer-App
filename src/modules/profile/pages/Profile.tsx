@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { UserData } from '../../../utils/modules/UserData';
 import InputField from '../../../components/InputField';
 import Popup from '../../../components/Popup';
+import Loader from '../../../components/Loader';
 
 const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
@@ -22,6 +23,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [frontFacadeImageName, setFrontFacadeImageName] = useState("");
   const [chequeImageName, setChequeImageName] = useState("");
   const [imageOpen, setimageOpen] = useState("")
+  const [loading, setLoading] = useState(true);
   const handleImageClick = (imageSource: string | "") => {
     console.log("opening model")
     setShowImagePreviewModal(true);
@@ -37,6 +39,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
         const result = res;
         console.log(result)
         setUserData(result);
+        setLoading(false);
       }))
   }, []);
   const fetchChequeCopy = async () => {
@@ -45,8 +48,10 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
       setChequeCopySource(source);
       const gstSource = await renderField("GST Photo");
       setGstCopySource(gstSource);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching cheque copy:", error);
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -212,6 +217,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.mainWrapper}>
+      <Loader isLoading={loading} />
       <View style={styles.flexBox}>
         <View style={styles.ImageProfile}>
           {profileImage ? (
