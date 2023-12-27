@@ -12,7 +12,7 @@ const { width, height } = Dimensions.get('window');
 
 interface ImagePickerFieldProps {
     label: string;
-    onImageChange: (image: string, imageName: string, apiResponse: any, label: string) => void;
+    onImageChange: (image: string, type: string, imageName: string, label: string) => void;
     imageRelated: string;
     initialImage?: string;
 }
@@ -96,15 +96,16 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
             setIsImageSelected(true);
 
             try {
-                const apiResponse = await triggerApiWithImage(fileData);
-                onImageChange(response?.assets[0]?.uri, response?.assets[0]?.fileName || 'Image', apiResponse, label);
+                // const apiResponse = await triggerApiWithImage(fileData);
+                onImageChange(response?.assets[0]?.uri, response?.assets[0]?.type, response?.assets[0]?.fileName, label);
             } catch (error) {
-                console.error('Error triggering API with image in ImagePickerField:', error);
+                console.log('Error triggering API with image in ImagePickerField:', error);
+                throw error;
             }
         }
     };
 
-    const triggerApiWithImage = (fileData: any) => {
+    const triggerApiWithImage = async (fileData: any) => {
         const formData = new FormData();
         formData.append('USER_ROLE', "2");
         formData.append('image_related', imageRelated);

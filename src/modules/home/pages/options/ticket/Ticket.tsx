@@ -51,6 +51,11 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [selectedOption, setSelectedOption] = useState('');
   const [isOptionsLoading, setIsOptionsLoading] = useState(true);
   const [entityUid, setEntityUid] = useState('');
+  const [fileData, setFileData] = useState({
+    uri: "",
+    type: "",
+    name: ""
+  })
   const [descriptionInput, setDescriptionInput] = useState('');
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
@@ -116,51 +121,91 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
     );
   };
 
+  // const handleSubmission = async () => {
+  //   const postData = {
+  //     userId: userData.userId,
+  //     issueTypeId: selectedOption,
+  //     imagePath: entityUid,
+  //     description: descriptionInput,
+  //   };
+
+  //   console.log("Post Data========", postData)
+
+  //   if (postData.userId != '' && postData.issueTypeId != '' && postData.description != '') {
+  //     sendTicket(postData)
+  //       .then((response) => {
+  //         if (response.status === 200) {
+  //           setSelectedOption('');
+  //           setEntityUid('');
+  //           setDescriptionInput('');
+  //           setPopupContent('Ticket Created Successfully');
+  //           setPopupVisible(true);
+  //         } else {
+  //           setPopupContent('Failed to create ticket');
+  //           setPopupVisible(true);
+  //           throw new Error('Failed to create ticket');
+  //         }
+  //       })
+  //       .catch((error) => {
+  //         setPopupContent('Failed to create ticket');
+  //         setPopupVisible(true);
+  //         console.error('API Error:', error);
+  //       });
+  //   }
+  //   else {
+  //     setPopupContent('Enter All Details');
+  //     setPopupVisible(true);
+  //   }
+  // };
+
+
   const handleSubmission = async () => {
-    const postData = {
-      userId: userData.userId,
-      issueTypeId: selectedOption,
-      imagePath: entityUid,
-      description: descriptionInput,
-    };
-
-    console.log("Post Data========", postData)
-
-    if (postData.userId != '' && postData.issueTypeId != '' && postData.description != '') {
-      sendTicket(postData)
-        .then((response) => {
-          if (response.status === 200) {
-            setSelectedOption('');
-            setEntityUid('');
-            setDescriptionInput('');
-            setPopupContent('Ticket Created Successfully');
-            setPopupVisible(true);
-          } else {
-            setPopupContent('Failed to create ticket');
-            setPopupVisible(true);
-            throw new Error('Failed to create ticket');
-          }
-        })
-        .catch((error) => {
-          setPopupContent('Failed to create ticket');
-          setPopupVisible(true);
-          console.error('API Error:', error);
-        });
-    }
-    else {
-      setPopupContent('Enter All Details');
-      setPopupVisible(true);
+    // const sendData = new FormData();
+    // sendData.append("name", fileData.name);
+    // sendData.append("type", fileData.type);
+    // sendData.append("uri", fileData.uri);
+    triggerApiWithImage(fileData);
+  }
+  const handleImageChange = async (image: string, type: string, imageName: string, label: string) => {
+    try {
+      setFileData({
+        uri: image,
+        type: type,
+        name: imageName,
+      })
+    } catch (error) {
+      console.error('Error handling image change in Raise Ticket:', error);
     }
   };
 
-  const handleImageChange = async (image: string, imageName: string, apiResponse: any, label: string) => {
-    try {
-        setEntityUid(apiResponse.data.entityUid)
-        console.log('API Response in Raise Ticket:', apiResponse);
-    } catch (error) {
-        console.error('Error handling image change in EditProfile:', error);
-    }
-};
+  const triggerApiWithImage = async (fileData: any) => {
+    console.log(fileData)
+    const formData = new FormData();
+    formData.append('USER_ROLE', "2");
+    formData.append('image_related', "TICKET");
+    formData.append('file', fileData);
+
+    // const formData = {
+    //   USER_ROLE: '2',
+    //   image_related: 'TICKET',
+    //   file: fileData
+    // }
+
+    console.log(formData)
+
+    return sendFile(formData)
+      .then(response => {
+        // setEntityUid(response.data.entityUid);
+        console.log("RESPONSE________", response)
+        return response;
+      })
+      .catch(error => {
+        console.error('API Error:', error.code);
+        setPopupContent("Error uploading image");
+        setPopupVisible(true);
+        throw error; // Propagate the error further if needed
+      });
+  };
 
   return (
     <ScrollView style={styles.mainWrapper}>
@@ -187,7 +232,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
           </Text>
         </TouchableHighlight>
       </View>
-      <Text style={[styles.blackText, {marginTop: responsiveFontSize(2)}]}>{t('strings:issue_type')}</Text>
+      <Text style={[styles.blackText, { marginTop: responsiveFontSize(2) }]}>{t('strings:issue_type')}</Text>
       {isOptionsLoading ? (
         <Text style={styles.blackText}>Loading options...</Text>
       ) : options.length === 0 ? (
