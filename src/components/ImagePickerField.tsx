@@ -6,6 +6,7 @@ import { launchCamera, launchImageLibrary, ImagePickerResponse } from 'react-nat
 import colors from '../../colors';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import { getFile, sendFile } from '../utils/apiservice';
+import Popup from './Popup';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,14 +25,14 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
     const [select, setSelect] = useState('');
     const [isImageSelected, setIsImageSelected] = useState(false); // New state
     const [entityUid, setEntityUid] = useState<string>('');
+    const [isPopupVisible, setPopupVisible] = useState(false);
+    const [popupContent, setPopupContent] = useState("");
     const [showImageModal, setShowImageModal] = useState(false);
     useEffect(() => {
-        // Create an async function within useEffect to use await
         const fetchImage = async () => {
             if (initialImage) {
                 try {
                     const image = await getFile(initialImage, imageRelated, "2");
-                    console.log("<><><><><");
                     setSelectedImage(image.url);
                     setSelectedImageName(initialImage);
                 } catch (error) {
@@ -79,7 +80,6 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
     };
 
     const handleImageResponse = async (response: ImagePickerResponse) => {
-        console.log('Response:', response);
         const fileData = {
             uri: response.assets[0].uri,
             type: response.assets[0].type,
@@ -97,7 +97,6 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
 
             try {
                 const apiResponse = await triggerApiWithImage(fileData);
-                console.log('API Response in ImagePickerField:', apiResponse);
                 onImageChange(response?.assets[0]?.uri, response?.assets[0]?.fileName || 'Image', apiResponse, label);
             } catch (error) {
                 console.error('Error triggering API with image in ImagePickerField:', error);
@@ -105,23 +104,31 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
         }
     };
 
-    const triggerApiWithImage = async (fileData: FormData) => {
+    const triggerApiWithImage = (fileData: any) => {
         const formData = new FormData();
-        formData.append('USER_ROLE', 2);
+        formData.append('USER_ROLE', "2");
         formData.append('image_related', imageRelated);
         formData.append('file', fileData);
-
-        try {
-            const response = await sendFile(formData);
-            setEntityUid(response.data.entityUid);
-            return response;
-        } catch (error) {
-            console.error('API Error:', error);
-        }
+    
+        return sendFile(formData)
+            .then(response => {
+                setEntityUid(response.data.entityUid);
+                return response;
+            })
+            .catch(error => {
+                console.error('API Error:', error);
+                setPopupContent("Error uploading image");
+                setPopupVisible(true);
+                throw error; // Propagate the error further if needed
+            });
     };
+    
 
     return (
         <View style={styles.container}>
+            <Popup isVisible={isPopupVisible} onClose={()=>setPopupVisible(false)}>
+                <Text>{popupContent}</Text>
+            </Popup>
             <TouchableOpacity style={[styles.input, isImageSelected && styles.selectedContainer]} onPress={handleImagePickerPress}>
                 <View style={[styles.labelContainer, !selectedImage && styles.notSelectedLabelContainer]}>
                     <Text style={[isImageSelected && styles.focusedLabel]} >

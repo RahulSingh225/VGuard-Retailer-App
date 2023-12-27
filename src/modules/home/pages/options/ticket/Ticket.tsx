@@ -217,7 +217,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
       )}
       <ImagePickerField label='Upload Picture (optional)'
         onImageChange={handleImageChange}
-        imageRelated='ID_CARD_FRONT'
+        imageRelated='TICKET'
       />
       <Text style={styles.blackText}>{t('strings:description_remarks')}</Text>
       <TextInput

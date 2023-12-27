@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import colors from '../../../../../../colors';
 import { getProductWiseOffers } from '../../../../../utils/apiservice';
+import Loader from '../../../../../components/Loader';
 
 const baseURL = 'https://www.vguardrishta.com/';
 
@@ -24,20 +25,24 @@ interface ProductWiseProps {
 
 const ProductWise: React.FC<ProductWiseProps> = ({ navigation }) => {
   const [data, setData] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getProductWiseOffers()
       .then(response => response.json())
       .then(responseData => {
-        console.log(responseData);
+        
         const updatedData = responseData.map((category: Category) => ({
           ...category,
           imageUrl: baseURL + category.imageUrl,
         }));
         setData(updatedData);
+        setLoading(false);
+        console.log("RESPONSE DATA-------", updatedData);
       })
       .catch(error => {
         console.error('Error fetching data:', error);
+        setLoading(false);
       });
   }, []);
 
@@ -49,6 +54,7 @@ const ProductWise: React.FC<ProductWiseProps> = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.mainWrapper}>
+      <Loader isLoading={loading} />
       {data.map(category => (
         <TouchableOpacity
           key={category.categoryId}
@@ -57,6 +63,7 @@ const ProductWise: React.FC<ProductWiseProps> = ({ navigation }) => {
           <Image
             source={{ uri: category.imageUrl }}
             style={styles.categoryImage}
+            onLoadEnd={() => setLoading(false)}
           />
         </TouchableOpacity>
       ))}
@@ -76,6 +83,7 @@ const styles = StyleSheet.create({
   categoryImage: {
     width: '100%',
     height: 100,
+    backgroundColor: colors.lightGrey
   },
 });
 
