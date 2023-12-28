@@ -67,10 +67,9 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
   const [CouponData, setCouponData] = useState({
     userMobileNumber: '',
     couponCode: '',
-    pin: '',
-    smsText: '',
+    // pin: '',
+    // smsText: '',
     from: '',
-    userType: '',
     userId: 0,
     apmID: 0,
     retailerCoupon: false,
@@ -79,8 +78,9 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
     latitude: '',
     longitude: '',
     geolocation: '',
-    category: '',
+    category: 'Customer',
   })
+  
   var USER: any = null;
   var CouponResponse: any;
 
@@ -93,6 +93,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         ...prevData,
         from: 'APP',
         userMobileNumber: USER?.mobileNo,
+        userCode: USER?.userCode
       }))
       getUserLocation();
     })
@@ -104,9 +105,10 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         if (position != null) {
           setCouponData((prevData) => ({
             ...prevData,
-            latitude: position.latitude,
-            longitude: position.longitude,
+            latitude: position.latitude.toString(),
+            longitude: position.longitude.toString(),
           }));
+          
         } else {
           console.log("Position is undefined or null");
         }
@@ -140,7 +142,6 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         console.log("Response-----:", r);
         CouponResponse = r;
         if (r.errorCode == 1) {
-          console.log("<><<<><><><<><><><<<><><><")
           setQrcode('');
           var couponPoints = r.couponPoints;
           var basePoints = r.basePoints;
@@ -258,7 +259,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
     if (CouponResponse?.transactId && CouponResponse?.bitEligibleScratchCard) {
       getBonusPoints(CouponResponse.transactId).then(response => response.json().then(result => {
         var couponPoints = result.promotionPoints;
-        scratchCardProps = {
+        setScratchCardProps({
           rewardImage: {
             width: 100,
             height: 100,
@@ -296,8 +297,8 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
             fontWeight: '400',
           },
           textInput: false,
-        };
-        scratchable = false
+        });
+        setScratchable(false);
 
       }))
       showScratchCard(true)

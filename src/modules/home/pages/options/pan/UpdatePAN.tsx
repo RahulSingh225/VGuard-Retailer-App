@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import Snackbar from 'react-native-snackbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
+    sendFile,
     updateKycReatiler
 } from '../../../../../utils/apiservice';
 import colors from '../../../../../../colors';
@@ -31,7 +32,11 @@ const UpdatePAN: React.FC<BankProps> = () => {
     const [popupContent, setPopupContent] = useState('');
     const [userId, setUserId] = useState('');
     const [isPopupVisible, setPopupVisible] = useState(false);
-
+    const [fileData, setFileData] = useState({
+        uri: "",
+        name: "",
+        type: ""
+    });
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
@@ -56,9 +61,10 @@ const UpdatePAN: React.FC<BankProps> = () => {
     }, []);
 
     const handleProceed = async () => {
+        const uuid = await triggerApiWithImage(fileData);
         const postData = {
             panCardNo: panNumber,
-            panCardFront: entityUid,
+            panCardFront: uuid,
             userId: userId,
         };
 
@@ -84,12 +90,40 @@ const UpdatePAN: React.FC<BankProps> = () => {
         });
     };
 
-    const handleImageChange = async (image: string, imageName: string, apiResponse: any, label: string) => {
+    const handleImageChange = async (image: string, type: string, imageName: string, label: string) => {
         try {
-            setEntityUid(apiResponse.data.entityUid)
-            console.log('API Response in Update Pan:', apiResponse);
+            setFileData({
+                uri: image,
+                name: imageName,
+                type: type
+            })
         } catch (error) {
-            console.error('Error handling image change in EditProfile:', error);
+            console.error('Error handling image change in Raise Ticket:', error);
+        }
+    };
+
+    const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }) => {
+        const formData = new FormData();
+        formData.append('USER_ROLE', '2');
+        formData.append('image_related', 'CHEQUE');
+        formData.append('file', {
+            uri: fileData.uri,
+            name: fileData.name,
+            type: fileData.type,
+        });
+
+        console.log("formData=====", formData);
+
+        try {
+            const response = await sendFile(formData);
+            console.log("response-----------", response.data.entityUid);
+            const image = response.data.entityUid
+            setEntityUid(image);
+            return response.data.entityUid;
+        } catch (error) {
+            setPopupContent("Error uploading image");
+            setPopupVisible(true)
+            console.error('API Error:', error);
         }
     };
 
@@ -98,16 +132,16 @@ const UpdatePAN: React.FC<BankProps> = () => {
         <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.mainWrapper}>
                 <View style={styles.form}>
-                        <ImagePickerField label='Pan Card* (Front)'
-                            onImageChange={handleImageChange}
-                            imageRelated='PAN_CARD_FRONT'
-                            initialImage={entityUid}
-                        />
-                        <InputField
-                            label={t('strings:update_pan_number_manually')}
-                            value={panNumber}
-                            onChangeText={(value) => setPanNumber(value)}
-                        />
+                    <ImagePickerField label='Pan Card* (Front)'
+                        onImageChange={handleImageChange}
+                        imageRelated='PAN_CARD_FRONT'
+                        initialImage={entityUid}
+                    />
+                    <InputField
+                        label={t('strings:update_pan_number_manually')}
+                        value={panNumber}
+                        onChangeText={(value) => setPanNumber(value)}
+                    />
 
                 </View>
                 <View style={styles.button}>

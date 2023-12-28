@@ -46,6 +46,11 @@ const Bank: React.FC<BankProps> = () => {
   const [availableBanks, setAvailableBanks] = useState<string[]>([]);
   const [popupContent, setPopupContent] = useState('');
   const [isPopupVisible, setPopupVisible] = useState(false);
+  const [fileData, setFileData] = useState({
+    uri: "",
+    name: "",
+    type: ""
+  });
 
   useEffect(() => {
 
@@ -99,53 +104,93 @@ const Bank: React.FC<BankProps> = () => {
 
 
   const handleProceed = () => {
-    const postData = {
-      bankAccNo: accNo,
-      bankAccHolderName: accHolder,
-      bankAccType: accType,
-      bankNameAndBranch: bankName,
-      bankIfsc: ifscCode,
-      checkPhoto: entityUid,
-    };
-    if (postData.bankAccNo != "" &&
-      postData.bankAccHolderName != "" &&
-      postData.bankAccType != "" &&
-      postData.bankAccType != "" &&
-      postData.bankNameAndBranch != "" &&
-      postData.bankIfsc != "" &&
-      postData.checkPhoto != ""
-    ) {
-      updateBank(postData)
-        .then((response) => {
-          console.log(postData, '---------------postdata');
-          if (response.status === 200) {
-            const responses = response.json();
-            return responses;
-          } else {
-            setPopupContent("Failed to update Bank Details");
-            setPopupVisible(true);
-          }
-        })
-        .then((data) => {
+    triggerApiWithImage(fileData)
+      .then((uuid) => {
+        const imageUid = uuid;  
+        const postData = {
+          bankAccNo: accNo,
+          bankAccHolderName: accHolder,
+          bankAccType: accType,
+          bankNameAndBranch: bankName,
+          bankIfsc: ifscCode,
+          checkPhoto: imageUid,
+        };
+  
+        console.log("POSTDATA", postData);
+  
+        if (
+          postData.bankAccNo !== "" &&
+          postData.bankAccHolderName !== "" &&
+          postData.bankAccType !== "" &&
+          postData.bankNameAndBranch !== "" &&
+          postData.bankIfsc !== "" &&
+          postData.checkPhoto !== ""
+        ) {
+          updateBank(postData)
+            .then(response => {
+              if (response.status === 200) {
+                return response.json();
+              } else {
+                setPopupContent("Failed to update Bank Details");
+              }
+            })
+            .then(data => {
+              setPopupContent(data.message);
+              setPopupVisible(true);
+            })
+            .catch(error => {
+              console.error('API Error:', error);
+              setPopupContent("An error occurred");
+              setPopupVisible(true);
+            });
+        } else {
+          setPopupContent("Enter all the details");
           setPopupVisible(true);
-          setPopupContent(data.message)
-        })
-        .catch((error) => {
-          console.error('API Error:', error);
-        });
-    }
-    else {
-      setPopupContent("Enter all the details");
-      setPopupVisible(true);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        setPopupContent("An error occurred");
+        setPopupVisible(true);
+      });
+  };
+  
+  
+
+  const handleImageChange = async (image: string, type: string, imageName: string, label: string) => {
+    try {
+      setFileData({
+        uri: image,
+        name: imageName,
+        type: type
+      })
+    } catch (error) {
+      console.error('Error handling image change in Raise Ticket:', error);
     }
   };
 
-  const handleImageChange = async (image: string, imageName: string, apiResponse: any, label: string) => {
+  const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }) => {
+    const formData = new FormData();
+    formData.append('USER_ROLE', '2');
+    formData.append('image_related', 'CHEQUE');
+    formData.append('file', {
+      uri: fileData.uri,
+      name: fileData.name,
+      type: fileData.type,
+    });
+
+    console.log("formData=====", formData);
+
     try {
-      setEntityUid(apiResponse.data.entityUid)
-      console.log('API Response in Update Pan:', apiResponse);
+      const response = await sendFile(formData);
+      console.log("response-----------", response.data.entityUid);
+      const image = response.data.entityUid
+      setEntityUid(image);
+      return response.data.entityUid;
     } catch (error) {
-      console.error('Error handling image change in EditProfile:', error);
+      setPopupContent("Error uploading image");
+      setPopupVisible(true)
+      console.error('API Error:', error);
     }
   };
 

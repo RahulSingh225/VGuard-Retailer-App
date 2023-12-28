@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, Linking, TouchableOpacity } from 'react-native';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getCities, getDistricts, getFile, getRetailerCategoryDealIn, getRishtaUserProfile, getStates, updateProfile } from '../../../utils/apiservice';
+import { getCities, getDistricts, getFile, getRetailerCategoryDealIn, getRishtaUserProfile, getStates, sendFile, updateProfile } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { UserData } from '../../../utils/modules/UserData';
@@ -76,7 +76,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
     console.log(">><><><><>SELFIE", selfie)
   }, [stateId, selfie]);
-  
+
   const fetchData = async () => {
     try {
       const statesResponse = await getStates();
@@ -131,34 +131,49 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const handleSubmit = async () => {
-    console.log("Post Data:", postData);
-
-    const currentDate = new Date();
-    const dobDate = moment(postData?.dob, 'DD MMM YYYY').toDate();
-    const minAllowedDate = new Date(currentDate);
-    minAllowedDate.setFullYear(currentDate.getFullYear() - 18);
-
-    console.log(postData?.dob)
-    console.log(dobDate)
-
-    if (dobDate < minAllowedDate) {
-      updateProfile(postData)
-        .then(response => response.json())
-        .then((responseData) => {
-          setPopupVisible(true);
-          setPopupContent(responseData?.message);
-          console.log("<><<><<><>><", responseData, "<><<<><><><><><><<><");
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
+    try {
+      console.log("Post Data:", postData);
+  
+      const currentDate = new Date();
+      const dobDate = moment(postData?.dob, 'DD MMM YYYY').toDate();
+      const minAllowedDate = new Date(currentDate);
+      minAllowedDate.setFullYear(currentDate.getFullYear() - 18);
+  
+      console.log(postData?.dob);
+      console.log(dobDate);
+  
+      if (dobDate < minAllowedDate) {
+        const idFrontUid = await triggerApiWithImage(idFrontFileData);
+        const idBackUid = await triggerApiWithImage(idBackFileData);
+        const selfieUid = await triggerApiWithImage(selfieFileData);
+        const gstUid = await triggerApiWithImage(GstFileData);
+  
+        setPostDataOfImage('aadharOrVoterOrDLFront', idFrontUid);
+        setPostDataOfImage('aadharOrVoterOrDlBack', idBackUid);
+        setPostDataOfImage('selfie', selfieUid);
+        setPostDataOfImage('gstFront', gstUid);
+  
+        updateProfile(postData)
+          .then(response => response.json())
+          .then((responseData) => {
+            setPopupVisible(true);
+            setPopupContent(responseData?.message);
+            console.log("<><<><<><>><", responseData, "<><<<><><><><><><<><");
+          })
+          .catch(error => {
+            console.error('Error fetching data:', error);
+          });
+      } else {
+        Snackbar.show({
+          text: 'The age should be at least 18 years.',
+          duration: Snackbar.LENGTH_LONG,
         });
-    } else {
-      Snackbar.show({
-        text: 'The age should be atleast 18 years.',
-        duration: Snackbar.LENGTH_LONG,
-      });
+      }
+    } catch (error) {
+      console.error('Error in handleSubmit:', error);
     }
   };
+  
 
 
   const handleChange = (label: string, value: string) => {
@@ -174,7 +189,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         [label]: value,
       }));
     }
-    else if(label == "gstYesNo"){
+    else if (label == "gstYesNo") {
       setPostData((prevData: UserData) => ({
         ...prevData,
         kycDetails: {
@@ -221,33 +236,87 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     { label: 'UnMarried', value: '2' }
   ];
 
-  const handleImageChange = async (image: string, imageName: string, apiResponse: any, label: string) => {
+  const [idFrontFileData, setIdFrontFileData] = useState({
+    uri: "",
+    name: "",
+    type: ""
+  })
+  const [idBackFileData, setIdBackFileData] = useState({
+    uri: "",
+    name: "",
+    type: ""
+  })
+  const [selfieFileData, setSelfieFileData] = useState({
+    uri: "",
+    name: "",
+    type: ""
+  })
+  const [GstFileData, setGstFileData] = useState({
+    uri: "",
+    name: "",
+    type: ""
+  })
+
+  const handleImageChange = async (image: string, type: string, imageName: string, label: string) => {
     try {
-      if (label == "Id Proof* (Front)") {
-        setIdFrontUid(apiResponse.data.entityUid);
-        setPostDataOfImage('aadharOrVoterOrDLFront', apiResponse.data.entityUid)
+      if (label === "Id Proof* (Front)") {
+        setIdFrontFileData({
+          uri: image,
+          name: imageName,
+          type: type
+        })
+      } else if (label === "Id Proof* (Back)") {
+        setIdBackFileData({
+          uri: image,
+          name: imageName,
+          type: type
+        })
+      } else if (label === "Selfie") {
+        setSelfieFileData({
+          uri: image,
+          name: imageName,
+          type: type
+        })
+      } else if (label === "GST Photo") {
+        setGstFileData({
+          uri: image,
+          name: imageName,
+          type: type
+        })
       }
-      else if (label == "Id Proof* (Back)") {
-        setIdBackUid(apiResponse.data.entityUid);
-        setPostDataOfImage('aadharOrVoterOrDlBack', apiResponse.data.entityUid)
-      }
-      else if (label == "Selfie") {
-        console.log("sELFIE", apiResponse.data.entityUid)
-        setSelfie(apiResponse.data.entityUid);
-        setPostDataOfImage('selfie', apiResponse.data.entityUid);
-      }
-      else if (label == "GST Photo") {
-        setGstUid(apiResponse.data.entityUid);
-        setPostDataOfImage('gstFront', apiResponse.data.entityUid)
-      }
-      console.log('API Response in EditProfile:', apiResponse);
+
     } catch (error) {
       console.error('Error handling image change in EditProfile:', error);
     }
   };
 
+  const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }) => {
+    try {
+      const formData = new FormData();
+      formData.append('USER_ROLE', '2');
+      formData.append('image_related', 'CHEQUE');
+      formData.append('file', {
+        uri: fileData.uri,
+        name: fileData.name,
+        type: fileData.type,
+      });
+
+      console.log("formData=====", formData);
+
+      const response = await sendFile(formData);
+      console.log("response-----------", response.data.entityUid);
+
+      return response.data.entityUid;
+    } catch (error) {
+      setPopupContent("Error uploading image");
+      setPopupVisible(true);
+      console.error('API Error:', error);
+      throw error; // rethrow the error to propagate it further
+    }
+  };
+
   const setPostDataOfImage = (label: string, value: string) => {
-    console.log("POST IMAGE------", label, value)
+    console.log("POST IMAGE------", label, value);
     setPostData((prevData: UserData) => ({
       ...prevData,
       kycDetails: {
@@ -255,7 +324,8 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         [label]: value,
       }
     }));
-  }
+  };
+
 
   const handleStateSelect = async (text: string) => {
     const selectedCategory = states.find(category => category.stateName === text);

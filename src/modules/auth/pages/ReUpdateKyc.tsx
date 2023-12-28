@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getCities, getDistricts, getRishtaUserProfile, getStates } from '../../../utils/apiservice';
+import { getCities, getDistricts, getRishtaUserProfile, getStates, sendFile } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { UserData } from '../../../utils/modules/UserData';
@@ -71,31 +71,31 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
 
     const fetchData = async () => {
         try {
-          const statesResponse = await getStates();
-          const statesData = await statesResponse.data;
-          setStates(statesData);
-    
-          const defaultState = postData.stateId;
-    
-          const districtsResponse = await getDistricts(defaultState);
-          const districtsData = await districtsResponse.data;
-    
-          if (Array.isArray(districtsData)) {
-            setDistricts(districtsData);
-    
-            if (Array.isArray(districtsData) && districtsData.length > 0) {
-              const citiesResponse = await getCities(postData.distId);
-              const citiesData = await citiesResponse.data;
-              console.log("CITIES-----------", citiesData);
-              setCities(citiesData);
+            const statesResponse = await getStates();
+            const statesData = await statesResponse.data;
+            setStates(statesData);
+
+            const defaultState = postData.stateId;
+
+            const districtsResponse = await getDistricts(defaultState);
+            const districtsData = await districtsResponse.data;
+
+            if (Array.isArray(districtsData)) {
+                setDistricts(districtsData);
+
+                if (Array.isArray(districtsData) && districtsData.length > 0) {
+                    const citiesResponse = await getCities(postData.distId);
+                    const citiesData = await citiesResponse.data;
+                    console.log("CITIES-----------", citiesData);
+                    setCities(citiesData);
+                }
+            } else {
+                console.error('Error: Districts data is not an array.', districtsData);
             }
-          } else {
-            console.error('Error: Districts data is not an array.', districtsData);
-          }
         } catch (error) {
-          console.error('Error fetching data:', error);
+            console.error('Error fetching data:', error);
         }
-      };
+    };
 
     const validateField = (label: string, value: string, postData: UserData | any) => {
         const errors: string[] = [];
@@ -151,21 +151,61 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         return errors;
     };
 
-
-    const InitiatePreview = () => {
-        const errors: string[] = validateField('name', postData?.name, postData);
-
-        setValidationErrors(errors);
-
-        if (errors.length === 0) {
-            AsyncStorage.setItem('VGUSER', JSON.stringify(postData)).then(() => {
-                navigation.navigate('PreviewReUpdateKyc');
+    const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }) => {
+        try {
+            const formData = new FormData();
+            formData.append('USER_ROLE', '2');
+            formData.append('image_related', 'CHEQUE');
+            formData.append('file', {
+                uri: fileData.uri,
+                name: fileData.name,
+                type: fileData.type,
             });
-        } else {
+
+            console.log("formData=====", formData);
+
+            const response = await sendFile(formData);
+            console.log("response-----------", response.data.entityUid);
+
+            return response.data.entityUid;
+        } catch (error) {
+            setPopupContent("Error uploading image");
             setPopupVisible(true);
-            setPopupContent(errors.map((error, index) => <Text key={index}>{error}</Text>));
+            console.error('API Error:', error);
+            throw error; // rethrow the error to propagate it further
         }
     };
+
+
+    const InitiatePreview = async () => {
+        try {
+          const errors: string[] = validateField('name', postData?.name, postData);
+      
+          setValidationErrors(errors);
+      
+          if (errors.length === 0) {
+            const idFrontUid = await triggerApiWithImage(idFrontFileData);
+            const idBackUid = await triggerApiWithImage(idBackFileData);
+            const panUid = await triggerApiWithImage(panFileData);
+            const gstUid = await triggerApiWithImage(GstFileData);
+      
+            setPostDataOfImage('aadharOrVoterOrDLFront', idFrontUid);
+            setPostDataOfImage('aadharOrVoterOrDlBack', idBackUid);
+            setPostDataOfImage('panCardFront', panUid);
+            setPostDataOfImage('gstFront', gstUid);
+      
+            AsyncStorage.setItem('VGUSER', JSON.stringify(postData)).then(() => {
+              navigation.navigate('PreviewReUpdateKyc');
+            });
+          } else {
+            setPopupVisible(true);
+            setPopupContent(errors.map((error, index) => <Text key={index}>{error}</Text>));
+          }
+        } catch (error) {
+          console.error('Error in InitiatePreview:', error);
+        }
+      };
+      
 
     const handleChange = (label: string, value: string) => {
         if (label === 'isShopDifferent') {
@@ -223,23 +263,57 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         { label: 'No', value: 'No' }
     ];
 
-    const handleImageChange = async (image: string, imageName: string, apiResponse: any, label: string) => {
+    const [idFrontFileData, setIdFrontFileData] = useState({
+        uri: "",
+        name: "",
+        type: ""
+    })
+    const [idBackFileData, setIdBackFileData] = useState({
+        uri: "",
+        name: "",
+        type: ""
+    })
+    const [panFileData, setPanFileData] = useState({
+        uri: "",
+        name: "",
+        type: ""
+    })
+    const [GstFileData, setGstFileData] = useState({
+        uri: "",
+        name: "",
+        type: ""
+    })
+
+    const handleImageChange = async (image: string, type: string, imageName: string, label: string) => {
         try {
-            if (label == "Aadhar Card* (Front)") {
-                setPostDataOfImage('aadharOrVoterOrDLFront', apiResponse.data.entityUid)
+            if (label === "Aadhar Card* (Front)") {
+                setIdFrontFileData({
+                    uri: image,
+                    name: imageName,
+                    type: type
+                })
+            } else if (label === "Aadhar Card* (Back)") {
+                setIdBackFileData({
+                    uri: image,
+                    name: imageName,
+                    type: type
+                })
+            } else if (label === "Pan Card* (Front)") {
+                setPanFileData({
+                    uri: image,
+                    name: imageName,
+                    type: type
+                })
+            } else if (label === "GST Photo") {
+                setGstFileData({
+                    uri: image,
+                    name: imageName,
+                    type: type
+                })
             }
-            else if (label == "Aadhar Card* (Back)") {
-                setPostDataOfImage('aadharOrVoterOrDlBack', apiResponse.data.entityUid)
-            }
-            else if (label == "GST Photo") {
-                setPostDataOfImage('gstFront', apiResponse.data.entityUid)
-            }
-            else if (label == "Pan Card* (Front)") {
-                setPostDataOfImage('panCardFront', apiResponse.data.entityUid)
-                console.log("<><><><<", apiResponse.data.entityUid)
-            }
+
         } catch (error) {
-            console.error('Error handling image change in EditProfile:', error);
+            console.error('Error handling image change in Update Kyc:', error);
         }
     };
 

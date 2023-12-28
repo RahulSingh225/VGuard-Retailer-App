@@ -45,7 +45,7 @@ export const createDigestGetRequest = async (relativeUrl = {}) => {
 export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
     try {
         const url = BASE_URL + relativeUrl;
-        
+
         const username = await AsyncStorage.getItem('username');
         const password = await AsyncStorage.getItem('password');
         const authType = await AsyncStorage.getItem('authtype');
@@ -99,7 +99,7 @@ export const testingcreateGetRequest = async (relativeUrl = {}) => {
         const url = TEST_BASE_URL + relativeUrl;
         // const url = BASE_URL + relativeUrl;
         console.log("URL-------------------", url)
-        
+
 
         const username = await AsyncStorage.getItem('username');
         const password = await AsyncStorage.getItem('password');
@@ -287,9 +287,13 @@ export function getFile(uuid: String, imageRelated: String, userRole: String) {
 //   };
 
 export const sendFile = (formData: FormData): Promise<any> => {
-    // console.log(formData);
-
-    return api.post('file', formData)
+    console.log(formData);
+    const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      };
+    return api.post('file', formData, config)
         .then(response => {
             // console.log(response.status);
             // console.log("IMAGE RESPONSE", response);
@@ -300,19 +304,17 @@ export const sendFile = (formData: FormData): Promise<any> => {
                 console.log(error.response.data);
                 console.log(error.response.status);
                 console.log(error.response.headers);
-              } else if (error.request) {
+            } else if (error.request) {
                 console.log(error.request);
-              } else {
+            } else {
                 console.log('Error', error.message);
-              }
-              throw error;
+            }
+            throw error;
         });
-    // const path = "file";
-    // return createDigestPostRequest(path, formData);
 };
 
-
-
+// const path = "file";
+// return createDigestPostRequest(path, formData);
 
 export function getDistributorList() {
     const path = "user/dist/";

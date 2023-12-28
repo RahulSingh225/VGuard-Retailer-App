@@ -58,6 +58,7 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const { login } = useAuth();
   const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [popupContent, setPopupContent] = useState(false);
   const [selectedOption, setSelectedOption] = useState(true);
 
   const handleTermsPress = () => {
@@ -71,9 +72,9 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       .catch((error) => console.error('Error opening URL:', error));
   };
 
-  const togglePopup = () => {
-    setIsPopupVisible(!isPopupVisible);
-  };
+  // const togglePopup = () => {
+  //   setIsPopupVisible(!isPopupVisible);
+  // };
 
   const handleLogin = async () => {
     if (username === '' || password === '') {
@@ -97,8 +98,13 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         var r = await response.json();
         console.log(r);
         login(r);
+      }
+      else if(response.status === 500) {
+        setIsPopupVisible(!isPopupVisible);
+        setPopupContent("Something went wrong!")
       } else {
-        togglePopup();
+        setIsPopupVisible(!isPopupVisible);
+        setPopupContent("Wrong Username or Password!")
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -233,9 +239,9 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           </View>
         </View>
         {isPopupVisible && (
-          <Popup isVisible={isPopupVisible} onClose={togglePopup}>
+          <Popup isVisible={isPopupVisible} onClose={()=>setIsPopupVisible(!isPopupVisible)}>
             <Text style={{ fontWeight: 'bold' }}>
-              Incorrect Username or Password
+              {popupContent}
             </Text>
           </Popup>
         )}
