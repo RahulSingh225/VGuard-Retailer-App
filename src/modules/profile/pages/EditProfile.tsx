@@ -40,9 +40,9 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [districts, setDistricts] = useState([]);
   const [cities, setCities] = useState([]);
   const [stateId, setStateId] = useState("");
+  const [loader, showLoader] = useState(true);
 
   useEffect(() => {
-    // showLoader(true);
     getRishtaUserProfile()
       .then(response => response.json())
       .then(res => {
@@ -55,10 +55,12 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         setIdFrontUid(res.kycDetails.aadharOrVoterOrDLFront);
         const image = selfie;
         console.log("SELFIE----------", image);
+        showLoader(false);
       })
       .catch(error => {
         setPopupContent("Something Went Wrong!");
         setPopupVisible(true);
+        showLoader(false);
       })
 
     getRetailerCategoryDealIn()
@@ -131,66 +133,102 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const handleSubmit = async () => {
+    showLoader(true);
     try {
       console.log("Post Data:", postData);
-  
+
       const currentDate = new Date();
       const dobDate = moment(postData?.dob, 'DD MMM YYYY').toDate();
       const minAllowedDate = new Date(currentDate);
       minAllowedDate.setFullYear(currentDate.getFullYear() - 18);
-  
+
       console.log(postData?.dob);
       console.log(dobDate);
-  
+
       if (dobDate < minAllowedDate) {
-        const selfie = selfieFileData;
-        const idFront = idFrontFileData;
-        const idBack = idBackFileData;
-        const gst = GstFileData
-        if(selfie.uri!= "")
-        {
-          const selfieUid = await triggerApiWithImage(selfie, 'PROFILE');
-          console.log("SELFIEEEEEEEEEEEEE", selfieUid);
+        console.log("<><><<<<>");
+
+        // Store promises for each image upload
+        const selfiePromise = selfieFileData.uri !== "" ? triggerApiWithImage(selfieFileData, 'PROFILE') : Promise.resolve(null);
+        const idFrontPromise = idFrontFileData.uri !== "" ? triggerApiWithImage(idFrontFileData, 'ID_CARD_FRONT') : Promise.resolve(null);
+        const idBackPromise = idBackFileData.uri !== "" ? triggerApiWithImage(idBackFileData, 'ID_CARD_BACK') : Promise.resolve(null);
+        const gstPromise = GstFileData.uri !== "" ? triggerApiWithImage(GstFileData, 'GST') : Promise.resolve(null);
+
+        // Wait for all image uploads to complete
+        const [selfieUid, idFrontUid, idBackUid, gstUid] = await Promise.all([selfiePromise, idFrontPromise, idBackPromise, gstPromise]);
+
+        // Check if any image upload failed
+        if (selfieFileData.uri !== "" && selfieUid === null) {
+          Snackbar.show({
+            text: 'Error uploading selfie image.',
+            duration: Snackbar.LENGTH_LONG,
+          });
+          return;
+        }
+
+        if (idFrontFileData.uri !== "" && idFrontUid === null) {
+          Snackbar.show({
+            text: 'Error uploading ID card front image.',
+            duration: Snackbar.LENGTH_LONG,
+          });
+          return;
+        }
+
+        if (idBackFileData.uri !== "" && idBackUid === null) {
+          Snackbar.show({
+            text: 'Error uploading ID card back image.',
+            duration: Snackbar.LENGTH_LONG,
+          });
+          return;
+        }
+
+        if (GstFileData.uri !== "" && gstUid === null) {
+          Snackbar.show({
+            text: 'Error uploading GST image.',
+            duration: Snackbar.LENGTH_LONG,
+          });
+          return;
+        }
+
+        // Update profile with successful image uploads
+        if (selfieFileData.uri !== "" && selfieUid !== null) {
           setPostDataOfImage('selfie', selfieUid);
         }
-        if(idFront.uri!= "")
-        {
-          const idFrontUid = await triggerApiWithImage(idFront, 'ID_CARD_FRONT');
+
+        if (idFrontFileData.uri !== "" && idFrontUid !== null) {
           setPostDataOfImage('aadharOrVoterOrDLFront', idFrontUid);
         }
-        if(idBack.uri!= "")
-        {
-          const idBackUid = await triggerApiWithImage(idBackFileData, 'ID_CARD_BACK');
+
+        if (idBackFileData.uri !== "" && idBackUid !== null) {
           setPostDataOfImage('aadharOrVoterOrDlBack', idBackUid);
         }
-        if(gst.uri!= "")
-        {
-          const gstUid = await triggerApiWithImage(GstFileData, 'GST');
+
+        if (GstFileData.uri !== "" && gstUid !== null) {
           setPostDataOfImage('gstFront', gstUid);
         }
+
+        // Update the profile data
         updateProfile(postData)
           .then(response => response.json())
           .then((responseData) => {
             setPopupVisible(true);
             setPopupContent(responseData?.message);
             console.log("<><<><<><>><", responseData, "<><<<><><><><><><<><");
+            showLoader(false);
           })
           .catch(error => {
-            console.error('Error fetching data:', error);
+            setPopupContent("Error Updating Profile");
+            setPopupVisible(true);
+            showLoader(false);
           });
       } else {
-        Snackbar.show({
-          text: 'The age should be at least 18 years.',
-          duration: Snackbar.LENGTH_LONG,
-        });
+        setPopupContent('The age should be at least 18 years.');
+        setPopupVisible(true);
       }
     } catch (error) {
       console.error('Error in handleSubmit:', error);
     }
   };
-  
-
-
   const handleChange = (label: string, value: string) => {
     if (label == "isShopDifferent") {
       setIsShopAddressDifferent(value)
@@ -279,7 +317,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         name: imageName,
         type: type,
       };
-  
+
       if (label === "Id Proof* (Front)") {
         setIdFrontFileData(fileData);
       } else if (label === "Id Proof* (Back)") {
@@ -291,12 +329,12 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       } else if (label === "GST Photo") {
         setGstFileData(fileData);
       }
-  
+
     } catch (error) {
       console.error('Error handling image change in EditProfile:', error);
     }
   };
-  
+
 
   const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }, imageRelated: string) => {
     try {
@@ -333,50 +371,72 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
 
-  const handleStateSelect = async (text: string) => {
+  const handleStateSelect = async (text: string, type: string) => {
     const selectedCategory = states.find(category => category.stateName === text);
-
-    setPostData((prevData: UserData) => ({
-      ...prevData,
-      state: text,
-      stateId: selectedCategory?.id || null,
-    }));
-
+    if (type == "permanent") {
+      setPostData((prevData: UserData) => ({
+        ...prevData,
+        state: text,
+        stateId: selectedCategory?.id || null,
+      }));
+    }
+    else if (type == "current") {
+      setPostData((prevData: UserData) => ({
+        ...prevData,
+        currState: text,
+        currStateId: selectedCategory?.id || null,
+      }));
+    }
     getDistricts(selectedCategory?.id)
       .then(response => response.data)
       .then((data) => {
         setDistricts(data);
       })
   }
-  const handleDistrictSelect = async (text: string) => {
+  const handleDistrictSelect = async (text: string, type: string) => {
     const selectedCategory = districts.find(category => category.districtName === text);
-
-    setPostData((prevData: UserData) => ({
-      ...prevData,
-      dist: text,
-      distId: selectedCategory?.id || null,
-    }));
-
+    if (type == "permanent") {
+      setPostData((prevData: UserData) => ({
+        ...prevData,
+        dist: text,
+        distId: selectedCategory?.id || null,
+      }));
+    }
+    else if (type == "current") {
+      setPostData((prevData: UserData) => ({
+        ...prevData,
+        currDist: text,
+        currDistId: selectedCategory?.id || null,
+      }));
+    }
     getCities(selectedCategory?.id)
       .then(response => response.data)
       .then((data) => {
         setCities(data);
       })
   }
-  const handleCitySelect = async (text: string) => {
+  const handleCitySelect = async (text: string, type: string) => {
     const selectedCategory = cities.find(category => category.cityName === text);
-
-    setPostData((prevData: UserData) => ({
-      ...prevData,
-      city: text,
-      cityId: selectedCategory?.id || null,
-    }));
+    if (type == "permanent") {
+      setPostData((prevData: UserData) => ({
+        ...prevData,
+        city: text,
+        cityId: selectedCategory?.id || null,
+      }));
+    }
+    else if (type == "current") {
+      setPostData((prevData: UserData) => ({
+        ...prevData,
+        currCity: text,
+        currCityId: selectedCategory?.id || null,
+      }));
+    }
   }
 
 
   return (
     <ScrollView style={styles.mainWrapper}>
-      {/* {loader && <Loader />} */}
+      {loader && <Loader isLoading={loader} />}
       <View style={styles.flexBox}>
         <View style={styles.ImageProfile}>
           {profileImage ? (
@@ -458,21 +518,21 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           label={t('strings:lbl_state')}
           disabled={false}
           selectedValue={postData?.state}
-          onValueChange={(text: string) => handleStateSelect(text)}
+          onValueChange={(text: string) => handleStateSelect(text, 'permanent')}
           items={states.map(state => ({ label: state.stateName, value: state.stateName }))}
         />
         <PickerField
           label={t('strings:district')}
           disabled={false}
           selectedValue={postData?.dist}
-          onValueChange={(text: string) => handleDistrictSelect(text)}
+          onValueChange={(text: string) => handleDistrictSelect(text, 'permanent')}
           items={districts.map(district => ({ label: district.districtName, value: district.districtName }))}
         />
         <PickerField
           label={t('strings:city')}
           disabled={false}
           selectedValue={postData?.city}
-          onValueChange={(text: string) => handleCitySelect(text)}
+          onValueChange={(text: string) => handleCitySelect(text, 'permanent')}
           items={cities.map(city => ({ label: city.cityName, value: city.cityName }))}
         />
         <PickerField
@@ -481,6 +541,55 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           onValueChange={(text: string) => handleChange("isShopDifferent", text)}
           items={selectYesorNo}
         />
+        {isShopAddressDifferent == "No" ? (
+          <>
+            <Text style={styles.subHeading}>{t('strings:current_address')}</Text>
+
+            <InputField
+              label={t('strings:lbl_current_address_mandatory')}
+              value={postData?.currentAddress}
+              onChangeText={(text) => handleInputChange(text, 'currentAddress')}
+            />
+            <InputField
+              label={t('strings:lbl_street_locality')}
+              value={postData?.currStreetAndLocality}
+              onChangeText={(text) => handleInputChange(text, 'currStreetAndLocality')}
+            />
+            <InputField
+              label={t('strings:lbl_landmark')}
+              value={postData?.currLandmark}
+              onChangeText={(text) => handleInputChange(text, 'currLandmark')}
+            />
+            <InputField
+              label={t('strings:pincode')}
+              value={postData?.currPinCode}
+              onChangeText={(text) => handleInputChange(text, 'currPinCode')}
+              numeric
+              maxLength={6}
+            />
+            <PickerField
+              label={t('strings:lbl_state')}
+              disabled={false}
+              selectedValue={postData?.currState}
+              onValueChange={(text: string) => handleStateSelect(text, 'current')}
+              items={states.map(state => ({ label: state.stateName, value: state.stateName }))}
+            />
+            <PickerField
+              label={t('strings:district')}
+              disabled={false}
+              selectedValue={postData?.currDist}
+              onValueChange={(text: string) => handleDistrictSelect(text, 'current')}
+              items={districts.map(district => ({ label: district.districtName, value: district.districtName }))}
+            />
+            <PickerField
+              label={t('strings:city')}
+              disabled={false}
+              selectedValue={postData?.currCity}
+              onValueChange={(text: string) => handleCitySelect(text, 'current')}
+              items={cities.map(city => ({ label: city.cityName, value: city.cityName }))}
+            />
+          </>
+        ) : null}
         <PickerField
           label={t('strings:lbl_marital_status')}
           selectedValue={postData?.maritalStatus}

@@ -37,19 +37,20 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
   const [popupMessage, setPopupMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(60);
+  const [loader, showLoader] = useState(false);
   const { login } = useAuth();
 
   const placeholderColor = colors.grey;
   useEffect(() => {
     let timer;
-  
+
     if (countdown > 0) {
       timer = setInterval(() => {
         console.log('Countdown tick:', countdown);
         setCountdown((prevCountdown) => prevCountdown - 1);
       }, 1000); // The interval is set to 1000 milliseconds (1 second)
     }
-  
+
     return () => {
       clearInterval(timer);
       console.log('Timer cleared');
@@ -57,11 +58,43 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
   }, [countdown]);
 
   const callToGetOtp = async () => {
+    if (countdown <= 0) {
+      showLoader(true);
+      try {
+        const body = {
+          loginOtpUserName: number,
+          otpType: "Voice"
+        };
+        let validationResponse = await generateOtpForLogin(body);
+        console.log(validationResponse);
+        if (validationResponse.data.status === 200) {
+          const successMessage = validationResponse.data.message;
+          setIsPopupVisible(true);
+          setPopupMessage(successMessage);
+        } else {
+          const errorMessage = validationResponse.data.message;
+          setIsPopupVisible(true);
+          setPopupMessage(errorMessage);
+        }
+        showLoader(false);
+      } catch (error) {
+        setPopupMessage("Error sending OTP!");
+        setIsPopupVisible(true);
+        showLoader(false);
+      }
+    }
+    else{
+      setPopupMessage("Wait for "+countdown+ "seconds to send OTP!");
+      setIsPopupVisible(true);
+    }
+  }
+  const smsToGetOtp = async () => {
+    showLoader(true);
+    const body = {
+      loginOtpUserName: number,
+      otpType: null
+    };
     try {
-      const body = {
-        loginOtpUserName: number,
-        otpType: "Voice"
-      };
       let validationResponse = await generateOtpForLogin(body);
       console.log(validationResponse);
       if (validationResponse.data.status === 200) {
@@ -73,54 +106,76 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
         setIsPopupVisible(true);
         setPopupMessage(errorMessage);
       }
+      showLoader(false);
     } catch (error) {
-      console.error('Error during validation:', error);
+      setPopupMessage("Error sending OTP!");
+      setIsPopupVisible(true);
+      showLoader(false);
     }
   }
-  
-  const validateotp = async () => {
-    try {
-      if (!otp) {
-        setIsPopupVisible(true);
-        setPopupMessage('Please Enter the otp to proceed ');
-      } else {
-        const body = {
-          loginOtpUserName: number,
-          otp: otp
-        }
-        let verification = await validateLoginOtp(body);
 
-        console.log("VERIFICATION", verification)
+  const validateotp = () => {
+    showLoader(true);
+    if (!otp) {
+      setIsPopupVisible(true);
+      setPopupMessage('Please Enter the otp to proceed ');
+      showLoader(false);
+      return;
+    }
+  
+    const body = {
+      loginOtpUserName: number,
+      otp: otp,
+    };
+  
+    validateLoginOtp(body)
+      .then((verification) => {
+        console.log("VERIFICATION", verification);
         const successMessage = verification.data.message;
         console.log(successMessage);
+  
         if (
           successMessage ===
           'OTP verified successfully, please proceed with the registration.'
         ) {
           setPopupMessage(successMessage);
           setIsPopupVisible(true);
-          const response = await loginWithOtp(number, otp);;
-          if (response.status === 200) {
-            var r = await response.json();
-            console.log(r);
-            login(r);
-          }          
+  
+          loginWithOtp(number, otp)
+            .then((response) => {
+              if (response.status === 200) {
+                return response.json();
+              } else {
+                throw new Error('Error logging in with OTP');
+              }
+            })
+            .then((r) => {
+              console.log(r);
+              login(r);
+              showLoader(false);
+            })
+            .catch((error) => {
+              console.error('Error logging in with OTP:', error);
+              showLoader(false);
+            });
         } else {
           setIsPopupVisible(true);
           setPopupMessage(verification.data.message);
+          showLoader(false);
         }
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-    }
-  }
+      })
+      .catch((error) => {
+        console.error('Error validating OTP:', error);
+        showLoader(false);
+      });
+  };
+  
 
   useEffect(() => { }, [otp, number]);
 
   const handleClose = async () => {
     setIsPopupVisible(false);
-    if(isPopupVisible==false){
+    if (isPopupVisible == false) {
       console.log("<><><<><")
     }
   }
@@ -129,11 +184,13 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
+      {loader && <Loader isLoading={loader} />}
+
       {isPopupVisible && (
-                <Popup isVisible={isPopupVisible} onClose={() => setIsPopupVisible(false)}>
-                    {popupMessage}
-                </Popup>
-            )}
+        <Popup isVisible={isPopupVisible} onClose={() => setIsPopupVisible(false)}>
+          {popupMessage}
+        </Popup>
+      )}
       <View style={styles.registerUser}>
         {isLoading == true ? (
           <View style={{ flex: 1 }}>
@@ -196,7 +253,7 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
             <View style={{ flexDirection: 'column', alignItems: 'center', marginTop: 30 }}>
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <Text style={styles.greyText}>{t('strings:otp_not_received')}</Text>
-                <TouchableOpacity onPress={() => validateotp()}><Text style={{ color: colors.yellow }}>{t('strings:resend_otp')}</Text></TouchableOpacity>
+                <TouchableOpacity onPress={smsToGetOtp}><Text style={{ color: colors.yellow }}>{t('strings:resend_otp')}</Text></TouchableOpacity>
               </View>
               <Text style={styles.greyText}>{t('strings:or')}</Text>
               <View style={{ flexDirection: 'row', gap: 10 }}>

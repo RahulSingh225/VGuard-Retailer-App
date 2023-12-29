@@ -7,6 +7,7 @@ import { getProdWiseEarning } from '../../../../../utils/apiservice';
 
 interface ProductDetails {
   slNo: number;
+  category: string;
   partDesc: string;
   points: number;
   couponCode: string;
@@ -30,13 +31,14 @@ const ProductWiseEarning: React.FC = () => {
 
   const data = productDetails.map(product => [
     product?.slNo.toString(),
+    product?.category,
     product?.partDesc,
     product?.points.toString(),
     product?.couponCode,
     product?.createdDate,
   ]);
 
-  const tableHead = ["Sl No.", "Material Description", "Points", "Coupon Code", "Created Date"];
+  const tableHead = ["Sl No.", "Product Category", "Material Description", "Points", "Coupon Code", "Created Date"];
 
   return (
     <ScrollView style={styles.container}>
@@ -46,8 +48,8 @@ const ProductWiseEarning: React.FC = () => {
             <Rows data={[['No Data']]} textStyle={[styles.text, { color: colors.grey, fontWeight: 'bold', textAlign: 'center' }]} />
           ) : (
             <>
-              <Row data={tableHead} style={styles.head} widthArr={[50, 250, 80, 100, 120]}  textStyle={styles.text} />
-              <Rows data={data} textStyle={styles.text} style={styles.row} widthArr={[50, 250, 80, 100, 120]} />
+              <Row data={tableHead} style={styles.head} widthArr={[50, 100, 250, 80, 100, 120]}  textStyle={styles.text} />
+              <Rows data={data} textStyle={styles.text} style={styles.row} widthArr={[50, 100, 250, 80, 100, 120]} />
             </>
           )}
         </Table>

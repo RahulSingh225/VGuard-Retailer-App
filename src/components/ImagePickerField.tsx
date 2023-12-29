@@ -33,6 +33,7 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
             if (initialImage) {
                 try {
                     const image = await getFile(initialImage, imageRelated, "2");
+                    setIsImageSelected(true);
                     setSelectedImage(image.url);
                     setSelectedImageName(initialImage);
                 } catch (error) {
@@ -132,8 +133,8 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
             </Popup>
             <TouchableOpacity style={[styles.input, isImageSelected && styles.selectedContainer]} onPress={handleImagePickerPress}>
                 <View style={[styles.labelContainer, !selectedImage && styles.notSelectedLabelContainer]}>
-                    <Text style={[isImageSelected && styles.focusedLabel]} >
-                        {label}
+                    <Text style={[styles.notfocusedLabel, isImageSelected && styles.focusedLabel]} >
+                        {label} xxx
                     </Text>
                 </View>
                 {selectedImage ? (
@@ -244,8 +245,11 @@ const styles = StyleSheet.create({
         fontSize: responsiveFontSize(1.5),
         fontWeight: 'bold',
         color: colors.black,
-        backgroundColor: colors.white,
+        // backgroundColor: colors.white,
         paddingHorizontal: 3,
+    },
+    notfocusedLabel: {
+        display: 'none'
     },
     cameraContainer: {
         flexDirection: 'row',

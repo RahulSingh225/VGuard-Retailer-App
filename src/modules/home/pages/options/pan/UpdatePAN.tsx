@@ -22,6 +22,7 @@ import Popup from '../../../../../components/Popup';
 import NeedHelp from '../../../../../components/NeedHelp';
 import ImagePickerField from '../../../../../components/ImagePickerField';
 import InputField from '../../../../../components/InputField';
+import Loader from '../../../../../components/Loader';
 
 type BankProps = {};
 
@@ -32,6 +33,7 @@ const UpdatePAN: React.FC<BankProps> = () => {
     const [popupContent, setPopupContent] = useState('');
     const [userId, setUserId] = useState('');
     const [isPopupVisible, setPopupVisible] = useState(false);
+    const [loader, showLoader] = useState(true);
     const [fileData, setFileData] = useState({
         uri: "",
         name: "",
@@ -52,8 +54,10 @@ const UpdatePAN: React.FC<BankProps> = () => {
                     setPanNumber(shapedUser.panNumber);
                     setEntityUid(shapedUser.entityUid);
                 }
+                showLoader(false);
             } catch (error) {
                 console.error('Error fetching user role:', error);
+                showLoader(false);
             }
         };
 
@@ -61,27 +65,33 @@ const UpdatePAN: React.FC<BankProps> = () => {
     }, []);
 
     const handleProceed = async () => {
+        showLoader(true);
         const uuid = await triggerApiWithImage(fileData);
         const postData = {
-            panCardNo: panNumber,
-            panCardFront: uuid,
-            userId: userId,
+            kycDetails: {
+                panCardNo: panNumber,
+                panCardFront: uuid,
+                userId: userId,
+            },
         };
 
         try {
             const response = await updateKycReatiler(postData);
             console.log(postData, '---------------postdata');
-
+            console.log("<>><<<<", response)
             if (response.status === 200) {
                 const responseData = await response.json();
                 setPopupContent(responseData.message);
                 setPopupVisible(true);
                 // showSnackbar(responseData.message);
             } else {
-                throw new Error('Failed to update PAN');
+                setPopupContent(response.message);
+                setPopupVisible(true);
             }
+            showLoader(false);
         } catch (error) {
             console.error('API Error:', error);
+            showLoader(false);
         }
     };
 
@@ -132,6 +142,7 @@ const UpdatePAN: React.FC<BankProps> = () => {
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
+            {loader && <Loader isLoading={loader} />}
             <View style={styles.mainWrapper}>
                 <View style={styles.form}>
                     <ImagePickerField label='Pan Card* (Front)'
