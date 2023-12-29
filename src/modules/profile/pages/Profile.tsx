@@ -41,6 +41,10 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
         setUserData(result);
         setLoading(false);
       }))
+      .catch(error => {
+        setPopupContent("Something Went Wrong!");
+        setPopupVisible(true);
+      })
   }, []);
   const fetchChequeCopy = async () => {
     try {

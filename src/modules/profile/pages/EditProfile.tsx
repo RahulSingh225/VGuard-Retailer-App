@@ -56,6 +56,10 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         const image = selfie;
         console.log("SELFIE----------", image);
       })
+      .catch(error => {
+        setPopupContent("Something Went Wrong!");
+        setPopupVisible(true);
+      })
 
     getRetailerCategoryDealIn()
       .then(response => response.json())
@@ -69,12 +73,9 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
 
   useEffect(() => {
-    console.log("State ID:-------", stateId)
     if (stateId !== undefined && stateId !== "") {
       fetchData();
-      console.log("USER DATA--------------", userData);
     }
-    console.log(">><><><><>SELFIE", selfie)
   }, [stateId, selfie]);
 
   const fetchData = async () => {
@@ -106,7 +107,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   useEffect(() => {
-    console.log("ID PROOF:", userData?.kycDetails?.aadharOrVoterOrDlNo)
     if (userData?.roleId && userData?.kycDetails?.selfie) {
       const getImage = async () => {
         try {
@@ -143,16 +143,31 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       console.log(dobDate);
   
       if (dobDate < minAllowedDate) {
-        const idFrontUid = await triggerApiWithImage(idFrontFileData);
-        const idBackUid = await triggerApiWithImage(idBackFileData);
-        const selfieUid = await triggerApiWithImage(selfieFileData);
-        const gstUid = await triggerApiWithImage(GstFileData);
-  
-        setPostDataOfImage('aadharOrVoterOrDLFront', idFrontUid);
-        setPostDataOfImage('aadharOrVoterOrDlBack', idBackUid);
-        setPostDataOfImage('selfie', selfieUid);
-        setPostDataOfImage('gstFront', gstUid);
-  
+        const selfie = selfieFileData;
+        const idFront = idFrontFileData;
+        const idBack = idBackFileData;
+        const gst = GstFileData
+        if(selfie.uri!= "")
+        {
+          const selfieUid = await triggerApiWithImage(selfie, 'PROFILE');
+          console.log("SELFIEEEEEEEEEEEEE", selfieUid);
+          setPostDataOfImage('selfie', selfieUid);
+        }
+        if(idFront.uri!= "")
+        {
+          const idFrontUid = await triggerApiWithImage(idFront, 'ID_CARD_FRONT');
+          setPostDataOfImage('aadharOrVoterOrDLFront', idFrontUid);
+        }
+        if(idBack.uri!= "")
+        {
+          const idBackUid = await triggerApiWithImage(idBackFileData, 'ID_CARD_BACK');
+          setPostDataOfImage('aadharOrVoterOrDlBack', idBackUid);
+        }
+        if(gst.uri!= "")
+        {
+          const gstUid = await triggerApiWithImage(GstFileData, 'GST');
+          setPostDataOfImage('gstFront', gstUid);
+        }
         updateProfile(postData)
           .then(response => response.json())
           .then((responseData) => {
@@ -259,42 +274,35 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const handleImageChange = async (image: string, type: string, imageName: string, label: string) => {
     try {
+      let fileData = {
+        uri: image,
+        name: imageName,
+        type: type,
+      };
+  
       if (label === "Id Proof* (Front)") {
-        setIdFrontFileData({
-          uri: image,
-          name: imageName,
-          type: type
-        })
+        setIdFrontFileData(fileData);
       } else if (label === "Id Proof* (Back)") {
-        setIdBackFileData({
-          uri: image,
-          name: imageName,
-          type: type
-        })
+        setIdBackFileData(fileData);
       } else if (label === "Selfie") {
-        setSelfieFileData({
-          uri: image,
-          name: imageName,
-          type: type
-        })
+        console.log("CHANGING");
+        console.log(fileData);
+        setSelfieFileData(fileData);
       } else if (label === "GST Photo") {
-        setGstFileData({
-          uri: image,
-          name: imageName,
-          type: type
-        })
+        setGstFileData(fileData);
       }
-
+  
     } catch (error) {
       console.error('Error handling image change in EditProfile:', error);
     }
   };
+  
 
-  const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }) => {
+  const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }, imageRelated: string) => {
     try {
       const formData = new FormData();
       formData.append('USER_ROLE', '2');
-      formData.append('image_related', 'CHEQUE');
+      formData.append('image_related', imageRelated);
       formData.append('file', {
         uri: fileData.uri,
         name: fileData.name,
@@ -302,10 +310,8 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       });
 
       console.log("formData=====", formData);
-
       const response = await sendFile(formData);
       console.log("response-----------", response.data.entityUid);
-
       return response.data.entityUid;
     } catch (error) {
       setPopupContent("Error uploading image");

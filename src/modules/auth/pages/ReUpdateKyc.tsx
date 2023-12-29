@@ -151,61 +151,79 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         return errors;
     };
 
-    const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }) => {
+    const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }, imageRelated: string) => {
         try {
-            const formData = new FormData();
-            formData.append('USER_ROLE', '2');
-            formData.append('image_related', 'CHEQUE');
-            formData.append('file', {
-                uri: fileData.uri,
-                name: fileData.name,
-                type: fileData.type,
-            });
-
-            console.log("formData=====", formData);
-
-            const response = await sendFile(formData);
-            console.log("response-----------", response.data.entityUid);
-
-            return response.data.entityUid;
+          const formData = new FormData();
+          formData.append('USER_ROLE', '2');
+          formData.append('image_related', imageRelated);
+          formData.append('file', {
+            uri: fileData.uri,
+            name: fileData.name,
+            type: fileData.type,
+          });
+    
+          console.log("formData=====", formData);
+          const response = await sendFile(formData);
+          console.log("response-----------", response.data.entityUid);
+          return response.data.entityUid;
         } catch (error) {
-            setPopupContent("Error uploading image");
-            setPopupVisible(true);
-            console.error('API Error:', error);
-            throw error; // rethrow the error to propagate it further
+          setPopupContent("Error uploading image");
+          setPopupVisible(true);
+          console.error('API Error:', error);
+          throw error;
         }
-    };
+      };
 
 
     const InitiatePreview = async () => {
         try {
-          const errors: string[] = validateField('name', postData?.name, postData);
-      
-          setValidationErrors(errors);
-      
-          if (errors.length === 0) {
-            const idFrontUid = await triggerApiWithImage(idFrontFileData);
-            const idBackUid = await triggerApiWithImage(idBackFileData);
-            const panUid = await triggerApiWithImage(panFileData);
-            const gstUid = await triggerApiWithImage(GstFileData);
-      
-            setPostDataOfImage('aadharOrVoterOrDLFront', idFrontUid);
-            setPostDataOfImage('aadharOrVoterOrDlBack', idBackUid);
-            setPostDataOfImage('panCardFront', panUid);
-            setPostDataOfImage('gstFront', gstUid);
-      
-            AsyncStorage.setItem('VGUSER', JSON.stringify(postData)).then(() => {
-              navigation.navigate('PreviewReUpdateKyc');
-            });
-          } else {
-            setPopupVisible(true);
-            setPopupContent(errors.map((error, index) => <Text key={index}>{error}</Text>));
-          }
+            const errors: string[] = validateField('name', postData?.name, postData);
+
+            setValidationErrors(errors);
+
+            if (errors.length === 0) {
+                const panImage = panFileData;
+                const idFront = idFrontFileData;
+                const idBack = idBackFileData;
+                const gst = GstFileData;
+                console.log(panImage);
+                
+                if (idFront.uri != "") {
+                    console.log("idFRONTE")
+                    const idFrontUid = await triggerApiWithImage(idFront, 'ID_CARD_FRONT');
+                    setPostDataOfImage('aadharOrVoterOrDLFront', idFrontUid);
+                }
+                if (idBack.uri != "") {
+                    console.log("idBack")
+                    const idBackUid = await triggerApiWithImage(idBackFileData, 'ID_CARD_BACK');
+                    setPostDataOfImage('aadharOrVoterOrDlBack', idBackUid);
+                }
+                if (gst.uri != "") {
+                    console.log("GSTS<><><><>")
+                    const gstUid = await triggerApiWithImage(GstFileData, 'GST');
+                    setPostDataOfImage('gstFront', gstUid);
+                }
+                if (panImage.uri != "") {
+                    console.log("<><><><<>")
+                    console.log("FILEDATA", panImage);
+                    const panUid = await triggerApiWithImage(panImage, 'PAN_CARD_FRONT');
+                    console.log("RESPONSE", panUid);
+                    setPostDataOfImage('panCardFront', panUid);
+                    
+                }
+
+                AsyncStorage.setItem('VGUSER', JSON.stringify(postData)).then(() => {
+                    navigation.navigate('PreviewReUpdateKyc');
+                });
+            } else {
+                setPopupVisible(true);
+                setPopupContent(errors.map((error, index) => <Text key={index}>{error}</Text>));
+            }
         } catch (error) {
-          console.error('Error in InitiatePreview:', error);
+            console.error('Error in InitiatePreview:', error);
         }
-      };
-      
+    };
+
 
     const handleChange = (label: string, value: string) => {
         if (label === 'isShopDifferent') {
@@ -285,31 +303,21 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     })
 
     const handleImageChange = async (image: string, type: string, imageName: string, label: string) => {
+        let fileData = {
+            uri: image,
+            name: imageName,
+            type: type,
+          };
+          console.log(fileData)
         try {
             if (label === "Aadhar Card* (Front)") {
-                setIdFrontFileData({
-                    uri: image,
-                    name: imageName,
-                    type: type
-                })
+                setIdFrontFileData(fileData)
             } else if (label === "Aadhar Card* (Back)") {
-                setIdBackFileData({
-                    uri: image,
-                    name: imageName,
-                    type: type
-                })
+                setIdBackFileData(fileData)
             } else if (label === "Pan Card* (Front)") {
-                setPanFileData({
-                    uri: image,
-                    name: imageName,
-                    type: type
-                })
+                setPanFileData(fileData)
             } else if (label === "GST Photo") {
-                setGstFileData({
-                    uri: image,
-                    name: imageName,
-                    type: type
-                })
+                setGstFileData(fileData)
             }
 
         } catch (error) {

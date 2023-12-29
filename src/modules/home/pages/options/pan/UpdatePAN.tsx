@@ -74,7 +74,9 @@ const UpdatePAN: React.FC<BankProps> = () => {
 
             if (response.status === 200) {
                 const responseData = await response.json();
-                showSnackbar(responseData.message);
+                setPopupContent(responseData.message);
+                setPopupVisible(true);
+                // showSnackbar(responseData.message);
             } else {
                 throw new Error('Failed to update PAN');
             }
@@ -83,12 +85,12 @@ const UpdatePAN: React.FC<BankProps> = () => {
         }
     };
 
-    const showSnackbar = (message: string) => {
-        Snackbar.show({
-            text: message,
-            duration: Snackbar.LENGTH_SHORT,
-        });
-    };
+    // const showSnackbar = (message: string) => {
+    //     Snackbar.show({
+    //         text: message,
+    //         duration: Snackbar.LENGTH_SHORT,
+    //     });
+    // };
 
     const handleImageChange = async (image: string, type: string, imageName: string, label: string) => {
         try {
