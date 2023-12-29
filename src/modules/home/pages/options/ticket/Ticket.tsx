@@ -160,12 +160,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
 
 
   const handleSubmission = async () => {
-    // const sendData = new FormData();
-    // sendData.append("name", fileData.name);
-    // sendData.append("type", fileData.type);
-    // sendData.append("uri", fileData.uri);
     const imageUrl = await triggerApiWithImage(fileData);
-    // const imageUrl = entityUid;
     console.log(imageUrl);
     const postData = {
       userId: userData.userId,
