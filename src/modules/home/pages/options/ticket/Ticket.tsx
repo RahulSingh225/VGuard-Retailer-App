@@ -164,8 +164,9 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
     // sendData.append("name", fileData.name);
     // sendData.append("type", fileData.type);
     // sendData.append("uri", fileData.uri);
-    triggerApiWithImage(fileData);
-    const imageUrl = entityUid;
+    const imageUrl = await triggerApiWithImage(fileData);
+    // const imageUrl = entityUid;
+    console.log(imageUrl);
     const postData = {
       userId: userData.userId,
       issueTypeId: selectedOption,
@@ -225,8 +226,8 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
 
     try {
       const response = await sendFile(formData);
-      console.log("response-----------", response.data.entityUid);
       setEntityUid(response.data.entityUid);
+      return response.data.entityUid;
     } catch (error) {
       setPopupContent("Error uploading image");
       setPopupVisible(true)
