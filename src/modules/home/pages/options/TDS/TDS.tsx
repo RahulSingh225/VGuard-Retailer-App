@@ -1,14 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, Linking } from 'react-native';
-import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
-import { useTranslation } from 'react-i18next';
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  FlatList,
+  Linking,
+} from 'react-native';
+import {
+  responsiveFontSize,
+  responsiveHeight,
+} from 'react-native-responsive-dimensions';
+import {useTranslation} from 'react-i18next';
 import colors from '../../../../../../colors';
-import { getAy, getTdsList } from '../../../../../utils/apiservice';
+import {getAy, getTdsList} from '../../../../../utils/apiservice';
 import Loader from '../../../../../components/Loader';
-import { Table, Row, Rows } from 'react-native-table-component';
+import {Table, Row, Rows} from 'react-native-table-component';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface TDSProps { }
+interface TDSProps {}
 
 interface CertificateList {
   id: string;
@@ -17,14 +28,17 @@ interface CertificateList {
   tdsPerc: string;
 }
 
-
-const CustomYearDropdown: React.FC<{ data: any[]; value: string; onChange: (item: any) => void }> = ({ data, value, onChange }) => {
+const CustomYearDropdown: React.FC<{
+  data: any[];
+  value: string;
+  onChange: (item: any) => void;
+}> = ({data, value, onChange}) => {
   return (
     <FlatList
       style={styles.dropdown}
       data={data}
-      keyExtractor={(item) => item.value}
-      renderItem={({ item }) => (
+      keyExtractor={item => item.value}
+      renderItem={({item}) => (
         <TouchableOpacity onPress={() => onChange(item)}>
           <Text style={styles.dropdownItem}>{item}</Text>
         </TouchableOpacity>
@@ -34,14 +48,15 @@ const CustomYearDropdown: React.FC<{ data: any[]; value: string; onChange: (item
 };
 
 const TDS: React.FC<TDSProps> = () => {
-  const { t } = useTranslation();
+  const {t} = useTranslation();
   const [assessmentYearData, setAssessmentYearData] = useState<string[]>([]); // Set appropriate type for assessmentYearData
   const [loader, showLoader] = useState<boolean>(false);
-  const [isFocusAssessmentYear, setIsFocusAssessmentYear] = useState<boolean>(false);
-  const [assessmentYearValue, setAssessmentYearValue] = useState<string>('');
+  const [isFocusAssessmentYear, setIsFocusAssessmentYear] =
+    useState<boolean>(false);
+  const [assessmentYearValue,  setAssessmentYearValue] = useState<string>('');
   const [certificateList, setCertificateList] = useState<CertificateList[]>([]);
 
-  const BASEURL = "https://www.vguardrishta.com"
+  const BASEURL = 'https://www.vguardrishta.com';
 
   const handleDropdownFiscalYear = (item: string) => {
     setIsFocusAssessmentYear(false);
@@ -49,18 +64,16 @@ const TDS: React.FC<TDSProps> = () => {
   };
 
   const handleCardPress = (item: string) => {
-    console.log("URL" ,`${BASEURL}${item}`)
+    console.log('URL', `${BASEURL}${item}`);
     Linking.openURL(`${BASEURL}/${item}`);
-  }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       showLoader(true);
 
       try {
-        const [assessmentYearResponse] = await Promise.all([
-          getAy(),
-        ]);
+        const [assessmentYearResponse] = await Promise.all([getAy()]);
 
         const assessmentYearResult = await assessmentYearResponse.json();
 
@@ -77,33 +90,40 @@ const TDS: React.FC<TDSProps> = () => {
   }, []);
 
   useEffect(() => {
+    console.log(assessmentYearValue)
     getTdsList(assessmentYearValue)
-      .then((response) => response.json())
-      .then((responseData) => {
+      .then(response => response.json())
+      .then(responseData => {
         if (Array.isArray(responseData)) {
           setCertificateList(responseData);
         } else {
           console.error('Invalid API response format:', responseData);
         }
       })
-      .catch((error) => {
+      .catch(error => {
         console.error('Error fetching data:', error);
       });
   }, [assessmentYearValue]);
-  
 
   const data = certificateList
-    ? certificateList.map((data) => 
-    [data?.id.toString(), data?.name.toString(), data?.path.toString()])
+    ? certificateList.map(data => [
+        data?.id.toString(),
+        data?.name.toString(),
+        data?.path.toString(),
+      ])
     : [];
 
   return (
     <View style={styles.mainWrapper}>
-      {loader && <Loader />}
+      {loader && <Loader isLoading={loader} />}
 
       <Text style={styles.greyText}>Select Assessment Year</Text>
-      <TouchableOpacity onPress={() => setIsFocusAssessmentYear((prev) => !prev)}>
-        <View style={[styles.card, isFocusAssessmentYear && styles.dropdownContainer]}>
+      <TouchableOpacity onPress={() => setIsFocusAssessmentYear(prev => !prev)}>
+        <View
+          style={[
+            styles.card,
+            isFocusAssessmentYear && styles.dropdownContainer,
+          ]}>
           <Text style={styles.yearText}>{assessmentYearValue}</Text>
           <Image
             style={styles.downImage}
@@ -119,25 +139,28 @@ const TDS: React.FC<TDSProps> = () => {
           onChange={handleDropdownFiscalYear}
         />
       )}
-      <View style={[{ zIndex: -1 }]}>
-  {data.length === 0 ? (
-    <Text style={styles.noDataText}>No Data</Text>
-  ) : (
-    <FlatList
-      data={data}
-      keyExtractor={(item, index) => index.toString()}
-      renderItem={({ item }) => (
-        <TouchableOpacity style={styles.tdscard} onPress={()=>handleCardPress(item[2])}>
-          <Image style={[{width: 50, height: 50}]} resizeMode='contain' source={require('../../../../../assets/images/ic_tds_statement.png')} />
-          <Text style={styles.text}>
-            {item[1]}
-          </Text>
-        </TouchableOpacity>
-      )}
-    />
-  )}
-</View>
-
+      <View style={[{zIndex: -1}]}>
+        {data.length === 0 ? (
+          <Text style={styles.noDataText}>No Data</Text>
+        ) : (
+          <FlatList
+            data={data}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({item}) => (
+              <TouchableOpacity
+                style={styles.tdscard}
+                onPress={() => handleCardPress(item[2])}>
+                <Image
+                  style={[{width: 50, height: 50}]}
+                  resizeMode="contain"
+                  source={require('../../../../../assets/images/ic_tds_statement.png')}
+                />
+                <Text style={styles.text}>{item[1]}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        )}
+      </View>
     </View>
   );
 };
@@ -165,7 +188,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: colors.white,
-    elevation: 5
+    elevation: 5,
   },
   tdscard: {
     padding: 10,
@@ -175,7 +198,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
-    elevation: 2
+    elevation: 2,
   },
   yearText: {
     fontSize: responsiveFontSize(2),
@@ -202,13 +225,13 @@ const styles = StyleSheet.create({
   text: {
     marginHorizontal: 30,
     color: colors.grey,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   noDataText: {
     color: colors.grey,
     fontWeight: 'bold',
-    textAlign:'center'
-  }
+    textAlign: 'center',
+  },
 });
 
 export default TDS;

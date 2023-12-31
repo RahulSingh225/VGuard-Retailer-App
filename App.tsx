@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { AuthProvider } from './src/components/AuthContext';
+import React, {useEffect} from 'react';
+import {AuthProvider} from './src/components/AuthContext';
 import AppNavigator from './src/components/AppNavigator';
-import { PermissionsAndroid } from 'react-native';
+import {Alert, PermissionsAndroid} from 'react-native';
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -14,13 +14,13 @@ const App: React.FC = () => {
       const contactPermission = PermissionsAndroid.PERMISSIONS.READ_CONTACTS;
       const locationPermission =
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION;
-  
+
       const granted = await PermissionsAndroid.requestMultiple([
         cameraPermission,
         contactPermission,
         locationPermission,
       ]);
-  
+
       if (
         granted[cameraPermission] === PermissionsAndroid.RESULTS.GRANTED &&
         granted[contactPermission] === PermissionsAndroid.RESULTS.GRANTED &&
