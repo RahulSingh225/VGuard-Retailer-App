@@ -432,9 +432,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                         </Text>
                     </View>
                     <View style={styles.reasons}>
-                        {validationErrors.map((error, index) => (
-                            <Text key={index} style={{ color: 'red' }}>{`\u25CF ${error}`}</Text>
-                        ))}
+                            <Text style={{ color: 'red' }}>{postData?.rejectedReasonsStr || ''}</Text>
                     </View>
                 </View>
                 <InputField
