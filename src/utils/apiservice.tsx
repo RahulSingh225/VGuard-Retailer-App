@@ -1,6 +1,7 @@
 import axios from 'axios';
 import digestFetch from 'react-native-digest-fetch';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import messaging from "@react-native-firebase/messaging";
 
 const API_LINK = 'http://34.100.133.239:18092';
 
@@ -86,7 +87,6 @@ export const createPostRequest = async (relativeUrl: string, data: any) => {
 export const createGetRequest = async (relativeUrl: string) => {
     try {
         const response = await api.get(relativeUrl);
-        console.log(response)
         return response;
     } catch (error) {
         console.error('Error:', error);
@@ -178,9 +178,12 @@ export const loginPasswordDigest = async (relativeUrl: string, username: string,
         const userName = username;
         const Password = password;
 
-        await AsyncStorage.setItem('username', userName);
-        await AsyncStorage.setItem('password', Password);
-        await AsyncStorage.setItem('authtype', 'password');
+        if (response.status == 200) {
+            await AsyncStorage.setItem('username', userName);
+            await AsyncStorage.setItem('password', Password);
+            await AsyncStorage.setItem('authtype', 'password');
+            await update_fcm_token();
+        }
         return response;
     } catch (error) {
         throw error;
@@ -207,12 +210,32 @@ export const loginOtpDigest = async (relativeUrl: string, username: string, pass
         const userName = username;
         const Password = password;
 
-        await AsyncStorage.setItem('username', userName);
-        await AsyncStorage.setItem('password', Password);
-        await AsyncStorage.setItem('authtype', 'otp');
+        if (response.status == 200) {
+            await AsyncStorage.setItem('username', userName);
+            await AsyncStorage.setItem('password', Password);
+            await AsyncStorage.setItem('authtype', 'otp');
+            await update_fcm_token();
+        }
         return response;
     } catch (error) {
         throw error;
+    }
+};
+
+const update_fcm_token = async () => {
+    const path = 'pushNotification/registerToken'
+    try {
+        let fcmtoken = await messaging().getToken();
+        if (fcmtoken) {
+            let body = {
+                fcmToken: fcmtoken
+            }
+            await createDigestPostRequest(path, body)
+        } else {
+            console.log("Error : Issue in firebase FCM generater, ", fcmtoken)
+        }
+    } catch (e) {
+        console.log("Error : ", e);
     }
 };
 export function loginWithPassword(username: string, password: string) {
@@ -290,9 +313,9 @@ export const sendFile = (formData: FormData): Promise<any> => {
     console.log(formData);
     const config = {
         headers: {
-          'Content-Type': 'multipart/form-data',
+            'Content-Type': 'multipart/form-data',
         },
-      };
+    };
     return api.post('file', formData, config)
         .then(response => {
             // console.log(response.status);
@@ -975,7 +998,7 @@ export function getAy() {
 
 export function getTdsList(accementYear: string) {
     const path = `user/tdsCertificate/${accementYear}`;
-    
+
     return createDigestGetRequest(path);
 }
 

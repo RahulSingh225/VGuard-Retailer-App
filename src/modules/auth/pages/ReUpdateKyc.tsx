@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getCities, getDistricts, getRishtaUserProfile, getStates, sendFile } from '../../../utils/apiservice';
+import { getCities, getDistricts, getRishtaUserProfile, getStates, getUser, sendFile } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { UserData } from '../../../utils/modules/UserData';
@@ -42,7 +42,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     }, []);
 
     useEffect(() => {
-        getRishtaUserProfile()
+        getUser()
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, Dispatch, SetStateAction } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createDigestPostRequest } from '../utils/apiservice';
 
@@ -10,6 +10,9 @@ interface AuthContextProps {
   isUserAuthenticated: boolean;
   login: (user: User) => Promise<void>;
   logout: () => Promise<void>;
+  popupAuthContent: string;
+  showPopup: boolean;
+  setShowPopup: Dispatch<SetStateAction<boolean>>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -20,10 +23,19 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupAuthContent, setPopupContent] = useState('Please Enter Credentials of a Retailer');
 
   const login = async (user: User) => {
-    await AsyncStorage.setItem('USER', JSON.stringify(user));
-    setIsUserAuthenticated(true);
+    const userRole = user?.roleId;
+    console.log("USERDATA", user);
+    if(userRole == 2){
+      await AsyncStorage.setItem('USER', JSON.stringify(user));
+      setIsUserAuthenticated(true);
+    }
+    else{
+      setShowPopup(true);
+    }
   };
 
   const logout = async () => {
@@ -54,7 +66,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isUserAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isUserAuthenticated, login, logout, showPopup, popupAuthContent, setShowPopup }}>
       {children}
     </AuthContext.Provider>
   );

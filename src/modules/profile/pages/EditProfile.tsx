@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, Linking, TouchableOpacity } from 'react-native';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getCities, getDistricts, getFile, getRetailerCategoryDealIn, getRishtaUserProfile, getStates, sendFile, updateProfile } from '../../../utils/apiservice';
+import { getCities, getDistricts, getFile, getRetailerCategoryDealIn, getRishtaUserProfile, getStates, getUser, sendFile, updateProfile } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { UserData } from '../../../utils/modules/UserData';
@@ -44,9 +44,10 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [loader, showLoader] = useState(true);
 
   useEffect(() => {
-    getRishtaUserProfile()
+    getUser()
       .then(response => response.json())
       .then(res => {
+        console.log(res);
         setUserData(res);
         setPostData(res);
         setStateId(res.stateId);
@@ -55,7 +56,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         setIdBackUid(res.kycDetails.aadharOrVoterOrDlBack);
         setIdFrontUid(res.kycDetails.aadharOrVoterOrDLFront);
         const image = selfie;
-        console.log("SELFIE----------", image);
         showLoader(false);
       })
       .catch(error => {
@@ -98,7 +98,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         if (Array.isArray(districtsData) && districtsData.length > 0) {
           const citiesResponse = await getCities(postData.distId);
           const citiesData = await citiesResponse.data;
-          console.log("CITIES-----------", citiesData);
           setCities(citiesData);
         }
       } else {
@@ -136,19 +135,13 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const handleSubmit = async () => {
     showLoader(true);
     try {
-      console.log("Post Data:", postData);
 
       const currentDate = new Date();
       const dobDate = moment(postData?.dob, 'DD MMM YYYY').toDate();
       const minAllowedDate = new Date(currentDate);
       minAllowedDate.setFullYear(currentDate.getFullYear() - 18);
 
-      console.log(postData?.dob);
-      console.log(dobDate);
-
       if (dobDate < minAllowedDate) {
-        console.log("<><><<<<>");
-
         // Store promises for each image upload
         const selfiePromise = selfieFileData.uri !== "" ? triggerApiWithImage(selfieFileData, 'PROFILE') : Promise.resolve(null);
         const idFrontPromise = idFrontFileData.uri !== "" ? triggerApiWithImage(idFrontFileData, 'ID_CARD_FRONT') : Promise.resolve(null);
@@ -214,7 +207,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           .then((responseData) => {
             setPopupVisible(true);
             setPopupContent(responseData?.message);
-            console.log("<><<><<><>><", responseData, "<><<<><><><><><><<><");
             showLoader(false);
           })
           .catch(error => {
@@ -252,8 +244,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         }
       }))
     }
-
-    console.log("Changed")
   }
 
   const handleInputChange = (value: string, label: string) => {
@@ -275,9 +265,9 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const genderpickerItems = [
     { label: 'Select Gender', value: '' },
-    { label: 'Male', value: 'Male ' },
-    { label: 'Female', value: 'Female ' },
-    { label: 'Other', value: 'Other ' },
+    { label: 'Male', value: 'Male' },
+    { label: 'Female', value: 'Female' },
+    { label: 'Other', value: 'Other' },
   ];
   const selectYesorNo = [
     { label: 'Select Option', value: '' },
@@ -286,8 +276,8 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   ];
   const maritalStatusItems = [
     { label: 'Select Marital Status', value: '' },
-    { label: 'Married', value: '1' },
-    { label: 'UnMarried', value: '2' }
+    { label: 'Married', value: 'Married' },
+    { label: 'UnMarried', value: 'UnMarried' }
   ];
 
   const [idFrontFileData, setIdFrontFileData] = useState({
@@ -324,8 +314,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       } else if (label === "Id Proof* (Back)") {
         setIdBackFileData(fileData);
       } else if (label === "Selfie") {
-        console.log("CHANGING");
-        console.log(fileData);
         setSelfieFileData(fileData);
       } else if (label === "GST Photo") {
         setGstFileData(fileData);
@@ -348,9 +336,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         type: fileData.type,
       });
 
-      console.log("formData=====", formData);
       const response = await sendFile(formData);
-      console.log("response-----------", response.data.entityUid);
       return response.data.entityUid;
     } catch (error) {
       setPopupContent("Error uploading image");
@@ -361,7 +347,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const setPostDataOfImage = (label: string, value: string) => {
-    console.log("POST IMAGE------", label, value);
     setPostData((prevData: UserData) => ({
       ...prevData,
       kycDetails: {

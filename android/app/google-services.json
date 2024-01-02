@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "486992538060",
+    "project_id": "push-notifications-test-9e5a8",
+    "storage_bucket": "push-notifications-test-9e5a8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486992538060:android:49f8a71ca4b391696e9569",
+        "android_client_info": {
+          "package_name": "com.tfl.vguardretailer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5HrYOQjL1pnVxme4fp-d4HoJDqghIjkI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486992538060:android:f17d98092d6da6076e9569",
+        "android_client_info": {
+          "package_name": "com.tfl.vguardrishta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5HrYOQjL1pnVxme4fp-d4HoJDqghIjkI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

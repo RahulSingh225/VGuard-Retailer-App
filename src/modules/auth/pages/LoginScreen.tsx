@@ -56,7 +56,7 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const placeholderColor = colors.lightGrey;
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useAuth();
+  const { login, showPopup, popupAuthContent, setShowPopup } = useAuth();
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState(false);
   const [selectedOption, setSelectedOption] = useState(true);
@@ -99,7 +99,7 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         console.log(r);
         login(r);
       }
-      else if(response.status === 500) {
+      else if (response.status === 500) {
         setIsPopupVisible(!isPopupVisible);
         setPopupContent("Something went wrong!")
       } else {
@@ -139,7 +139,7 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
           <View style={styles.formContainer}>
             <View style={styles.inputContainer}>
-              <Image style={styles.icon} resizeMode='contain'  source={require('../../../assets/images/mobile_icon.png')} />
+              <Image style={styles.icon} resizeMode='contain' source={require('../../../assets/images/mobile_icon.png')} />
               <TextInput
                 style={styles.input}
                 placeholder={t('strings:lbl_registered_mobile_number_login')}
@@ -149,7 +149,7 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               />
             </View>
             <View style={styles.inputContainer}>
-            <Image style={styles.icon} resizeMode='contain'  source={require('../../../assets/images/lock_icon.png')} />
+              <Image style={styles.icon} resizeMode='contain' source={require('../../../assets/images/lock_icon.png')} />
               <TextInput
                 style={styles.input}
                 placeholder={t('strings:password')}
@@ -161,7 +161,7 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
             </View>
 
             <View style={styles.updateAndForgot}>
-              <TouchableOpacity style={styles.button} onPress={()=>navigation.navigate('updatekyc')}>
+              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('updatekyc')}>
                 <Text style={styles.buttonText}>
                   {t('strings:update_cap_kyc')}
                 </Text>
@@ -239,12 +239,20 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           </View>
         </View>
         {isPopupVisible && (
-          <Popup isVisible={isPopupVisible} onClose={()=>setIsPopupVisible(!isPopupVisible)}>
+          <Popup isVisible={isPopupVisible} onClose={() => setIsPopupVisible(!isPopupVisible)}>
             <Text style={{ fontWeight: 'bold' }}>
               {popupContent}
             </Text>
           </Popup>
         )}
+        {showPopup && (
+          <Popup isVisible={showPopup} onClose={() => setShowPopup(false)}>
+            <Text style={{ fontWeight: 'bold' }}>
+              {popupAuthContent}
+            </Text>
+          </Popup>
+        )}
+
         <Modal
           animationType="slide"
           transparent={true}

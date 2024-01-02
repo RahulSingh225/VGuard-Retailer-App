@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableHighlight, Image, Linking, TouchableOpacity, Modal } from 'react-native';
 import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getFile, getRishtaUserProfile } from '../../../utils/apiservice';
+import { getFile, getRishtaUserProfile, getUser } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { UserData } from '../../../utils/modules/UserData';
@@ -25,7 +25,6 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [imageOpen, setimageOpen] = useState("")
   const [loading, setLoading] = useState(true);
   const handleImageClick = (imageSource: string | "") => {
-    console.log("opening model")
     setShowImagePreviewModal(true);
     setimageOpen(imageSource);
   };
@@ -34,7 +33,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     //   const user = JSON.parse(r || '');
     //   setUserData(user);
     // });
-    getRishtaUserProfile().then(response => response.json()
+    getUser().then(response => response.json()
       .then(res => {
         const result = res;
         console.log(result)
@@ -124,7 +123,6 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (fieldName === 'Cancelled Cheque Copy') {
       const checkPhoto = userData.bankDetail.checkPhoto
       setChequeImageName(checkPhoto)
-      console.log("CHECK ", checkPhoto)
       const chequePhoto = await getFile(checkPhoto, 'CHEQUE', "2");
       const url = chequePhoto.url
       return url;

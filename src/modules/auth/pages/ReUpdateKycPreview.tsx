@@ -9,6 +9,7 @@ import { UserData } from '../../../utils/modules/UserData';
 import InputField from '../../../components/InputField';
 import Buttons from '../../../components/Buttons';
 import Popup from '../../../components/Popup';
+import Loader from '../../../components/Loader';
 interface ReUpdateKycPreviewProps {
     navigation: any;
 }
@@ -23,11 +24,15 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
     const [idFrontImageName, setIdFrontImageName] = useState("");
     const [idBackImageName, setIdBackImageName] = useState("");
     const [panImageName, setPanImageName] = useState("");
-    const [imageOpen, setimageOpen] = useState("")
+    const [imageOpen, setimageOpen] = useState("");
+    const [loader, showLoader] = useState(true);
+
     useEffect(() => {
         AsyncStorage.getItem('VGUSER').then(result => {
             setUserData(JSON.parse(result))
+            console.log("<><><><", result);
             setPostData(JSON.parse(result))
+            showLoader(false);
         })
     }, []);
 
@@ -98,7 +103,8 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
             return url;
         }
         else if (fieldName === "Id Proof* (Front)") {
-            const idfront = userData.kycDetails.aadharOrVoterOrDlFront;
+            const idfront = userData.kycDetails.aadharOrVoterOrDLFront;
+            console.log("FRONT SOURCE-----------", idfront)
             setIdFrontImageName(idfront)
             const idFrontPhoto = await getFile(idfront, 'ID_CARD_FRONT', "2");
             const url = idFrontPhoto.url
@@ -123,7 +129,7 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
 
     return (
         <ScrollView style={styles.mainWrapper}>
-            {/* {loader && <Loader />} */}
+            {loader && <Loader isLoading={loader} />}
             <View style={styles.detailsContainer}>
                 <InputField
                     label={t('strings:retailer_name')}
