@@ -1,20 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
+import {View, StyleSheet, ScrollView} from 'react-native';
 import {
-    View,
-    StyleSheet,
-    ScrollView,
-} from 'react-native';
-import {
-    responsiveFontSize,
-    responsiveHeight,
+  responsiveFontSize,
+  responsiveHeight,
 } from 'react-native-responsive-dimensions';
-import { useTranslation } from 'react-i18next';
+import {useTranslation} from 'react-i18next';
 import Snackbar from 'react-native-snackbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-    sendFile,
-    updateKycReatiler
-} from '../../../../../utils/apiservice';
+import {sendFile, updateKycReatiler} from '../../../../../utils/apiservice';
 import colors from '../../../../../../colors';
 import Buttons from '../../../../../components/Buttons';
 import arrowIcon from '../../../../../assets/images/arrow.png';
@@ -61,8 +54,8 @@ const UpdatePAN: React.FC<BankProps> = () => {
             }
         };
 
-        fetchUserRole();
-    }, []);
+    fetchUserRole();
+  }, []);
 
     const handleProceed = async () => {
         showLoader(true);
@@ -95,50 +88,58 @@ const UpdatePAN: React.FC<BankProps> = () => {
         }
     };
 
-    // const showSnackbar = (message: string) => {
-    //     Snackbar.show({
-    //         text: message,
-    //         duration: Snackbar.LENGTH_SHORT,
-    //     });
-    // };
+  // const showSnackbar = (message: string) => {
+  //     Snackbar.show({
+  //         text: message,
+  //         duration: Snackbar.LENGTH_SHORT,
+  //     });
+  // };
 
-    const handleImageChange = async (image: string, type: string, imageName: string, label: string) => {
-        try {
-            setFileData({
-                uri: image,
-                name: imageName,
-                type: type
-            })
-        } catch (error) {
-            console.error('Error handling image change in Raise Ticket:', error);
-        }
-    };
+  const handleImageChange = async (
+    image: string,
+    type: string,
+    imageName: string,
+    label: string,
+  ) => {
+    try {
+      setFileData({
+        uri: image,
+        name: imageName,
+        type: type,
+      });
+    } catch (error) {
+      console.error('Error handling image change in Raise Ticket:', error);
+    }
+  };
 
-    const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }) => {
-        const formData = new FormData();
-        formData.append('USER_ROLE', '2');
-        formData.append('image_related', 'CHEQUE');
-        formData.append('file', {
-            uri: fileData.uri,
-            name: fileData.name,
-            type: fileData.type,
-        });
+  const triggerApiWithImage = async (fileData: {
+    uri: string;
+    type: string;
+    name: string;
+  }) => {
+    const formData = new FormData();
+    formData.append('USER_ROLE', '2');
+    formData.append('image_related', 'PAN_CARD_FRONT');
+    formData.append('file', {
+      uri: fileData.uri,
+      name: fileData.name,
+      type: fileData.type,
+    });
 
-        console.log("formData=====", formData);
+    console.log('formData=====', formData);
 
-        try {
-            const response = await sendFile(formData);
-            console.log("response-----------", response.data.entityUid);
-            const image = response.data.entityUid
-            setEntityUid(image);
-            return response.data.entityUid;
-        } catch (error) {
-            setPopupContent("Error uploading image");
-            setPopupVisible(true)
-            console.error('API Error:', error);
-        }
-    };
-
+    try {
+      const response = await sendFile(formData);
+      console.log('response-----------', response.data.entityUid);
+      const image = response.data.entityUid;
+      setEntityUid(image);
+      return response.data.entityUid;
+    } catch (error) {
+      setPopupContent('Error uploading image');
+      setPopupVisible(true);
+      console.error('API Error:', error);
+    }
+  };
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -181,111 +182,109 @@ const UpdatePAN: React.FC<BankProps> = () => {
 };
 
 const styles = StyleSheet.create({
-    scrollContainer: {
-        flexGrow: 1,
-        backgroundColor: colors.white,
-    },
-    mainWrapper: {
-        padding: 15,
-    },
-    form: {
-        marginTop: 20,
-    },
-    header: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 5,
-    },
-    inputImage: {
-        height: responsiveHeight(2),
-        width: responsiveHeight(2),
-        marginRight: 5,
-    },
-    textHeader: {
-        fontSize: responsiveFontSize(2.5),
-        color: colors.black,
-        fontWeight: 'bold',
-    },
-    textSubHeader: {
-        fontSize: responsiveFontSize(1.8),
-        color: colors.black,
-        fontWeight: 'bold',
-    },
-    container: {
-        height: responsiveHeight(8),
-    },
-    buttonText: {
-        color: colors.white,
-        width: '100%',
-        textAlign: 'center',
-    },
-    inputContainer: {
-        borderColor: colors.lightGrey,
-        borderWidth: 2,
-        borderRadius: 10,
-        height: responsiveHeight(5),
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginTop: responsiveHeight(1),
-    },
-    input: {
-        width: '90%',
-        padding: 10,
-        fontSize: responsiveFontSize(1.8),
-        color: colors.black,
-        // fontWeight: 'bold',
-    },
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    },
-    modalContent: {
-        backgroundColor: 'white',
-        padding: 20,
-        gap: 10,
-        borderRadius: 10,
-        alignItems: 'center',
-    },
-    button: {
-        marginTop: 20,
-        alignItems: 'center',
-    },
-    picker: {
-        width: '90%',
-        color: colors.grey,
-    },
-    labelPicker: {
-        color: colors.grey,
-        fontWeight: 'bold',
-    },
-    modalcontainer: { alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.7)' },
-    imagePreviewContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    },
-    closeButton: {
-        position: 'absolute',
-        top: 20,
-        right: 20,
-    },
-    closeButtonText: {
-        color: 'white',
-        fontSize: 16,
-    },
-    imagePreview: {
-        width: '80%',
-        height: '80%',
-    },
-
-
+  scrollContainer: {
+    flexGrow: 1,
+    backgroundColor: colors.white,
+  },
+  mainWrapper: {
+    padding: 15,
+  },
+  form: {
+    marginTop: 20,
+  },
+  header: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  inputImage: {
+    height: responsiveHeight(2),
+    width: responsiveHeight(2),
+    marginRight: 5,
+  },
+  textHeader: {
+    fontSize: responsiveFontSize(2.5),
+    color: colors.black,
+    fontWeight: 'bold',
+  },
+  textSubHeader: {
+    fontSize: responsiveFontSize(1.8),
+    color: colors.black,
+    fontWeight: 'bold',
+  },
+  container: {
+    height: responsiveHeight(8),
+  },
+  buttonText: {
+    color: colors.white,
+    width: '100%',
+    textAlign: 'center',
+  },
+  inputContainer: {
+    borderColor: colors.lightGrey,
+    borderWidth: 2,
+    borderRadius: 10,
+    height: responsiveHeight(5),
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: responsiveHeight(1),
+  },
+  input: {
+    width: '90%',
+    padding: 10,
+    fontSize: responsiveFontSize(1.8),
+    color: colors.black,
+    // fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    gap: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  button: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  picker: {
+    width: '90%',
+    color: colors.grey,
+  },
+  labelPicker: {
+    color: colors.grey,
+    fontWeight: 'bold',
+  },
+  modalcontainer: {alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.7)'},
+  imagePreviewContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  imagePreview: {
+    width: '80%',
+    height: '80%',
+  },
 });
 
 export default UpdatePAN;
