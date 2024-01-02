@@ -31,6 +31,7 @@ import Buttons from '../../../../../components/Buttons';
 import arrowIcon from '../../../../../assets/images/arrow.png';
 import Popup from '../../../../../components/Popup';
 import ImagePickerField from '../../../../../components/ImagePickerField';
+import Loader from '../../../../../components/Loader';
 
 type BankProps = {};
 
@@ -46,6 +47,7 @@ const Bank: React.FC<BankProps> = () => {
   const [availableBanks, setAvailableBanks] = useState<string[]>([]);
   const [popupContent, setPopupContent] = useState('');
   const [isPopupVisible, setPopupVisible] = useState(false);
+  const [loader, showLoader] = useState(false);
   const [fileData, setFileData] = useState({
     uri: "",
     name: "",
@@ -53,6 +55,7 @@ const Bank: React.FC<BankProps> = () => {
   });
 
   useEffect(() => {
+    showLoader(true);
 
     const getBankDetailsAndCallFileUri = async () => {
       try {
@@ -71,10 +74,13 @@ const Bank: React.FC<BankProps> = () => {
             setPopupContent(data.errorMessage);
             setPopupVisible(true);
           }
+          showLoader(false);
         } else {
+          showLoader(false);
           throw new Error('Failed to get bank details');
         }
       } catch (error) {
+        showLoader(false);
         console.error('API Error:', error);
       }
     };
@@ -104,9 +110,10 @@ const Bank: React.FC<BankProps> = () => {
 
 
   const handleProceed = () => {
+    showLoader(true);
     triggerApiWithImage(fileData)
       .then((uuid) => {
-        const imageUid = uuid;  
+        const imageUid = uuid;
         const postData = {
           bankAccNo: accNo,
           bankAccHolderName: accHolder,
@@ -115,9 +122,9 @@ const Bank: React.FC<BankProps> = () => {
           bankIfsc: ifscCode,
           checkPhoto: imageUid,
         };
-  
+
         console.log("POSTDATA", postData);
-  
+
         if (
           postData.bankAccNo !== "" &&
           postData.bankAccHolderName !== "" &&
@@ -129,21 +136,26 @@ const Bank: React.FC<BankProps> = () => {
           updateBank(postData)
             .then(response => {
               if (response.status === 200) {
+                showLoader(false);
                 return response.json();
               } else {
+                showLoader(false);
                 setPopupContent("Failed to update Bank Details");
               }
             })
             .then(data => {
+              showLoader(false);
               setPopupContent(data.message);
               setPopupVisible(true);
             })
             .catch(error => {
+              showLoader(false);
               console.error('API Error:', error);
               setPopupContent("An error occurred");
               setPopupVisible(true);
             });
         } else {
+          showLoader(false);
           setPopupContent("Enter all the details");
           setPopupVisible(true);
         }
@@ -154,8 +166,8 @@ const Bank: React.FC<BankProps> = () => {
         setPopupVisible(true);
       });
   };
-  
-  
+
+
 
   const handleImageChange = async (image: string, type: string, imageName: string, label: string) => {
     try {
@@ -197,6 +209,8 @@ const Bank: React.FC<BankProps> = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
+      {loader && <Loader isLoading={loader} />}
+
       <View style={styles.mainWrapper}>
         <View style={styles.header}>
           <Text style={styles.textHeader}>
@@ -230,7 +244,7 @@ const Bank: React.FC<BankProps> = () => {
               onChangeText={(value) => setAccHolder(value)}
             />
           </View>
-          <View style={styles.inputContainer}>
+          {/* <View style={styles.inputContainer}>
             <Picker
               selectedValue={accType}
               onValueChange={(itemValue) => setAccType(itemValue)}
@@ -239,7 +253,7 @@ const Bank: React.FC<BankProps> = () => {
               <Picker.Item label={t('strings:account_type:saving')} value={'Saving'} />
               <Picker.Item label={t('strings:account_type:current')} value={'Current'} />
             </Picker>
-          </View>
+          </View> */}
           <View style={styles.inputContainer}>
             <Picker
               selectedValue={bankName}

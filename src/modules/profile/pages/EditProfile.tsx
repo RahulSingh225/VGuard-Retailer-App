@@ -29,6 +29,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [profileImage, setProfileImage] = useState(null);
   const [isShopAddressDifferent, setIsShopAddressDifferent] = useState('Yes');
   const [enrolledOtherSchemeYesNo, setEnrolledOtherSchemeYesNo] = useState('Yes');
+  const [additionalFieldsCount, setAdditionalFieldsCount] = useState(1);
   const [retailerCategoryDealIn, setRetailerCategoryDealIn] = useState([]);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
@@ -434,6 +435,46 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   }
 
 
+const renderAdditionalFields = () => {
+  const additionalFields = [];
+
+  for (let i = 2; i <= additionalFieldsCount; i++) {
+    if(i<=5){
+      additionalFields.push(
+        <View key={i}>
+          <InputField
+            label={t('strings:if_yes_please_mention_scheme_and_brand_name')}
+            value={postData?.[`otherSchemeBrand${i}`]}
+            onChangeText={(text) => handleInputChange(text, `otherSchemeBrand${i}`)}
+            numeric
+          />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <View style={{ flex: 1 }}>
+              <InputField
+                label={t('strings:if_yes_what_you_liked_about_the_program')}
+                value={postData?.[`abtOtherSchemeLiked${i}`]}
+                onChangeText={(text) => handleInputChange(text, `abtOtherSchemeLiked${i}`)}
+                numeric
+              />
+            </View>
+            {i < 5 && (
+              <TouchableOpacity onPress={() => setAdditionalFieldsCount((prev) => prev + 1)}>
+                <Image
+                  source={require('../../../assets/images/ic_add_yellow.webp')}
+                  style={{ width: 30, height: 30, marginBottom: 15 }}
+                  resizeMode='contain'
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      );
+    }
+  }
+
+  return additionalFields;
+};
+
   return (
     <ScrollView style={styles.mainWrapper}>
       {loader && <Loader isLoading={loader} />}
@@ -639,6 +680,28 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           onValueChange={(text: string) => handleChange("enrolledOtherSchemeYesNo", text)}
           items={selectYesorNo}
         />
+        {enrolledOtherSchemeYesNo === 'Yes' && (
+          <>
+            <InputField
+              label={t('strings:if_yes_please_mention_scheme_and_brand_name')}
+              value={postData?.otherSchemeBrand?.toString()}
+              onChangeText={(text) => handleInputChange(text, 'otherSchemeBrand')}
+            />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <View style={{ flex: 1 }}>
+                <InputField
+                  label={t('strings:if_yes_what_you_liked_about_the_program')}
+                  value={postData?.abtOtherSchemeLiked?.toString()}
+                  onChangeText={(text) => handleInputChange(text, 'abtOtherSchemeLiked')}
+                />
+              </View>
+              <TouchableOpacity onPress={() => setAdditionalFieldsCount((prev) => prev + 1)}>
+                <Image source={require('../../../assets/images/ic_add_yellow.webp')} style={{ width: 30, height: 30, marginBottom: 15 }} resizeMode='contain' />
+              </TouchableOpacity>
+            </View>
+            {renderAdditionalFields()}
+          </>
+        )}
         <InputField
           label={t('strings:annual_business_potential')}
           value={postData?.annualBusinessPotential?.toString()}

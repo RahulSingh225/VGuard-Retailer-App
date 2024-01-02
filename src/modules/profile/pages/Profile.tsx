@@ -184,14 +184,17 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const [renderedFields, setRenderedFields] = useState<string[] | null>(null);
+  const [renderedlabel2Fields, setRenderedlabel2Fields] = useState<string[] | null>(null);
   const [renderedBankFields, setRenderedBankFields] = useState<string[] | null>(null);
   const [renderedAddressFields, setRenderedAddressFields] = useState<string[] | null>(null);
   useEffect(() => {
     const fetchData = async () => {
       const fields = await renderFields(labels);
+      const label2Fields = await renderFields(label2);
       const addressFields = await renderFields(addressLabels);
       const bankFields = await renderFields(bankDetails);
       setRenderedFields(fields);
+      setRenderedlabel2Fields(label2Fields);
       setRenderedAddressFields(addressFields);
       setRenderedBankFields(bankFields);
     };
@@ -294,7 +297,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
           <InputField
             key={index}
             label={label}
-            value={renderedFields ? renderedFields[index] : ''}
+            value={renderedlabel2Fields ? renderedlabel2Fields[index] : ''}
             disabled={true}
             isImage={false}
           />
