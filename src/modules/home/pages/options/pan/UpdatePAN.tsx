@@ -1,13 +1,13 @@
-import React, {useState, useEffect} from 'react';
-import {View, StyleSheet, ScrollView} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import {
   responsiveFontSize,
   responsiveHeight,
 } from 'react-native-responsive-dimensions';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import Snackbar from 'react-native-snackbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {sendFile, updateKycReatiler} from '../../../../../utils/apiservice';
+import { sendFile, updateKycReatiler } from '../../../../../utils/apiservice';
 import colors from '../../../../../../colors';
 import Buttons from '../../../../../components/Buttons';
 import arrowIcon from '../../../../../assets/images/arrow.png';
@@ -20,73 +20,73 @@ import Loader from '../../../../../components/Loader';
 type BankProps = {};
 
 const UpdatePAN: React.FC<BankProps> = () => {
-    const { t } = useTranslation();
-    const [panNumber, setPanNumber] = useState<string>('');
-    const [entityUid, setEntityUid] = useState<string>('');
-    const [popupContent, setPopupContent] = useState('');
-    const [userId, setUserId] = useState('');
-    const [isPopupVisible, setPopupVisible] = useState(false);
-    const [loader, showLoader] = useState(true);
-    const [fileData, setFileData] = useState({
-        uri: "",
-        name: "",
-        type: ""
-    });
-    useEffect(() => {
-        const fetchUserRole = async () => {
-            try {
-                const userString = await AsyncStorage.getItem('USER');
-                if (userString) {
-                    const user = JSON.parse(userString);
-                    const shapedUser = {
-                        userId: user?.contactNo || '',
-                        entityUid: user?.kycDetails?.panCardFront,
-                        panNumber: user?.kycDetails?.panCardNo
-                    };
-                    setUserId(shapedUser.userId);
-                    setPanNumber(shapedUser.panNumber);
-                    setEntityUid(shapedUser.entityUid);
-                }
-                showLoader(false);
-            } catch (error) {
-                console.error('Error fetching user role:', error);
-                showLoader(false);
-            }
-        };
+  const { t } = useTranslation();
+  const [panNumber, setPanNumber] = useState<string>('');
+  const [entityUid, setEntityUid] = useState<string>('');
+  const [popupContent, setPopupContent] = useState('');
+  const [userId, setUserId] = useState('');
+  const [isPopupVisible, setPopupVisible] = useState(false);
+  const [loader, showLoader] = useState(true);
+  const [fileData, setFileData] = useState({
+    uri: "",
+    name: "",
+    type: ""
+  });
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const userString = await AsyncStorage.getItem('USER');
+        if (userString) {
+          const user = JSON.parse(userString);
+          const shapedUser = {
+            userId: user?.contactNo || '',
+            entityUid: user?.kycDetails?.panCardFront,
+            panNumber: user?.kycDetails?.panCardNo
+          };
+          setUserId(shapedUser.userId);
+          setPanNumber(shapedUser.panNumber);
+          setEntityUid(shapedUser.entityUid);
+        }
+        showLoader(false);
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+        showLoader(false);
+      }
+    };
 
     fetchUserRole();
   }, []);
 
-    const handleProceed = async () => {
-        showLoader(true);
-        const uuid = await triggerApiWithImage(fileData);
-        const postData = {
-            kycDetails: {
-                panCardNo: panNumber,
-                panCardFront: uuid,
-                userId: userId,
-            },
-        };
-
-        try {
-            const response = await updateKycReatiler(postData);
-            console.log(postData, '---------------postdata');
-            console.log("<>><<<<", response)
-            if (response.status === 200) {
-                const responseData = await response.json();
-                setPopupContent(responseData.message);
-                setPopupVisible(true);
-                // showSnackbar(responseData.message);
-            } else {
-                setPopupContent(response.message);
-                setPopupVisible(true);
-            }
-            showLoader(false);
-        } catch (error) {
-            console.error('API Error:', error);
-            showLoader(false);
-        }
+  const handleProceed = async () => {
+    showLoader(true);
+    const uuid = await triggerApiWithImage(fileData);
+    const postData = {
+      panCardNo: panNumber,
+      panCardFront: uuid,
+      userId: userId,
+      source: "App"
     };
+
+    try {
+      const response = await updateKycReatiler(postData);
+      console.log(postData, '---------------postdata');
+      console.log("<>><<<<", response)
+      if (response.status === 200) {
+        const responseData = await response.json();
+        console.log('RESPONSE', responseData);
+        setPopupContent(responseData.message);
+        setPopupVisible(true);
+        // showSnackbar(responseData.message);
+      } else {
+        setPopupContent(response.message);
+        setPopupVisible(true);
+      }
+      showLoader(false);
+    } catch (error) {
+      console.error('API Error:', error);
+      showLoader(false);
+    }
+  };
 
   // const showSnackbar = (message: string) => {
   //     Snackbar.show({
@@ -141,44 +141,44 @@ const UpdatePAN: React.FC<BankProps> = () => {
     }
   };
 
-    return (
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-            {loader && <Loader isLoading={loader} />}
-            <View style={styles.mainWrapper}>
-                <View style={styles.form}>
-                    <ImagePickerField label='Pan Card* (Front)'
-                        onImageChange={handleImageChange}
-                        imageRelated='PAN_CARD_FRONT'
-                        initialImage={entityUid}
-                    />
-                    <InputField
-                        label={t('strings:update_pan_number_manually')}
-                        value={panNumber}
-                        onChangeText={(value) => setPanNumber(value)}
-                    />
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      {loader && <Loader isLoading={loader} />}
+      <View style={styles.mainWrapper}>
+        <View style={styles.form}>
+          <ImagePickerField label='Pan Card* (Front)'
+            onImageChange={handleImageChange}
+            imageRelated='PAN_CARD_FRONT'
+            initialImage={entityUid}
+          />
+          <InputField
+            label={t('strings:update_pan_number_manually')}
+            value={panNumber}
+            onChangeText={(value) => setPanNumber(value)}
+          />
 
-                </View>
-                <View style={styles.button}>
-                    <Buttons
-                        label={t('strings:submit')}
-                        variant="filled"
-                        onPress={() => handleProceed()}
-                        width="100%"
-                        iconHeight={10}
-                        iconWidth={30}
-                        iconGap={30}
-                        icon={arrowIcon}
-                    />
-                </View>
-                <NeedHelp />
-            </View>
-            {isPopupVisible && (
-                <Popup isVisible={isPopupVisible} onClose={() => setPopupVisible(false)}>
-                    {popupContent}
-                </Popup>
-            )}
-        </ScrollView>
-    );
+        </View>
+        <View style={styles.button}>
+          <Buttons
+            label={t('strings:submit')}
+            variant="filled"
+            onPress={() => handleProceed()}
+            width="100%"
+            iconHeight={10}
+            iconWidth={30}
+            iconGap={30}
+            icon={arrowIcon}
+          />
+        </View>
+        <NeedHelp />
+      </View>
+      {isPopupVisible && (
+        <Popup isVisible={isPopupVisible} onClose={() => setPopupVisible(false)}>
+          {popupContent}
+        </Popup>
+      )}
+    </ScrollView>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     color: colors.grey,
     fontWeight: 'bold',
   },
-  modalcontainer: {alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.7)'},
+  modalcontainer: { alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.7)' },
   imagePreviewContainer: {
     flex: 1,
     justifyContent: 'center',

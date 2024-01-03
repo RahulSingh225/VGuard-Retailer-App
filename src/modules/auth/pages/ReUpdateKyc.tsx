@@ -153,76 +153,84 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
 
     const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }, imageRelated: string) => {
         try {
-          const formData = new FormData();
-          formData.append('USER_ROLE', '2');
-          formData.append('image_related', imageRelated);
-          formData.append('file', {
-            uri: fileData.uri,
-            name: fileData.name,
-            type: fileData.type,
-          });
-    
-          console.log("formData=====", formData);
-          const response = await sendFile(formData);
-          console.log("response-----------", response.data.entityUid);
-          return response.data.entityUid;
-        } catch (error) {
-          setPopupContent("Error uploading image");
-          setPopupVisible(true);
-          console.error('API Error:', error);
-          throw error;
-        }
-      };
+            const formData = new FormData();
+            formData.append('USER_ROLE', '2');
+            formData.append('image_related', imageRelated);
+            formData.append('file', {
+                uri: fileData.uri,
+                name: fileData.name,
+                type: fileData.type,
+            });
 
+            console.log("formData=====", formData);
+            const response = await sendFile(formData);
+            console.log("response-----------", response.data.entityUid);
+            return response.data.entityUid;
+        } catch (error) {
+            setPopupContent("Error uploading image");
+            setPopupVisible(true);
+            console.error('API Error:', error);
+            throw error;
+        }
+    };
+
+    const handleSendImage = async () => {
+        try {
+            const panPromise = panFileData.uri !== "" ? triggerApiWithImage(panFileData, 'PAN_CARD_FRONT') : Promise.resolve(null);
+            const idFrontPromise = idFrontFileData.uri !== "" ? triggerApiWithImage(idFrontFileData, 'ID_CARD_FRONT') : Promise.resolve(null);
+            const idBackPromise = idBackFileData.uri !== "" ? triggerApiWithImage(idBackFileData, 'ID_CARD_BACK') : Promise.resolve(null);
+            const gstPromise = GstFileData.uri !== "" ? triggerApiWithImage(GstFileData, 'GST') : Promise.resolve(null);
+
+            const [panUid, idFrontUid, idBackUid, gstUid] = await Promise.all([panPromise, idFrontPromise, idBackPromise, gstPromise]);
+
+            const updatedPostData = { ...postData };
+
+            if (panFileData.uri !== "" && panUid !== null) {
+                console.log(panUid);
+                setPostDataOfImage('pan', panUid);
+                updatedPostData.kycDetails.panCardFront = panUid;
+            }
+
+            if (idFrontFileData.uri !== "" && idFrontUid !== null) {
+                setPostDataOfImage('aadharOrVoterOrDLFront', idFrontUid);
+                updatedPostData.kycDetails.aadharOrVoterOrDLFront = idFrontUid;
+            }
+
+            if (idBackFileData.uri !== "" && idBackUid !== null) {
+                setPostDataOfImage('aadharOrVoterOrDlBack', idBackUid);
+                updatedPostData.kycDetails.aadharOrVoterOrDlBack = idBackUid;
+            }
+
+            if (GstFileData.uri !== "" && gstUid !== null) {
+                setPostDataOfImage('gstFront', gstUid);
+                updatedPostData.kycDetails.gstFront = gstUid;
+            }
+
+            return Promise.resolve(updatedPostData);
+        } catch (error) {
+            console.error('Error in handleSendImage:', error);
+            return Promise.reject('Error in handleSendImage.');
+        }
+    };
 
     const InitiatePreview = async () => {
         try {
-            const errors: string[] = validateField('name', postData?.name, postData);
-
-            setValidationErrors(errors);
-
-            if (errors.length === 0) {
-                const panImage = panFileData;
-                const idFront = idFrontFileData;
-                const idBack = idBackFileData;
-                const gst = GstFileData;
-                console.log(panImage);
-                
-                if (idFront.uri != "") {
-                    console.log("idFRONTE")
-                    const idFrontUid = await triggerApiWithImage(idFront, 'ID_CARD_FRONT');
-                    setPostDataOfImage('aadharOrVoterOrDLFront', idFrontUid);
-                }
-                if (idBack.uri != "") {
-                    console.log("idBack")
-                    const idBackUid = await triggerApiWithImage(idBackFileData, 'ID_CARD_BACK');
-                    setPostDataOfImage('aadharOrVoterOrDlBack', idBackUid);
-                }
-                if (gst.uri != "") {
-                    console.log("GSTS<><><><>")
-                    const gstUid = await triggerApiWithImage(GstFileData, 'GST');
-                    setPostDataOfImage('gstFront', gstUid);
-                }
-                if (panImage.uri != "") {
-                    console.log("<><><><<>")
-                    console.log("FILEDATA", panImage);
-                    const panUid = await triggerApiWithImage(panImage, 'PAN_CARD_FRONT');
-                    console.log("RESPONSE", panUid);
-                    setPostDataOfImage('panCardFront', panUid);
-                    
-                }
-
-                AsyncStorage.setItem('VGUSER', JSON.stringify(postData)).then(() => {
-                    navigation.navigate('PreviewReUpdateKyc');
+            handleSendImage()
+                .then(updatedPostData => {
+                    console.log("POSTDATA", updatedPostData);
+                    AsyncStorage.setItem('VGUSER', JSON.stringify(updatedPostData)).then(() => {
+                        navigation.navigate('PreviewReUpdateKyc');
+                    });
+                })
+                .catch(error => {
+                    console.error('Error in handleSubmit:', error);
                 });
-            } else {
-                setPopupVisible(true);
-                setPopupContent(errors.map((error, index) => <Text key={index}>{error}</Text>));
-            }
-        } catch (error) {
-            console.error('Error in InitiatePreview:', error);
+        }
+        catch (error) {
+            console.error('Error in handleSubmit:', error);
         }
     };
+
 
 
     const handleChange = (label: string, value: string) => {
@@ -307,8 +315,8 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             uri: image,
             name: imageName,
             type: type,
-          };
-          console.log(fileData)
+        };
+        console.log(fileData)
         try {
             if (label === "Aadhar Card* (Front)") {
                 setIdFrontFileData(fileData)
@@ -432,7 +440,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                         </Text>
                     </View>
                     <View style={styles.reasons}>
-                            <Text style={{ color: 'red' }}>{postData?.rejectedReasonsStr || ''}</Text>
+                        <Text style={{ color: 'red' }}>{postData?.rejectedReasonsStr || ''}</Text>
                     </View>
                 </View>
                 <InputField

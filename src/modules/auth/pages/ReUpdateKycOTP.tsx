@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import colors from '../../../../colors';
 import Buttons from '../../../components/Buttons';
 import arrowIcon from '../../../assets/images/arrow.png';
@@ -18,16 +18,16 @@ import {
   validateReverifyOtp,
 } from '../../../utils/apiservice';
 import Popup from '../../../components/Popup';
-import {width, height} from '../../../utils/dimensions';
-import {Colors} from '../../../utils/constants';
-import {responsiveFontSize} from 'react-native-responsive-dimensions';
+import { width, height } from '../../../utils/dimensions';
+import { Colors } from '../../../utils/constants';
+import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ReUpdateKycOTPProps {
   navigation: any;
 }
 
-const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({navigation}) => {
+const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
   const [number, setNumber] = useState('');
   const [preferedLanguage, setpreferedLanguage] = useState(1);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
@@ -50,7 +50,7 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({navigation}) => {
 
   const handleValidation = async () => {
     try {
-      let data = {loginOtpUserName: number, otpType: null};
+      let data = { loginOtpUserName: number, otpType: null };
       console.log(data);
       let validationResponse = await generateOtpForReverify(data);
       console.log(validationResponse);
@@ -93,13 +93,14 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({navigation}) => {
       let response = await validateReverifyOtp(userCredentials);
       let message = response.data.message;
       if (response.status === 200) {
-        AsyncStorage.setItem('username', number).then(() => {
-          AsyncStorage.setItem('password', otp).then(() => {
+        AsyncStorage.setItem('username', number.toString()).then(() => {
+          AsyncStorage.setItem('password', otp.toString()).then(() => {
             AsyncStorage.setItem('authtype', 'otp').then(() => {
-              navigation.navigate('ReUpdateKyc', {usernumber: number});
+              navigation.navigate('ReUpdateKyc', { usernumber: number });
             });
           });
         });
+
       } else {
         setIsPopupVisible(true);
         setPopupMessage(message);
@@ -136,7 +137,7 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({navigation}) => {
 
   const placeholderColor = colors.grey;
 
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
 
   return (
@@ -247,11 +248,11 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({navigation}) => {
                 marginLeft: 15,
               }}>
               <View>
-                <Text style={{color: 'black'}}>OTP Not Received ?</Text>
+                <Text style={{ color: 'black' }}>OTP Not Received ?</Text>
               </View>
               <TouchableOpacity
                 onPress={() => countdown === 0 && handleValidation()}>
-                <View style={{right: 28}}>
+                <View style={{ right: 28 }}>
                   <Text
                     style={{
                       color: Colors.yellow,
@@ -262,7 +263,7 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({navigation}) => {
                 </View>
               </TouchableOpacity>
             </View>
-            <View style={{marginLeft: 15}}>
+            <View style={{ marginLeft: 15 }}>
               <Text
                 style={{
                   color: 'grey',
@@ -295,7 +296,7 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({navigation}) => {
                 </View>
               </TouchableOpacity>
               {countdown !== null && countdown > 0 ? (
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Text
                     style={{
                       fontSize: responsiveFontSize(1.8),

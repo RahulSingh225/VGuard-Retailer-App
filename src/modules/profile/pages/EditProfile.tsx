@@ -48,6 +48,8 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       .then(response => response.json())
       .then(res => {
         console.log(res);
+        const trimmedGender = res.gender.trim();
+        res.gender = trimmedGender;
         setUserData(res);
         setPostData(res);
         setStateId(res.stateId);
@@ -132,87 +134,72 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     Linking.openURL(ecardURL + userData.ecardPath);
   };
 
+  const handleSendImage = async () => {
+    try {
+      const selfiePromise = selfieFileData.uri !== "" ? triggerApiWithImage(selfieFileData, 'PROFILE') : Promise.resolve(null);
+      const idFrontPromise = idFrontFileData.uri !== "" ? triggerApiWithImage(idFrontFileData, 'ID_CARD_FRONT') : Promise.resolve(null);
+      const idBackPromise = idBackFileData.uri !== "" ? triggerApiWithImage(idBackFileData, 'ID_CARD_BACK') : Promise.resolve(null);
+      const gstPromise = GstFileData.uri !== "" ? triggerApiWithImage(GstFileData, 'GST') : Promise.resolve(null);
+
+      const [selfieUid, idFrontUid, idBackUid, gstUid] = await Promise.all([selfiePromise, idFrontPromise, idBackPromise, gstPromise]);
+
+      const updatedPostData = { ...postData };
+
+      if (selfieFileData.uri !== "" && selfieUid !== null) {
+        console.log(selfieUid);
+        setPostDataOfImage('selfie', selfieUid);
+        updatedPostData.kycDetails.selfie = selfieUid;
+      }
+
+      if (idFrontFileData.uri !== "" && idFrontUid !== null) {
+        setPostDataOfImage('aadharOrVoterOrDLFront', idFrontUid);
+        updatedPostData.kycDetails.aadharOrVoterOrDLFront = idFrontUid;
+      }
+
+      if (idBackFileData.uri !== "" && idBackUid !== null) {
+        setPostDataOfImage('aadharOrVoterOrDlBack', idBackUid);
+        updatedPostData.kycDetails.aadharOrVoterOrDlBack = idBackUid;
+      }
+
+      if (GstFileData.uri !== "" && gstUid !== null) {
+        setPostDataOfImage('gstFront', gstUid);
+        updatedPostData.kycDetails.gstFront = gstUid;
+      }
+
+      return Promise.resolve(updatedPostData);
+    } catch (error) {
+      console.error('Error in handleSendImage:', error);
+      return Promise.reject('Error in handleSendImage.');
+    }
+  };
+
   const handleSubmit = async () => {
     showLoader(true);
     try {
-
       const currentDate = new Date();
       const dobDate = moment(postData?.dob, 'DD MMM YYYY').toDate();
       const minAllowedDate = new Date(currentDate);
       minAllowedDate.setFullYear(currentDate.getFullYear() - 18);
-
+  
       if (dobDate < minAllowedDate) {
-        // Store promises for each image upload
-        const selfiePromise = selfieFileData.uri !== "" ? triggerApiWithImage(selfieFileData, 'PROFILE') : Promise.resolve(null);
-        const idFrontPromise = idFrontFileData.uri !== "" ? triggerApiWithImage(idFrontFileData, 'ID_CARD_FRONT') : Promise.resolve(null);
-        const idBackPromise = idBackFileData.uri !== "" ? triggerApiWithImage(idBackFileData, 'ID_CARD_BACK') : Promise.resolve(null);
-        const gstPromise = GstFileData.uri !== "" ? triggerApiWithImage(GstFileData, 'GST') : Promise.resolve(null);
-
-        // Wait for all image uploads to complete
-        const [selfieUid, idFrontUid, idBackUid, gstUid] = await Promise.all([selfiePromise, idFrontPromise, idBackPromise, gstPromise]);
-
-        // Check if any image upload failed
-        if (selfieFileData.uri !== "" && selfieUid === null) {
-          Snackbar.show({
-            text: 'Error uploading selfie image.',
-            duration: Snackbar.LENGTH_LONG,
-          });
-          return;
-        }
-
-        if (idFrontFileData.uri !== "" && idFrontUid === null) {
-          Snackbar.show({
-            text: 'Error uploading ID card front image.',
-            duration: Snackbar.LENGTH_LONG,
-          });
-          return;
-        }
-
-        if (idBackFileData.uri !== "" && idBackUid === null) {
-          Snackbar.show({
-            text: 'Error uploading ID card back image.',
-            duration: Snackbar.LENGTH_LONG,
-          });
-          return;
-        }
-
-        if (GstFileData.uri !== "" && gstUid === null) {
-          Snackbar.show({
-            text: 'Error uploading GST image.',
-            duration: Snackbar.LENGTH_LONG,
-          });
-          return;
-        }
-
-        // Update profile with successful image uploads
-        if (selfieFileData.uri !== "" && selfieUid !== null) {
-          setPostDataOfImage('selfie', selfieUid);
-        }
-
-        if (idFrontFileData.uri !== "" && idFrontUid !== null) {
-          setPostDataOfImage('aadharOrVoterOrDLFront', idFrontUid);
-        }
-
-        if (idBackFileData.uri !== "" && idBackUid !== null) {
-          setPostDataOfImage('aadharOrVoterOrDlBack', idBackUid);
-        }
-
-        if (GstFileData.uri !== "" && gstUid !== null) {
-          setPostDataOfImage('gstFront', gstUid);
-        }
-
-        // Update the profile data
-        updateProfile(postData)
-          .then(response => response.json())
-          .then((responseData) => {
-            setPopupVisible(true);
-            setPopupContent(responseData?.message);
-            showLoader(false);
+        handleSendImage()
+          .then(updatedPostData => {
+            console.log("POSTDATA", updatedPostData);
+            updateProfile(updatedPostData)
+              .then(response => response.json())
+              .then((responseData) => {
+                setPopupVisible(true);
+                setPopupContent(responseData?.message);
+                showLoader(false);
+              })
+              .catch(error => {
+                setPopupContent("Error Updating Profile");
+                setPopupVisible(true);
+                showLoader(false);
+              });
           })
           .catch(error => {
-            setPopupContent("Error Updating Profile");
-            setPopupVisible(true);
-            showLoader(false);
+            console.error('Error in handleSubmit:', error);
           });
       } else {
         setPopupContent('The age should be at least 18 years.');
@@ -222,6 +209,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       console.error('Error in handleSubmit:', error);
     }
   };
+
   const handleChange = (label: string, value: string) => {
     if (label == "isShopDifferent") {
       setIsShopAddressDifferent(value)
@@ -249,7 +237,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const handleInputChange = (value: string, label: string) => {
     setPostData((prevData: UserData) => {
       let updatedValue: any = value;
-
       if (['annualBusinessPotential'].includes(label)) {
         updatedValue = parseFloat(value);
         if (isNaN(updatedValue)) {
@@ -261,13 +248,32 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         [label]: updatedValue,
       };
     });
+    if (label == "gender") {
+      let genderNum = "";
+      if (value == "Male") {
+        genderNum = "1";
+      }
+      else if (value == "Female") {
+        genderNum = "2"
+      }
+      else if (value == "Other") {
+        genderNum = "3"
+      }
+      setPostData((prevData: UserData) => {
+        return {
+          ...prevData,
+          [label]: value,
+          genderPos: genderNum
+        }
+      })
+    }
   };
 
   const genderpickerItems = [
     { label: 'Select Gender', value: '' },
     { label: 'Male', value: 'Male' },
     { label: 'Female', value: 'Female' },
-    { label: 'Other', value: 'Other' },
+    { label: 'Others', value: 'Others' },
   ];
   const selectYesorNo = [
     { label: 'Select Option', value: '' },
@@ -347,6 +353,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const setPostDataOfImage = (label: string, value: string) => {
+    console.log(label, value)
     setPostData((prevData: UserData) => ({
       ...prevData,
       kycDetails: {
@@ -420,45 +427,45 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   }
 
 
-const renderAdditionalFields = () => {
-  const additionalFields = [];
+  const renderAdditionalFields = () => {
+    const additionalFields = [];
 
-  for (let i = 2; i <= additionalFieldsCount; i++) {
-    if(i<=5){
-      additionalFields.push(
-        <View key={i}>
-          <InputField
-            label={t('strings:if_yes_please_mention_scheme_and_brand_name')}
-            value={postData?.[`otherSchemeBrand${i}`]}
-            onChangeText={(text) => handleInputChange(text, `otherSchemeBrand${i}`)}
-            numeric
-          />
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-            <View style={{ flex: 1 }}>
-              <InputField
-                label={t('strings:if_yes_what_you_liked_about_the_program')}
-                value={postData?.[`abtOtherSchemeLiked${i}`]}
-                onChangeText={(text) => handleInputChange(text, `abtOtherSchemeLiked${i}`)}
-                numeric
-              />
-            </View>
-            {i < 5 && (
-              <TouchableOpacity onPress={() => setAdditionalFieldsCount((prev) => prev + 1)}>
-                <Image
-                  source={require('../../../assets/images/ic_add_yellow.webp')}
-                  style={{ width: 30, height: 30, marginBottom: 15 }}
-                  resizeMode='contain'
+    for (let i = 2; i <= additionalFieldsCount; i++) {
+      if (i <= 5) {
+        additionalFields.push(
+          <View key={i}>
+            <InputField
+              label={t('strings:if_yes_please_mention_scheme_and_brand_name')}
+              value={postData?.[`otherSchemeBrand${i}`]}
+              onChangeText={(text) => handleInputChange(text, `otherSchemeBrand${i}`)}
+              numeric
+            />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <View style={{ flex: 1 }}>
+                <InputField
+                  label={t('strings:if_yes_what_you_liked_about_the_program')}
+                  value={postData?.[`abtOtherSchemeLiked${i}`]}
+                  onChangeText={(text) => handleInputChange(text, `abtOtherSchemeLiked${i}`)}
+                  numeric
                 />
-              </TouchableOpacity>
-            )}
+              </View>
+              {i < 5 && (
+                <TouchableOpacity onPress={() => setAdditionalFieldsCount((prev) => prev + 1)}>
+                  <Image
+                    source={require('../../../assets/images/ic_add_yellow.webp')}
+                    style={{ width: 30, height: 30, marginBottom: 15 }}
+                    resizeMode='contain'
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
-        </View>
-      );
+        );
+      }
     }
-  }
 
-  return additionalFields;
-};
+    return additionalFields;
+  };
 
   return (
     <ScrollView style={styles.mainWrapper}>

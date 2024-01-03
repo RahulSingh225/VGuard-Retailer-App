@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, Linking, TouchableOpacity, Modal } from 'react-native';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getFile, updateKycReatiler } from '../../../utils/apiservice';
+import { getFile, loginWithOtp, loginWithPassword, reUpdateUserForKyc, updateKycReatiler } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { UserData } from '../../../utils/modules/UserData';
@@ -10,6 +10,7 @@ import InputField from '../../../components/InputField';
 import Buttons from '../../../components/Buttons';
 import Popup from '../../../components/Popup';
 import Loader from '../../../components/Loader';
+import { useAuth } from '../../../components/AuthContext';
 interface ReUpdateKycPreviewProps {
     navigation: any;
 }
@@ -41,20 +42,49 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
         setimageOpen(imageSource);
     };
 
-    const handleSubmit = async () => {
+    const { login } = useAuth();
+
+
+    const handleSubmit = () => {
         console.log("Post Data:----", postData);
-        updateKycReatiler(postData)
+        reUpdateUserForKyc(postData)
             .then(response => response.json())
             .then((responseData) => {
-                console.log("RESPONSE DATA:", responseData)
+                console.log("RESPONSE DATA:", responseData);
                 setPopupVisible(true);
                 setPopupContent(responseData?.message);
-                // AsyncStorage.removeItem('VGUSER');
+                
+                if (responseData?.code === 200) {
+                    AsyncStorage.removeItem('VGUSER');
+
+                    const username = AsyncStorage.getItem('username');
+                    const password = AsyncStorage.getItem('password');
+    
+                    loginWithOtp(username, password)
+                        .then(response => response.json())
+                        .then(async (loginResponse) => {
+                            console.log(loginResponse);
+                            showLoader(false);
+    
+                            if (loginResponse.status === 200) {
+                                var r = await loginResponse.json();
+                                console.log(r);
+                                login(r);
+                            } else {
+                                setPopupVisible(!isPopupVisible);
+                                setPopupContent("Something went wrong!");
+                            }
+                        })
+                        .catch(loginError => {
+                            console.error('Login error:', loginError);
+                        });
+                }
             })
             .catch(error => {
                 console.error('Error posting data:', error);
             });
-    }
+    };
+    
     const handleEdit = async () => {
         navigation.navigate('ReUpdateKyc', { usernumber: postData.contactNo });
     }
@@ -91,7 +121,8 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
     }, [
         userData?.kycDetails?.aadharOrVoterOrDlFront, 
         userData?.kycDetails?.aadharOrVoterOrDlBack, 
-        userData?.kycDetails?.panCardFront]);
+        userData?.kycDetails?.panCardFront,
+        userData?.kycDetails?.gstFront]);
 
     const renderField = async (fieldName: string): string => {
         if (fieldName === 'GST Photo') {

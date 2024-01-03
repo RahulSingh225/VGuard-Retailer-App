@@ -33,17 +33,17 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     //   const user = JSON.parse(r || '');
     //   setUserData(user);
     // });
-    getUser().then(response => response.json()
-      .then(res => {
-        const result = res;
-        console.log(result)
-        setUserData(result);
-        setLoading(false);
-      }))
-      .catch(error => {
-        setPopupContent("Something Went Wrong!");
-        setPopupVisible(true);
-      })
+    getUser().then(response => response.json())
+    .then(res => {
+      console.log(res);
+      setUserData(res);
+      setLoading(false);
+    })
+    .catch(error => {
+      setPopupContent("Something Went Wrong!");
+      setPopupVisible(true);
+      setLoading(false);
+    })
   }, []);
   const fetchChequeCopy = async () => {
     try {
@@ -51,10 +51,10 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
       setChequeCopySource(source);
       const gstSource = await renderField("GST Photo");
       setGstCopySource(gstSource);
-      setLoading(false);
+      // setLoading(false);
     } catch (error) {
       console.error("Error fetching cheque copy:", error);
-      setLoading(false);
+      // setLoading(false);
     }
   };
   useEffect(() => {
@@ -222,7 +222,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.mainWrapper}>
-      <Loader isLoading={loading} />
+      {loading && <Loader isLoading={loading} />}
       <View style={styles.flexBox}>
         <View style={styles.ImageProfile}>
           {profileImage ? (
@@ -300,7 +300,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
             isImage={false}
           />
         ))}
-        
+
         <Text style={styles.subHeading}>{t('strings:permanent_address')}</Text>
         {addressLabels.map((label, index) => (
           <InputField
@@ -342,7 +342,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
           <Image
             source={{ uri: imageOpen }}
-            style={{ width: '70%', height: '70%'}}
+            style={{ width: '70%', height: '70%' }}
             resizeMode="contain"
           />
         </View>
