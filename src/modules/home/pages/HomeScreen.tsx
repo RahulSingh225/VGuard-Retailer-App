@@ -1,12 +1,13 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Linking, ImageBackground } from 'react-native';
 import NeedHelp from '../../../components/NeedHelp';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import colors from '../../../../colors';
 import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 import { useTranslation } from 'react-i18next';
 import { getFile } from '../../../utils/apiservice';
+import { getImageUrl } from '../../../utils/FileUtils';
 import CustomTouchableOption from '../../../components/CustomTouchableOption';
 interface User {
   userCode: string;
@@ -21,7 +22,7 @@ interface User {
 const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
   const [userData, setUserData] = useState<User | null>(null);
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState("");
 
   const loadUserDetails = async () => {
     try {
@@ -54,14 +55,11 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (userData?.userRole && userData.selfieImage) {
       const getImage = async () => {
         try {
-          const profileImageUrl = await getFile(userData.selfieImage, 'PROFILE', "2");
-          if (profileImageUrl.status === 500) {
-            setProfileImage(null);
-          }
-          else {
-            setProfileImage(profileImageUrl.url);
-          }
-          console.log(profileImage)
+          // const profileImageUrl = await getFile(userData.selfieImage, 'PROFILE', "2");
+          const profileImageUrl = await getImageUrl(userData.selfieImage, 'Profile');
+          console.log(profileImageUrl);
+          setProfileImage(profileImageUrl);
+          // console.log(profileImage)
         } catch (error) {
           console.log('Error while fetching profile image:', error);
         }
@@ -71,119 +69,125 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   }, [userData?.userRole, userData?.selfieImage]);
   return (
     <ScrollView style={styles.mainWrapper}>
-      <View style={{padding: 15}}>
-      <View style={styles.detailContainer}>
-        <View style={styles.ImageProfile}>
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          ) : (
-            <Image source={require('../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          )}
+      <View style={{ padding: 15 }}>
+        <View style={styles.detailContainer}>
+          <View style={styles.ImageProfile}>
+            <ImageBackground
+              source={require('../../../assets/images/ic_v_guards_user.png')}
+              style={{ width: '100%', height: '100%', borderRadius: 100 }}
+              resizeMode='contain'
+            >
+              <Image
+                source={{ uri: profileImage }}
+                style={{ width: '100%', height: '100%', borderRadius: 100 }}
+                resizeMode='contain'
+              />
+            </ImageBackground>
+          </View>
+          <View>
+            <Text style={styles.name}>{userData?.name}</Text>
+            <Text style={styles.code}>{userData?.userCode}</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+              <Text style={styles.viewProfile}>{t('strings:view_profile')}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <View>
-          <Text style={styles.name}>{userData?.name}</Text>
-          <Text style={styles.code}>{userData?.userCode}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-            <Text style={styles.viewProfile}>{t('strings:view_profile')}</Text>
+        <View style={styles.points}>
+          <TouchableOpacity style={styles.leftPoint} onPress={() => navigation.navigate("Dashboard")} >
+            <Text style={styles.greyText}>{t('strings:points_balance')}</Text>
+
+            <Text style={styles.point}>{userData?.pointsBalance ? userData?.pointsBalance : 0}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.middlePoint} onPress={() => navigation.navigate("Redemption History")} >
+            <Text style={styles.greyText}>{t('strings:points_redeemed')}</Text>
+            <Text style={styles.point}>
+              {userData?.redeemedPoints ? userData?.redeemedPoints : 0}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.rightPoint} onPress={() => navigation.navigate("Unique Code History")} >
+            <Text style={styles.greyText}>{t('strings:number_of_scans')}</Text>
+            <Text style={styles.point}>{userData?.numberOfScan}</Text>
+
           </TouchableOpacity>
         </View>
-      </View>
-      <View style={styles.points}>
-        <TouchableOpacity style={styles.leftPoint} onPress={()=>navigation.navigate("Dashboard")} >
-          <Text style={styles.greyText}>{t('strings:points_balance')}</Text>
-
-          <Text style={styles.point}>{userData?.pointsBalance ? userData?.pointsBalance : 0}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.middlePoint} onPress={()=>navigation.navigate("Redemption History")} >
-          <Text style={styles.greyText}>{t('strings:points_redeemed')}</Text>
-          <Text style={styles.point}>
-            {userData?.redeemedPoints ? userData?.redeemedPoints : 0}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.rightPoint} onPress={()=>navigation.navigate("Unique Code History")} >
-          <Text style={styles.greyText}>{t('strings:number_of_scans')}</Text>
-          <Text style={styles.point}>{userData?.numberOfScan}</Text>
-
-        </TouchableOpacity>
-      </View>
-      <View style={styles.dashboard}>
-        <View style={styles.row}>
-          <CustomTouchableOption
-            text="strings:scan_code"
-            iconSource={require('../../../assets/images/ic_scan_code.png')}
-            screenName="Scan QR"
-          />
-          <CustomTouchableOption
-            text="strings:redeem_points"
-            iconSource={require('../../../assets/images/ic_redeem_points.webp')}
-            screenName="Redeem Products"
-          />
-          <CustomTouchableOption
-            text="strings:dashboard"
-            iconSource={require('../../../assets/images/ic_dashboard.webp')}
-            screenName="Dashboard"
-          />
+        <View style={styles.dashboard}>
+          <View style={styles.row}>
+            <CustomTouchableOption
+              text="strings:scan_code"
+              iconSource={require('../../../assets/images/ic_scan_code.png')}
+              screenName="Scan QR"
+            />
+            <CustomTouchableOption
+              text="strings:redeem_points"
+              iconSource={require('../../../assets/images/ic_redeem_points.webp')}
+              screenName="Redeem Products"
+            />
+            <CustomTouchableOption
+              text="strings:dashboard"
+              iconSource={require('../../../assets/images/ic_dashboard.webp')}
+              screenName="Dashboard"
+            />
+          </View>
+          <View style={styles.row}>
+            <CustomTouchableOption
+              text="strings:update_pan"
+              iconSource={require('../../../assets/images/ic_update_kyc.webp')}
+              screenName="Update PAN"
+            />
+            <CustomTouchableOption
+              text="strings:scheem_offers"
+              iconSource={require('../../../assets/images/ic_scheme_offers.png')}
+              screenName="schemes"
+            />
+            <CustomTouchableOption
+              text="strings:info_desk"
+              iconSource={require('../../../assets/images/ic_vguard_info.webp')}
+              screenName="info"
+            />
+          </View>
+          <View style={styles.row}>
+            <CustomTouchableOption
+              text="strings:air_cooler"
+              iconSource={require('../../../assets/images/icon_air_cooler.webp')}
+              screenName="Air Cooler"
+            />
+            <CustomTouchableOption
+              text="strings:what_s_new"
+              iconSource={require('../../../assets/images/ic_whats_new.webp')}
+              screenName="new"
+            />
+            <CustomTouchableOption
+              text="strings:raise_ticket"
+              iconSource={require('../../../assets/images/ic_raise_ticket.webp')}
+              screenName="ticket"
+            />
+          </View>
+          <View style={styles.row}>
+            <CustomTouchableOption
+              text="strings:update_bank"
+              iconSource={require('../../../assets/images/ic_raise_ticket.webp')}
+              screenName="Update Bank"
+            />
+            <CustomTouchableOption
+              text="strings:tds_certificate"
+              iconSource={require('../../../assets/images/tds_ic.png')}
+              screenName="TDS Certificate"
+            />
+            <CustomTouchableOption
+              text="strings:engagement"
+              iconSource={require('../../../assets/images/elink.png')}
+              screenName="Engagement"
+            />
+          </View>
+          <View style={styles.lastrow}>
+            <CustomTouchableOption
+              text="strings:tds_statement"
+              iconSource={require('../../../assets/images/tds_ic.png')}
+              screenName="TDS Statement"
+            />
+          </View>
         </View>
-        <View style={styles.row}>
-          <CustomTouchableOption
-            text="strings:update_pan"
-            iconSource={require('../../../assets/images/ic_update_kyc.webp')}
-            screenName="Update PAN"
-          />
-          <CustomTouchableOption
-            text="strings:scheem_offers"
-            iconSource={require('../../../assets/images/ic_scheme_offers.png')}
-            screenName="schemes"
-          />
-          <CustomTouchableOption
-            text="strings:info_desk"
-            iconSource={require('../../../assets/images/ic_vguard_info.webp')}
-            screenName="info"
-          />
-        </View>
-        <View style={styles.row}>
-          <CustomTouchableOption
-            text="strings:air_cooler"
-            iconSource={require('../../../assets/images/icon_air_cooler.webp')}
-            screenName="Air Cooler"
-          />
-          <CustomTouchableOption
-            text="strings:what_s_new"
-            iconSource={require('../../../assets/images/ic_whats_new.webp')}
-            screenName="new"
-          />
-          <CustomTouchableOption
-            text="strings:raise_ticket"
-            iconSource={require('../../../assets/images/ic_raise_ticket.webp')}
-            screenName="ticket"
-          />
-        </View>
-        <View style={styles.row}>
-          <CustomTouchableOption
-            text="strings:update_bank"
-            iconSource={require('../../../assets/images/ic_raise_ticket.webp')}
-            screenName="Update Bank"
-          />
-          <CustomTouchableOption
-            text="strings:tds_certificate"
-            iconSource={require('../../../assets/images/tds_ic.png')}
-            screenName="TDS Certificate"
-          />
-          <CustomTouchableOption
-            text="strings:engagement"
-            iconSource={require('../../../assets/images/elink.png')}
-            screenName="Engagement"
-          />
-        </View>
-        <View style={styles.lastrow}>
-          <CustomTouchableOption
-            text="strings:tds_statement"
-            iconSource={require('../../../assets/images/tds_ic.png')}
-            screenName="TDS Statement"
-          />
-        </View>
-      </View>
-      <NeedHelp />
+        <NeedHelp />
       </View>
     </ScrollView>
   );
@@ -217,6 +221,7 @@ const styles = StyleSheet.create({
     height: 50,
     width: 50,
     borderRadius: 100,
+    // backgroundColor: 'red'
   },
   points: {
     width: '100%',

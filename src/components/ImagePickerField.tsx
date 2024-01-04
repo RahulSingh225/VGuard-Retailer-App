@@ -7,6 +7,7 @@ import colors from '../../colors';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import { getFile, sendFile } from '../utils/apiservice';
 import Popup from './Popup';
+import { getImageUrl } from '../utils/FileUtils';
 
 const { width, height } = Dimensions.get('window');
 
@@ -15,10 +16,11 @@ interface ImagePickerFieldProps {
     onImageChange: (image: string, type: string, imageName: string, label: string) => void;
     imageRelated: string;
     initialImage?: string;
+    getImageRelated?: string;
 }
 
 
-const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChange, imageRelated, initialImage }) => {
+const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChange, imageRelated, initialImage, getImageRelated }) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
     const [showImagePickerModal, setShowImagePickerModal] = useState(false);
@@ -32,17 +34,18 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
         const fetchImage = async () => {
             if (initialImage) {
                 try {
-                    const image = await getFile(initialImage, imageRelated, "2");
+                    // const image = await getFile(initialImage, imageRelated, "2");
+                    const image = await getImageUrl(initialImage, getImageRelated);
                     setIsImageSelected(true);
-                    setSelectedImage(image.url);
+                    setSelectedImage(image);
                     setSelectedImageName(initialImage);
+                    console.log(image, "<><><URL<><><")
                 } catch (error) {
                     console.error('Error fetching image:', error);
                 }
             }
         };
 
-        // Call the async function
         fetchImage();
     }, [initialImage]);
 

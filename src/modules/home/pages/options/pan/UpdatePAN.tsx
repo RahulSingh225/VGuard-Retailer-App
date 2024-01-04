@@ -150,6 +150,7 @@ const UpdatePAN: React.FC<BankProps> = () => {
             onImageChange={handleImageChange}
             imageRelated='PAN_CARD_FRONT'
             initialImage={entityUid}
+            getImageRelated = 'PanCard'
           />
           <InputField
             label={t('strings:update_pan_number_manually')}

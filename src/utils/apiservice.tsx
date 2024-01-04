@@ -7,9 +7,9 @@ const API_LINK = 'http://34.100.133.239:18092';
 
 const imageURL = 'https://vguardrishta.com/';
 
-const BASE_URL = 'http://34.100.133.239:18092/vguard/api/';
+// const BASE_URL = 'http://34.100.133.239:18092/vguard/api/';
 
-// const BASE_URL = 'http://202.66.175.34:18091/vguard/api/';
+const BASE_URL = 'http://202.66.175.34:18091/vguard/api/';
 
 const TEST_BASE_URL = 'http://192.168.29.60:5000/vguard/api/';
 

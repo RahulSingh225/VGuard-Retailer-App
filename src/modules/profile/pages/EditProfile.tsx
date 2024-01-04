@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Image, Linking, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Image, Linking, TouchableOpacity, ImageBackground } from 'react-native';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
 import { getCities, getDistricts, getFile, getRetailerCategoryDealIn, getRishtaUserProfile, getStates, getUser, sendFile, updateProfile } from '../../../utils/apiservice';
@@ -16,6 +16,7 @@ import ImagePickerField from '../../../components/ImagePickerField';
 import MultiSelectField from '../../../components/MultiSelectField';
 import Loader from '../../../components/Loader';
 import moment from 'moment';
+import { getImageUrl } from '../../../utils/FileUtils';
 
 
 const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -26,7 +27,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const [userData, setUserData] = useState<UserData | any>();
   const [postData, setPostData] = useState<UserData | any>();
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState("");
   const [isShopAddressDifferent, setIsShopAddressDifferent] = useState('Yes');
   const [enrolledOtherSchemeYesNo, setEnrolledOtherSchemeYesNo] = useState('Yes');
   const [additionalFieldsCount, setAdditionalFieldsCount] = useState(1);
@@ -111,24 +112,18 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   useEffect(() => {
-    if (userData?.roleId && userData?.kycDetails?.selfie) {
-      const getImage = async () => {
-        try {
-          const profileImageUrl = await getFile(userData.kycDetails.selfie, 'PROFILE', 2);
-          if (profileImageUrl.status === 500) {
-            setProfileImage(null);
-          }
-          else {
-            setProfileImage(profileImageUrl.url);
-          }
-        } catch (error) {
-          console.log('Error while fetching profile image:', error);
-        }
-      };
+    const getImage = async () => {
+      try {
+        // const profileImageUrl = await getFile(userData.kycDetails.selfie, 'PROFILE', 2);
+        const profileImageUrl = await getImageUrl(userData.kycDetails.selfie, 'Profile');
+        setProfileImage(profileImageUrl);
+      } catch (error) {
+        console.log('Error while fetching profile image:', error);
+      }
+    };
 
-      getImage();
-    }
-  }, [userData?.roleId, userData?.kycDetails?.selfie]);
+    getImage();
+  }, [userData?.kycDetails?.selfie]);
 
   const openEVisitingCard = () => {
     Linking.openURL(ecardURL + userData.ecardPath);
@@ -180,7 +175,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       const dobDate = moment(postData?.dob, 'DD MMM YYYY').toDate();
       const minAllowedDate = new Date(currentDate);
       minAllowedDate.setFullYear(currentDate.getFullYear() - 18);
-  
+
       if (dobDate < minAllowedDate) {
         handleSendImage()
           .then(updatedPostData => {
@@ -472,11 +467,17 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       {loader && <Loader isLoading={loader} />}
       <View style={styles.flexBox}>
         <View style={styles.ImageProfile}>
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          ) : (
-            <Image source={require('../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          )}
+          <ImageBackground
+            source={require('../../../assets/images/ic_v_guards_user.png')}
+            style={{ width: '100%', height: '100%', borderRadius: 100 }}
+            resizeMode='contain'
+          >
+            <Image
+              source={{ uri: profileImage }}
+              style={{ width: '100%', height: '100%', borderRadius: 100 }}
+              resizeMode='contain'
+            />
+          </ImageBackground>
         </View>
         <View style={styles.profileText}>
           <Text style={styles.textDetail}>{userData?.name}</Text>
@@ -705,16 +706,19 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           onImageChange={handleImageChange}
           imageRelated='PROFILE'
           initialImage={userData?.kycDetails?.selfie}
+          getImageRelated='Profile'
         />
         <ImagePickerField label='Id Proof* (Front)'
           onImageChange={handleImageChange}
           imageRelated='ID_CARD_FRONT'
           initialImage={userData?.kycDetails?.aadharOrVoterOrDLFront}
+          getImageRelated='IdCard'
         />
         <ImagePickerField label='Id Proof* (Back)'
           onImageChange={handleImageChange}
           imageRelated="ID_CARD_BACK"
           initialImage={userData?.kycDetails?.aadharOrVoterOrDlBack}
+          getImageRelated='IdCard'
         />
         <InputField
           label={t('strings:id_proof_no')}
@@ -723,19 +727,20 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         />
         <PickerField
           label={t('strings:do_you_have_gst_number')}
-          selectedValue={postData?.kycDetails?.gstYesNo}
+          selectedValue={postData?.gstYesNo}
           onValueChange={(text: string) => handleChange("gstYesNo", text)}
           items={selectYesorNo}
         />
         <InputField
           label={t('strings:gst_no')}
-          value={postData?.kycDetails?.gstNo}
+          value={postData?.gstNo}
           onChangeText={(text) => handleInputChange(text, 'kycDetails.gstNo')}
         />
         <ImagePickerField label='GST Photo'
           onImageChange={handleImageChange}
           imageRelated="GST"
-          initialImage={userData?.kycDetails?.gstFront}
+          initialImage={userData?.gstPic}
+          getImageRelated='GST'
         />
 
         <View style={styles.button}>

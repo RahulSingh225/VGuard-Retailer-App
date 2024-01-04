@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableHighlight, Image, Linking, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableHighlight, Image, Linking, TouchableOpacity, Modal, ImageBackground } from 'react-native';
 import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
 import { getFile, getRishtaUserProfile, getUser } from '../../../utils/apiservice';
@@ -9,6 +9,7 @@ import { UserData } from '../../../utils/modules/UserData';
 import InputField from '../../../components/InputField';
 import Popup from '../../../components/Popup';
 import Loader from '../../../components/Loader';
+import { getImageUrl } from '../../../utils/FileUtils';
 
 const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
@@ -17,7 +18,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const ecardURL = 'https://www.vguardrishta.com/img/appImages/eCard/';
 
   const [userData, setUserData] = useState<UserData | any>();
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState("");
   const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
   const [gstImageName, setGstImageName] = useState("");
   const [frontFacadeImageName, setFrontFacadeImageName] = useState("");
@@ -34,16 +35,16 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     //   setUserData(user);
     // });
     getUser().then(response => response.json())
-    .then(res => {
-      console.log(res);
-      setUserData(res);
-      setLoading(false);
-    })
-    .catch(error => {
-      setPopupContent("Something Went Wrong!");
-      setPopupVisible(true);
-      setLoading(false);
-    })
+      .then(res => {
+        console.log(res);
+        setUserData(res);
+        setLoading(false);
+      })
+      .catch(error => {
+        setPopupContent("Something Went Wrong!");
+        setPopupVisible(true);
+        setLoading(false);
+      })
   }, []);
   const fetchChequeCopy = async () => {
     try {
@@ -64,13 +65,9 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (userData?.roleId && userData?.kycDetails?.selfie) {
       const getImage = async () => {
         try {
-          const profileImageUrl = await getFile(userData.kycDetails.selfie, 'PROFILE', "2");
-          if (profileImageUrl.status === 500) {
-            setProfileImage(null);
-          }
-          else {
-            setProfileImage(profileImageUrl.url);
-          }
+          // const profileImageUrl = await getFile(userData.kycDetails.selfie, 'PROFILE', "2");
+          const profileImageUrl = await getImageUrl(userData.kycDetails.selfie, 'Profile');
+          setProfileImage(profileImageUrl);
         } catch (error) {
           console.log('Error while fetching profile image:', error);
         }
@@ -225,11 +222,17 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
       {loading && <Loader isLoading={loading} />}
       <View style={styles.flexBox}>
         <View style={styles.ImageProfile}>
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          ) : (
-            <Image source={require('../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          )}
+          <ImageBackground
+            source={require('../../../assets/images/ic_v_guards_user.png')}
+            style={{ width: '100%', height: '100%', borderRadius: 100 }}
+            resizeMode='contain'
+          >
+            <Image
+              source={{ uri: profileImage }}
+              style={{ width: '100%', height: '100%', borderRadius: 100 }}
+              resizeMode='contain'
+            />
+          </ImageBackground>
         </View>
         <View style={styles.profileText}>
           <Text style={styles.textDetail}>{userData?.name}</Text>

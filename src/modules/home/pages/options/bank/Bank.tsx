@@ -286,6 +286,7 @@ const Bank: React.FC<BankProps> = () => {
               onImageChange={handleImageChange}
               imageRelated='CHEQUE'
               initialImage={entityUid}
+              getImageRelated = 'Cheque'
             />
           </View>
         </View>

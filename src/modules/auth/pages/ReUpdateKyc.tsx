@@ -568,16 +568,19 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     onImageChange={handleImageChange}
                     imageRelated='ID_CARD_FRONT'
                     initialImage={postData?.kycDetails?.aadharOrVoterOrDLFront}
+                    getImageRelated='IdCard'
                 />
                 <ImagePickerField label='Aadhar Card* (Back)'
                     onImageChange={handleImageChange}
                     imageRelated="ID_CARD_BACK"
                     initialImage={postData?.kycDetails?.aadharOrVoterOrDlBack}
+                    getImageRelated='IdCard'
                 />
                 <ImagePickerField label='Pan Card* (Front)'
                     onImageChange={handleImageChange}
                     imageRelated="PAN_CARD_FRONT"
                     initialImage={postData?.kycDetails?.panCardFront}
+                    getImageRelated='PanCard'
                 />
                 <InputField
                     label={t('strings:update_pan_number_manually')}
@@ -602,6 +605,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                             onImageChange={handleImageChange}
                             imageRelated="GST"
                             initialImage={postData?.kycDetails?.gstFront}
+                            getImageRelated='GST'
                         />
                     </>
                 ) : null}
