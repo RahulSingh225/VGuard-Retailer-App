@@ -144,3 +144,17 @@ export interface UserData {
     islead: string | "";
     diffAcc: string | "";
 }
+
+export interface State {
+    stateId: number | 0;
+    stateName: string | "";
+}
+export interface Cities {
+    cityId: number | 0;
+    cityName: string | "";
+}
+export interface District {
+    distId: number | 0;
+    districtName: string | "";
+}
+  

@@ -17,10 +17,11 @@ interface ImagePickerFieldProps {
     imageRelated: string;
     initialImage?: string;
     getImageRelated?: string;
+    editable?: boolean;
 }
 
 
-const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChange, imageRelated, initialImage, getImageRelated }) => {
+const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChange, imageRelated, initialImage, getImageRelated, editable }) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
     const [showImagePickerModal, setShowImagePickerModal] = useState(false);
@@ -108,42 +109,23 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
             }
         }
     };
-
-    const triggerApiWithImage = async (fileData: any) => {
-        const formData = new FormData();
-        formData.append('USER_ROLE', "2");
-        formData.append('image_related', imageRelated);
-        formData.append('file', fileData);
-    
-        return sendFile(formData)
-            .then(response => {
-                setEntityUid(response.data.entityUid);
-                return response;
-            })
-            .catch(error => {
-                console.error('API Error:', error);
-                setPopupContent("Error uploading image");
-                setPopupVisible(true);
-                throw error; // Propagate the error further if needed
-            });
-    };
-    
-
     return (
         <View style={styles.container}>
             <Popup isVisible={isPopupVisible} onClose={()=>setPopupVisible(false)}>
                 <Text>{popupContent}</Text>
             </Popup>
-            <TouchableOpacity style={[styles.input, isImageSelected && styles.selectedContainer]} onPress={handleImagePickerPress}>
+            <TouchableOpacity style={[styles.input, isImageSelected && styles.selectedContainer]} 
+            onPress={editable ? handleImagePickerPress : undefined}
+            >
                 <View style={[styles.labelContainer, !selectedImage && styles.notSelectedLabelContainer]}>
                     <Text style={[styles.notfocusedLabel, isImageSelected && styles.focusedLabel]} >
-                        {label} xxx
+                        {label}
                     </Text>
                 </View>
                 {selectedImage ? (
 
                     <View style={styles.imageContainer}>
-                        <Text style={styles.imageName}>{selectedImageName}</Text>
+                        <Text style={styles.imageName}>{label}</Text>
                         <TouchableOpacity onPress={handleImageModalToggle}>
                             <Image source={{ uri: selectedImage }} style={styles.image} resizeMode="cover" />
                         </TouchableOpacity>

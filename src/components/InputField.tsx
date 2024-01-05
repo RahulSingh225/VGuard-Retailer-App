@@ -51,9 +51,9 @@ const InputField: React.FC<InputFieldProps> = ({
       {isImage ? (
         <View style={{ flexDirection: 'row' }}>
           <TextInput
-            style={[styles.input, disabled && styles.disabledInput, { flex: 1 }]}
+            style={[styles.input, styles.disabledInput, { flex: 1 }]}
             editable={false}
-            value={imageName}
+            value={label}
             {...rest}
           />
           <TouchableOpacity onPress={onPressImage}>

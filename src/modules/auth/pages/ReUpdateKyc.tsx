@@ -2,16 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getCities, getDistricts, getRishtaUserProfile, getStates, getUser, sendFile } from '../../../utils/apiservice';
+import { getCities, getDetailsByPinCode, getDistricts, getPincodeList, getRishtaUserProfile, getStates, getUser, sendFile } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
-import { UserData } from '../../../utils/modules/UserData';
+import { Cities, District, State, UserData } from '../../../utils/modules/UserData';
 import InputField from '../../../components/InputField';
 import Buttons from '../../../components/Buttons';
 import PickerField from '../../../components/PickerField';
 import Popup from '../../../components/Popup';
 import ImagePickerField from '../../../components/ImagePickerField';
 import Loader from '../../../components/Loader';
+import { height } from '../../../utils/dimensions';
+import DropDownPicker from 'react-native-dropdown-picker';
 interface ReUpdateKycProps {
     navigation: any;
     route: {
@@ -25,13 +27,19 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     const { t } = useTranslation();
     const { usernumber } = route.params;
     const [postData, setPostData] = useState<UserData | any>();
-    const [isShopAddressDifferent, setIsShopAddressDifferent] = useState('Yes');
+    const [isShopAddressDifferent, setIsShopAddressDifferent] = useState('');
     const [isPopupVisible, setPopupVisible] = useState(false);
     const [popupContent, setPopupContent] = useState('');
-    const [states, setStates] = useState([]);
-    const [districts, setDistricts] = useState([]);
-    const [cities, setCities] = useState([]);
+    const [states, setStates] = useState<State | any>();
+    const [districts, setDistricts] = useState<District | any>();
+    const [cities, setCities] = useState<Cities | any>();
+    const [currStates, setCurrStates] = useState<State | any>();
+    const [currDistricts, setCurrDistricts] = useState<District | any>();
+    const [currCities, setCurrCities] = useState<Cities | any>();
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
+    const [uiSwitch, setUIswitch] = React.useState({ currentpincode: false, pincode: false })
+    const [loader, showLoader] = useState(true);
+
 
     useEffect(() => {
         fetchData();
@@ -45,6 +53,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         getUser()
             .then(response => {
                 if (!response.ok) {
+                    showLoader(false);
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 return response.json();
@@ -52,6 +61,16 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             .then(res => {
                 const result = res;
                 setPostData(result);
+                if (res.currLandmark == res.landmark &&
+                    res.currentAddress == res.permanentAddress &&
+                    res.currStreetAndLocality == res.streetAndLocality &&
+                    res.currPinCode == res.pinCode) {
+                    setIsShopAddressDifferent('Yes');
+                }
+                else {
+                    setIsShopAddressDifferent('No');
+                }
+                showLoader(false);
             })
             .catch(error => {
                 console.error('Error fetching user profile:', error);
@@ -74,11 +93,15 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             const statesResponse = await getStates();
             const statesData = await statesResponse.data;
             setStates(statesData);
+            setCurrStates(statesData);
 
             const defaultState = postData.stateId;
+            const currDefaultState = postData.currStateId;
 
             const districtsResponse = await getDistricts(defaultState);
             const districtsData = await districtsResponse.data;
+            const currDistrictsResponse = await getDistricts(currDefaultState);
+            const currDistrictsData = await currDistrictsResponse.data;
 
             if (Array.isArray(districtsData)) {
                 setDistricts(districtsData);
@@ -91,6 +114,18 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 }
             } else {
                 console.error('Error: Districts data is not an array.', districtsData);
+            }
+            if (Array.isArray(currDistrictsData)) {
+                setCurrDistricts(currDistrictsData);
+
+                if (Array.isArray(currDistrictsData) && currDistrictsData.length > 0) {
+                    const citiesResponse = await getCities(postData.currDistId);
+                    const citiesData = await citiesResponse.data;
+                    console.log("CITIES-----------", citiesData);
+                    setCurrCities(citiesData);
+                }
+            } else {
+                console.error('Error: Districts data is not an array.', currDistrictsData);
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -344,8 +379,9 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     }
 
     const handleStateSelect = async (text: string, type: string) => {
-        const selectedCategory = states.find(category => category.stateName === text);
+        let selectedCategory: any;
         if (type == "permanent") {
+            selectedCategory = states.find(category => category.stateName === text);
             setPostData((prevData: UserData) => ({
                 ...prevData,
                 state: text,
@@ -353,6 +389,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             }));
         }
         else if (type == "current") {
+            selectedCategory = currStates.find(category => category.stateName === text);
             setPostData((prevData: UserData) => ({
                 ...prevData,
                 currState: text,
@@ -362,12 +399,18 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         getDistricts(selectedCategory?.id)
             .then(response => response.data)
             .then((data) => {
-                setDistricts(data);
+                if(type=='permanent'){
+                    setDistricts(data);
+                }
+                if(type=='current'){
+                    setCurrDistricts(data);
+                }
             })
     }
     const handleDistrictSelect = async (text: string, type: string) => {
-        const selectedCategory = districts.find(category => category.districtName === text);
+        let selectedCategory: any;
         if (type == "permanent") {
+            selectedCategory = districts.find(category => category.districtName === text);
             setPostData((prevData: UserData) => ({
                 ...prevData,
                 dist: text,
@@ -375,6 +418,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             }));
         }
         else if (type == "current") {
+            selectedCategory = currDistricts.find(category => category.districtName === text);
             setPostData((prevData: UserData) => ({
                 ...prevData,
                 currDist: text,
@@ -384,12 +428,17 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         getCities(selectedCategory?.id)
             .then(response => response.data)
             .then((data) => {
-                setCities(data);
+                if(type=='permanent'){
+                    setCities(data);
+                }
+                if(type=='current'){
+                    setCurrCities(data);
+                }
             })
     }
     const handleCitySelect = async (text: string, type: string) => {
-        const selectedCategory = cities.find(category => category.cityName === text);
         if (type == "permanent") {
+            const selectedCategory = cities.find(category => category.cityName === text);
             setPostData((prevData: UserData) => ({
                 ...prevData,
                 city: text,
@@ -397,6 +446,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             }));
         }
         else if (type == "current") {
+            const selectedCategory = currCities.find(category => category.cityName === text);
             setPostData((prevData: UserData) => ({
                 ...prevData,
                 currCity: text,
@@ -405,9 +455,108 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         }
     }
 
+    const [pincode_suggestions, setPincode_Suggestions] = React.useState([])
+    const [curr_pincode_suggestions, setCurr_Pincode_Suggestions] = React.useState([])
+
+    function updateDistrictState(pincode: string, type: string) {
+        showLoader(true);
+
+        getPincodeList(pincode)
+            .then(data => {
+                const pincodeid = data.data[0].pinCodeId;
+                return getDetailsByPinCode(pincodeid);
+            })
+            .then(secondData => {
+                secondData = secondData.data;
+                if(type == 'permanent'){
+                    setDistricts([{
+                        distId: secondData.distId,
+                        districtName: secondData.distName,
+                    }]);
+                    setStates([secondData]);
+                    setCities([secondData]);
+                }
+                if(type == 'current'){
+                    setCurrDistricts([{
+                        distId: secondData.distId,
+                        districtName: secondData.distName,
+                    }]);
+                    setCurrStates([secondData]);
+                    setCurrCities([secondData]);
+                }
+
+                type === 'permanent' ?
+                    setPostData((prevData: UserData) => ({
+                        ...prevData,
+                        dist: secondData.distName,
+                        distId: secondData.distId,
+                        state: secondData.stateName,
+                        stateId: secondData.stateId,
+                        cityId: secondData.cityId,
+                        city: secondData.cityName,
+                        pinCode: pincode
+                    }))
+                    : setPostData((prevData: UserData) => ({
+                        ...prevData,
+                        currDist: secondData.distName,
+                        currDistId: secondData.distId,
+                        currState: secondData.stateName,
+                        currStateId: secondData.stateId,
+                        currCityId: secondData.cityId,
+                        currCity: secondData.cityName,
+                        currPinCode: pincode
+                    }));
+                return getCities(secondData.distId);
+            })
+            .then(cityData => {
+                cityData = cityData;
+                // console.log('Second API call:', cityData);
+                showLoader(false);
+            })
+            .catch(error => {
+                console.error('Error in Page 1:', error);
+            })
+            .finally(() => {
+                showLoader(false);
+            });
+    }
+
+    async function processPincode(pincode: string, type: string) {
+        if (pincode.length > 3) {
+            let suggestionData = await getPincodeList(pincode);
+            suggestionData = suggestionData.data;
+
+            if (Array.isArray(suggestionData) && suggestionData.length > 0) {
+                const filteredSuggestions = suggestionData.filter((item) => (
+                    item.pinCode !== null
+                ));
+                if(type=='permanent'){
+                    setPincode_Suggestions(filteredSuggestions);
+                }
+                if(type=='current'){
+                    setCurr_Pincode_Suggestions(filteredSuggestions);
+                }
+                if (pincode.length == 6) {
+                    updateDistrictState(pincode, type);
+                }
+            }
+        }
+        // console.log(pincode);
+
+        type === 'permanent' ? setPostData((prevData: UserData) => ({
+            ...prevData,
+            pinCode: pincode
+        })) : setPostData((prevData: UserData) => ({
+            ...prevData,
+            currPinCode: pincode
+        }))
+    }
+
+
     return (
         <ScrollView style={styles.mainWrapper}>
-            {/* {loader && <Loader />} */}
+            {loader && <Loader isLoading={loader} />}
+
             <View style={{
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -474,33 +623,72 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     value={postData?.landmark}
                     onChangeText={(text) => handleInputChange(text, 'landmark')}
                 />
-                <InputField
-                    label={t('strings:pincode')}
+                <Text style={{ color: colors.black, fontWeight: 'bold', marginBottom: 2 }}>{'Pincode'}</Text>
+                <DropDownPicker
+                    mode="BADGE"
+                    showBadgeDot={true}
+                    searchable={true}
+                    searchPlaceholder='Search Your Pincode'
+                    loading={loader}
+                    placeholder={postData?.pinCode === null ? 'Search Pincode' : `${postData?.pinCode || ""}`}
+                    searchablePlaceholder="Search Pincode"
+                    searchTextInputProps={{
+                        maxLength: 6,
+                        keyboardType: "number-pad"
+                    }}
+                    listMode="SCROLLVIEW"
+                    scrollViewProps={{ nestedScrollEnabled: true, decelerationRate: "fast" }}
+                    open={uiSwitch.pincode}
+                    items={pincode_suggestions.map((item) => ({
+                        label: item.pinCode,
+                        value: item.pinCode,
+                    }
+                    ))}
+                    setOpen={() => setUIswitch({ pincode: !uiSwitch.pincode })}
                     value={postData?.pinCode}
-                    onChangeText={(text) => handleInputChange(text, 'pinCode')}
-                    numeric
-                    maxLength={6}
+                    onSelectItem={(item) => {
+                        // console.log(item)
+                        processPincode(`${item.value}`, 'permanent')
+                    }}
+                    onChangeSearchText={(text) => processPincode(text, 'permanent')}
+                    dropDownContainerStyle={{
+                        height: height / 5,
+                        borderWidth: 2,
+                        borderColor: colors.grey,
+                        elevation: 0,
+                        backgroundColor: "white",
+                    }}
+                    style={{
+                        backgroundColor: 'white',
+                        elevation: 0,
+                        opacity: 0.9,
+                        borderWidth: 2,
+                        height: height / 15,
+                        borderColor: colors.grey,
+                        marginBottom: 20,
+                        borderRadius: 5
+                    }}
                 />
                 <PickerField
                     label={t('strings:lbl_state')}
                     disabled={false}
                     selectedValue={postData?.state}
                     onValueChange={(text: string) => handleStateSelect(text, "permanent")}
-                    items={states.map(state => ({ label: state.stateName, value: state.stateName }))}
+                    items={states?.map(state => ({ label: state.stateName, value: state.stateName }))}
                 />
                 <PickerField
                     label={t('strings:district')}
                     disabled={false}
                     selectedValue={postData?.dist}
                     onValueChange={(text: string) => handleDistrictSelect(text, "permanent")}
-                    items={districts.map(district => ({ label: district.districtName, value: district.districtName }))}
+                    items={districts?.map(district => ({ label: district.districtName, value: district.districtName }))}
                 />
                 <PickerField
                     label={t('strings:city')}
                     disabled={false}
                     selectedValue={postData?.city}
                     onValueChange={(text: string) => handleCitySelect(text, "permanent")}
-                    items={cities.map(city => ({ label: city.cityName, value: city.cityName }))}
+                    items={cities?.map(city => ({ label: city.cityName, value: city.cityName }))}
                 />
                 <PickerField
                     label={t('strings:is_shop_address_different')}
@@ -527,33 +715,71 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                             value={postData?.currLandmark}
                             onChangeText={(text) => handleInputChange(text, 'currLandmark')}
                         />
-                        <InputField
-                            label={t('strings:pincode')}
+                        <DropDownPicker
+                            mode="BADGE"
+                            showBadgeDot={true}
+                            searchable={true}
+                            searchPlaceholder='Search Your Pincode'
+                            loading={loader}
+                            placeholder={postData?.currPinCode === null ? 'Search Pincode' : `${postData?.currPinCode || ""}`}
+                            searchablePlaceholder="Search Pincode"
+                            searchTextInputProps={{
+                                maxLength: 6,
+                                keyboardType: "number-pad"
+                            }}
+                            listMode="SCROLLVIEW"
+                            scrollViewProps={{ nestedScrollEnabled: true, decelerationRate: "fast" }}
+                            open={uiSwitch.currentpincode}
+                            items={curr_pincode_suggestions.map((item) => ({
+                                label: item.pinCode,
+                                value: item.pinCode,
+                            }
+                            ))}
+                            setOpen={() => setUIswitch({ currentpincode: !uiSwitch.currentpincode })}
                             value={postData?.currPinCode}
-                            onChangeText={(text) => handleInputChange(text, 'currPinCode')}
-                            numeric
-                            maxLength={6}
+                            onSelectItem={(item) => {
+                                // console.log(item)
+                                processPincode(`${item.value}`, 'current')
+                            }}
+                            onChangeSearchText={(text) => processPincode(text, 'current')}
+                            dropDownContainerStyle={{
+                                height: height / 5,
+                                borderWidth: 2,
+                                borderColor: colors.grey,
+                                elevation: 0,
+                                backgroundColor: "white",
+                            }}
+                            style={{
+                                backgroundColor: 'white',
+                                elevation: 0,
+                                opacity: 0.9,
+                                borderWidth: 2,
+                                height: height / 15,
+                                borderColor: colors.grey,
+                                marginBottom: 20,
+                                borderRadius: 5
+                            }}
                         />
                         <PickerField
                             label={t('strings:lbl_state')}
                             disabled={false}
                             selectedValue={postData?.currState}
                             onValueChange={(text: string) => handleStateSelect(text, 'current')}
-                            items={states.map(state => ({ label: state.stateName, value: state.stateName }))}
+                            items={currStates?.map(state => ({ label: state.stateName, value: state.stateName }))}
                         />
                         <PickerField
                             label={t('strings:district')}
                             disabled={false}
                             selectedValue={postData?.currDist}
                             onValueChange={(text: string) => handleDistrictSelect(text, 'current')}
-                            items={districts.map(district => ({ label: district.districtName, value: district.districtName }))}
+                            items={currDistricts?.map(district => ({ label: district.districtName, value: district.districtName }))}
                         />
                         <PickerField
                             label={t('strings:city')}
                             disabled={false}
                             selectedValue={postData?.currCity}
                             onValueChange={(text: string) => handleCitySelect(text, 'current')}
-                            items={cities.map(city => ({ label: city.cityName, value: city.cityName }))}
+                            items={currCities?.map(city => ({ label: city.cityName, value: city.cityName }))}
                         />
                     </>
                 ) : null}

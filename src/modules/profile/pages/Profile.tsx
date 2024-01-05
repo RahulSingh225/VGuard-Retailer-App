@@ -120,15 +120,18 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (fieldName === 'Cancelled Cheque Copy') {
       const checkPhoto = userData.bankDetail.checkPhoto
       setChequeImageName(checkPhoto)
-      const chequePhoto = await getFile(checkPhoto, 'CHEQUE', "2");
-      const url = chequePhoto.url
+      // const chequePhoto = await getFile(checkPhoto, 'CHEQUE', "2");
+      const chequePhoto = await getImageUrl(checkPhoto, 'Cheque');
+      const url = chequePhoto
       return url;
     }
     if (fieldName === 'GST Photo') {
-      const gstFront = userData.kycDetails.gstFront;
+      const gstFront = userData.gstPic;
       setGstImageName(gstFront)
-      const gstPhoto = await getFile(gstFront, 'GST', "2");
-      const url = gstPhoto.url
+      // const gstPhoto = await getFile(gstFront, 'GST', "2");
+      const gstPhoto = await getImageUrl(gstFront, 'GST');
+      const url = gstPhoto;
+      console.log("URL", url)
       return url;
     }
     const fieldMap: Record<string, string> = {
@@ -149,16 +152,13 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
       'Account Holder Name': 'bankDetail.bankAccHolderName',
       'Bank Name': 'bankDetail.bankNameAndBranch',
       'IFSC Code': 'bankDetail.bankIfsc',
-      'GST Photo': 'kycDetails.gstFront',
+      'GST Photo': 'gstPic',
     };
 
 
     if (fieldName in fieldMap) {
       const mappedField = fieldMap[fieldName];
       const fieldValue = mappedField.split('.').reduce((obj, key) => obj[key], userData);
-      if (fieldName === 'Marital Status') {
-        return fieldValue == 1 ? 'Married' : fieldValue == 2 ? 'Unmarried' : '';
-      }
       const formattedValue =
         typeof fieldValue === 'number' ? fieldValue.toString() : fieldValue;
       return formattedValue === true ? 'Yes' : formattedValue === false ? 'No' : formattedValue;
@@ -198,7 +198,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   }, [userData?.roleId, userData?.kycDetails?.selfie]);
 
   const [chequeCopySource, setChequeCopySource] = useState<string | null>(null);
-  const [gstCopySource, setGstCopySource] = useState<string | null>(null);
+  const [gstCopySource, setGstCopySource] = useState<string | "">("");
   const [frontFacadeCopySource, setFrontFacadeCopySource] = useState<string | null>(null);
   // const [facadeCopySource, setFacadeCopySource] = useState<string | null>(null);
 
@@ -280,19 +280,20 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
             console.log("Image Pressed")
           }}
         /> */}
+        
         <InputField
           label="Front Facade"
           isImage
-          imageName={gstImageName}
-          imageSource={gstCopySource}
-          onPressImage={() => handleImageClick(gstCopySource)}
+          imageName={profileImage}
+          imageSource={profileImage}
+          onPressImage={() => handleImageClick(profileImage)}
         />
         <InputField
           label="GST Photo"
           isImage
-          imageName={frontFacadeImageName}
-          imageSource={frontFacadeCopySource}
-          onPressImage={() => handleImageClick(frontFacadeCopySource)}
+          imageName={gstImageName}
+          imageSource={gstCopySource}
+          onPressImage={() => handleImageClick(gstCopySource)}
         />
         {label2.map((label, index) => (
           <InputField
