@@ -48,8 +48,8 @@ const ProductWiseEarning: React.FC = () => {
             <Rows data={[['No Data']]} textStyle={[styles.text, { color: colors.grey, fontWeight: 'bold', textAlign: 'center' }]} />
           ) : (
             <>
-              <Row data={tableHead} style={styles.head} widthArr={[50, 100, 250, 80, 100, 120]}  textStyle={styles.text} />
-              <Rows data={data} textStyle={styles.text} style={styles.row} widthArr={[50, 100, 250, 80, 100, 120]} />
+              <Row data={tableHead} style={styles.head} widthArr={[50, 100, 320, 80, 150, 120]}  textStyle={styles.text} />
+              <Rows data={data} textStyle={styles.text} style={styles.row} widthArr={[50, 100, 320, 80, 150, 120]} />
             </>
           )}
         </Table>

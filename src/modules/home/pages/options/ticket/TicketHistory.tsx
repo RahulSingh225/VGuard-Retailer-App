@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, ImageBackground } from 'react-native';
 import colors from '../../../../../../colors';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import { getTicketHistory } from '../../../../../utils/apiservice';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Loader from '../../../../../components/Loader';
+import moment from 'moment';
+import { getImageUrl } from '../../../../../utils/FileUtils';
 
 interface TicketItem {
   createdDate: string;
@@ -15,7 +18,7 @@ interface TicketItem {
 
 const TicketHistory: React.FC = () => {
   const [data, setData] = useState<TicketItem[]>([]);
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState("");
   const [userData, setUserData] = useState({
     userName: '',
     userId: '',
@@ -24,26 +27,19 @@ const TicketHistory: React.FC = () => {
     userRole: '',
   });
   const { t } = useTranslation();
+  const [loader, setLoader] = useState(true);
   useEffect(() => {
-    if (userData.userRole && userData.userImage) {
-      const getImage = async () => {
-        try {
-          const profileImageUrl = await getFile(userData.userImage, 'PROFILE', 2);
-          if (profileImageUrl.status === 500) {
-            setProfileImage(null);
-          }
-          else {
-            setProfileImage(profileImageUrl.url);
-          }
-          console.log(profileImage)
-        } catch (error) {
-          console.log('Error while fetching profile image:', error);
-        }
-      };
+    const getImage = async () => {
+      try {
+        const profileImageUrl = await getImageUrl(userData.userImage, 'Profile');
+        setProfileImage(profileImageUrl);
+      } catch (error) {
+        console.log('Error while fetching profile image:', error);
+      }
+    };
 
-      getImage();
-    }
-  }, [userData.userRole, userData.userImage]);
+    getImage();
+  }, [userData.userImage]);
   useEffect(() => {
     AsyncStorage.getItem('USER').then((r) => {
       const user = JSON.parse(r);
@@ -58,14 +54,29 @@ const TicketHistory: React.FC = () => {
       };
       setUserData(data);
     });
+
     getTicketHistory()
       .then(response => response.json())
       .then((responseData: TicketItem[]) => {
-        setData(responseData);
-        console.log("<><<><<><>><", responseData, "<><<<><><><><><><<><");
+        const sortedData = responseData.sort((a, b) => {
+          const dateA = moment(a.createdDate, 'DD MMM YYYY');
+          const dateB = moment(b.createdDate, 'DD MMM YYYY');
+
+          const dateComparison = dateB.diff(dateA);
+          if (dateComparison !== 0) {
+            return dateComparison;
+          }
+
+          return b.ticketNo.localeCompare(a.ticketNo);
+        });
+
+        setData(sortedData);
+        setLoader(false);
+        console.log("<><<><<><>><", sortedData, "<><<<><><><><><><<><");
       })
       .catch(error => {
         console.error('Error fetching data:', error);
+        setLoader(false);
       });
   }, []);
 
@@ -81,15 +92,22 @@ const TicketHistory: React.FC = () => {
 
   return (
     <ScrollView style={styles.container}>
+      {loader && <Loader isLoading={loader} />}
       <View style={styles.profileDetails}>
         <View style={styles.ImageProfile}>
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          ) : (
-            <Image source={require('../../../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          )}
+          <ImageBackground
+            source={require('../../../../../assets/images/ic_v_guards_user.png')}
+            style={{ width: '100%', height: '100%', borderRadius: 100 }}
+            resizeMode='contain'
+          >
+            <Image
+              source={{ uri: profileImage }}
+              style={{ width: '100%', height: '100%', borderRadius: 100 }}
+              resizeMode='contain'
+            />
+          </ImageBackground>
         </View>
-        <View style={styles.profileText}>
+        <View>
           <Text style={styles.textDetail}>{userData.userName}</Text>
           <Text style={styles.textDetail}>{userData.userCode}</Text>
         </View>
@@ -104,7 +122,7 @@ const TicketHistory: React.FC = () => {
             <View style={styles.messageContainer}>
               <Text style={styles.messageText}>{item.createdDate}</Text>
               <Text style={styles.messageText}>{item.name}</Text>
-              <TouchableOpacity  onPress={() => toggleRow(index)}>
+              <TouchableOpacity onPress={() => toggleRow(index)}>
                 <Image resizeMode='contain' style={{ height: 20, width: 20 }} source={require('../../../../../assets/images/ic_ticket_drop_down2.png')} />
               </TouchableOpacity>
               <View style={styles.statusContainer}>

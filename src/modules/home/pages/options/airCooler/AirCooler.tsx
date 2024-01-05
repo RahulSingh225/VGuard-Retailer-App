@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Linking, ImageBackground } from 'react-native';
 import NeedHelp from '../../../../../components/NeedHelp';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import colors from '../../../../../../colors';
@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import CustomTouchableOption from '../../../../../components/CustomTouchableOption';
 import { getFile, getAirCoolerPointsSummary } from '../../../../../utils/apiservice';
 import Popup from '../../../../../components/Popup';
+import { getImageUrl } from '../../../../../utils/FileUtils';
 
 interface User {
     userCode: string;
@@ -24,11 +25,11 @@ const AirCooler: React.FC<{ navigation: any }> = ({ navigation }) => {
     const { t } = useTranslation();
     const [userData, setUserData] = useState<User | null>(null);
     const [userStarData, setUserStarData] = useState<User | null>(null);
-    const [profileImage, setProfileImage] = useState(null);
+    const [profileImage, setProfileImage] = useState("");
     const [isPopupVisible, setPopupVisible] = useState(false);
     const [popupContent, setPopupContent] = useState('');
 
-    
+
 
     const loadUserDetails = async () => {
         try {
@@ -74,13 +75,9 @@ const AirCooler: React.FC<{ navigation: any }> = ({ navigation }) => {
         if (userData?.userRole && userData.selfieImage) {
             const getImage = async () => {
                 try {
-                    const profileImageUrl = await getFile(userData.selfieImage, 'PROFILE', 2);
-                    if (profileImageUrl.status === 500) {
-                        setProfileImage(null);
-                    }
-                    else {
-                        setProfileImage(profileImageUrl.url);
-                    }
+                    // const profileImageUrl = await getFile(userData.selfieImage, 'PROFILE', 2);
+                    const profileImageUrl = await getImageUrl(userData.selfieImage, 'Profile');
+                    setProfileImage(profileImageUrl);
                 } catch (error) {
                     console.log('Error while fetching profile image:', error);
                 }
@@ -93,11 +90,17 @@ const AirCooler: React.FC<{ navigation: any }> = ({ navigation }) => {
             <View style={{ padding: 15 }}>
                 <View style={styles.detailContainer}>
                     <View style={styles.ImageProfile}>
-                        {profileImage ? (
-                            <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-                        ) : (
-                            <Image source={require('../../../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-                        )}
+                        <ImageBackground
+                            source={require('../../../../../assets/images/ic_v_guards_user.png')}
+                            style={{ width: '100%', height: '100%', borderRadius: 100 }}
+                            resizeMode='contain'
+                        >
+                            <Image
+                                source={{ uri: profileImage }}
+                                style={{ width: '100%', height: '100%', borderRadius: 100 }}
+                                resizeMode='contain'
+                            />
+                        </ImageBackground>
                     </View>
                     <View>
                         <Text style={styles.name}>{userData?.name}</Text>
@@ -110,13 +113,13 @@ const AirCooler: React.FC<{ navigation: any }> = ({ navigation }) => {
 
                         <Text style={styles.point}>{userStarData?.pointsBalance ? userStarData?.pointsBalance : 0}</Text>
                     </View>
-                    <TouchableOpacity style={styles.middlePoint} onPress={()=>navigation.navigate("Redemption History")} >
+                    <TouchableOpacity style={styles.middlePoint} onPress={() => navigation.navigate("Redemption History")} >
                         <Text style={styles.greyText}>{t('strings:star_redeemed')}</Text>
                         <Text style={styles.point}>
                             {userStarData?.redeemedPoints ? userStarData?.redeemedPoints : 0}
                         </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.rightPoint} onPress={()=>navigation.navigate("Unique Code History")} >
+                    <TouchableOpacity style={styles.rightPoint} onPress={() => navigation.navigate("Unique Code History")} >
                         <Text style={styles.greyText}>{t('strings:number_of_scans')}</Text>
                         <Text style={styles.point}>{userStarData?.numberOfScan ? userStarData?.numberOfScan : 0}</Text>
 
@@ -144,9 +147,9 @@ const AirCooler: React.FC<{ navigation: any }> = ({ navigation }) => {
                         />
                     </View>
                     <View style={styles.lastrow}>
-                        <TouchableOpacity style={styles.oval} onPress={()=>setPopupVisible(true)}>
+                        <TouchableOpacity style={styles.oval} onPress={() => setPopupVisible(true)}>
                             <View>
-                                <Image style={styles.optionIcon} source={require('../../../../../assets/images/ic_paytm_transfer.webp')}/>
+                                <Image style={styles.optionIcon} source={require('../../../../../assets/images/ic_paytm_transfer.webp')} />
                             </View>
                             <Text style={styles.nav}>{t('strings:paytm_transfer')}</Text>
                         </TouchableOpacity>

@@ -33,18 +33,19 @@ const ProductWiseOfferTable: React.FC<ProductWiseOfferTableProps> = ({ route, na
   }, [categoryId]);
 
   const dataofTable = data.map(product => [
-    product.materialDesc,
-    product.points.toString()
+    product.slNo,
+    product.points.toString(),
+    product.materialDesc
   ]);
 
-  const tableHead = ["Material Description", "Points"];
-
+  const tableHead = ["Material Code", "Points", "Material Description"];
+  const columnWidths = [80, 80, '100%'];
   return (
     <ScrollView style={styles.mainWrapper}>
-      {loader && <Loader />}
+      {loader && <Loader isLoading={loader} />}
       <Table borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
-        <Row data={tableHead} style={styles.head} textStyle={styles.text} />
-        <Rows data={dataofTable} textStyle={styles.text} />
+        <Row data={tableHead} style={styles.head} textStyle={styles.text} widthArr={columnWidths}/>
+        <Rows data={dataofTable} textStyle={styles.text} widthArr={columnWidths}/>
       </Table>
     </ScrollView>
   );

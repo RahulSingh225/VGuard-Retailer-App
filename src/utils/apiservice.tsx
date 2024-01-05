@@ -834,7 +834,7 @@ export function logoutUser() {
 
 export function getDetailsByPinCode(pinCode: string) {
     const path = `state/detailByPincode/${pinCode}`;
-    return createDigestGetRequest(path);
+    return createGetRequest(path);
 }
 
 export function getCitiesByPincodeId(pinCodeId: number) {
@@ -844,7 +844,8 @@ export function getCitiesByPincodeId(pinCodeId: number) {
 
 export function getPincodeList(pinCode: string) {
     const path = `state/pinCodeList/${pinCode}`;
-    return createDigestGetRequest(path);
+    console.log("<><><", pinCode)
+    return createGetRequest(path);
 }
 
 export function getVguardInfoDownloads() {

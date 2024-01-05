@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   Image,
+  ImageBackground,
 } from 'react-native';
 import MonthPicker from 'react-native-month-year-picker';
 import moment from 'moment';
@@ -20,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import NeedHelp from '../../../../../components/NeedHelp';
 import CustomTouchableOption from '../../../../../components/CustomTouchableOption';
 import { getFile } from '../../../../../utils/apiservice';
+import { getImageUrl } from '../../../../../utils/FileUtils';
 
 interface UserData {
   userName: string;
@@ -38,7 +40,7 @@ const Dashboard: React.FC = () => {
 
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState("");
 
   const [userData, setUserData] = useState<UserData>({
     userName: '',
@@ -82,14 +84,9 @@ const Dashboard: React.FC = () => {
     if (userData.userRole && userData.userImage) {
       const getImage = async () => {
         try {
-          const profileImageUrl = await getFile(userData.userImage, 'PROFILE', 2);
-          if (profileImageUrl.status === 500) {
-            setProfileImage(null);
-          }
-          else {
-            setProfileImage(profileImageUrl.url);
-          }
-          console.log(profileImage)
+          const profileImageUrl = await getImageUrl(userData.userImage, 'Profile');
+          setProfileImage(profileImageUrl);
+          console.log(profileImageUrl, "<><><<><")
         } catch (error) {
           console.log('Error while fetching profile image:', error);
         }
@@ -101,12 +98,18 @@ const Dashboard: React.FC = () => {
   return (
     <View style={styles.mainWrapper}>
       <View style={styles.profileDetails}>
-      <View style={styles.ImageProfile}>
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          ) : (
-            <Image source={require('../../../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          )}
+        <View style={styles.ImageProfile}>
+          <ImageBackground
+            source={require('../../../../../assets/images/ic_v_guards_user.png')}
+            style={{ width: '100%', height: '100%', borderRadius: 100 }}
+            resizeMode='contain'
+          >
+            <Image
+              source={{ uri: profileImage }}
+              style={{ width: '100%', height: '100%', borderRadius: 100 }}
+              resizeMode='contain'
+            />
+          </ImageBackground>
         </View>
         <View>
           <Text style={styles.textDetail}>{userData.userName}</Text>
@@ -145,12 +148,12 @@ const Dashboard: React.FC = () => {
         </View>
         <View style={styles.rightPoint}>
           <Text style={styles.greyText}>{t('strings:points_redeemed')}</Text>
-          <Text style={styles.point}>{userData?.redeemedPoints ? userData?.redeemedPoints: 0}</Text>
+          <Text style={styles.point}>{userData?.redeemedPoints ? userData?.redeemedPoints : 0}</Text>
 
         </View>
       </View>
 
-      <Text style={{color: colors.grey, fontSize: responsiveFontSize(1.5), textAlign: 'center', marginTop: 5}}>*DUPS Scheme Points are non-redeemable</Text>
+      <Text style={{ color: colors.grey, fontSize: responsiveFontSize(1.5), textAlign: 'center', marginTop: 5 }}>*DUPS Scheme Points are non-redeemable</Text>
 
       <View style={styles.options}>
         <CustomTouchableOption

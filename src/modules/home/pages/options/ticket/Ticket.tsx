@@ -10,6 +10,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Linking,
+  ImageBackground,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -30,6 +31,7 @@ import { height, width } from '../../../../../utils/dimensions';
 import { Button } from 'react-native-paper';
 import Popup from '../../../../../components/Popup';
 import ImagePickerField from '../../../../../components/ImagePickerField';
+import { getImageUrl } from '../../../../../utils/FileUtils';
 
 const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
   const baseURL =
@@ -45,7 +47,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
     userRole: '',
   });
 
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState("");
 
   const [options, setOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState('');
@@ -87,25 +89,17 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    if (userData.userRole && userData.userImage) {
-      const getImage = async () => {
-        try {
-          const profileImageUrl = await getFile(userData.userImage, 'PROFILE', 2);
-          if (profileImageUrl.status === 500) {
-            setProfileImage(null);
-          }
-          else {
-            setProfileImage(profileImageUrl.url);
-          }
-          console.log(profileImage)
-        } catch (error) {
-          console.log('Error while fetching profile image:', error);
-        }
-      };
+    const getImage = async () => {
+      try {
+        const profileImageUrl = await getImageUrl(userData.userImage, 'Profile');
+        setProfileImage(profileImageUrl);
+      } catch (error) {
+        console.log('Error while fetching profile image:', error);
+      }
+    };
 
-      getImage();
-    }
-  }, [userData.userRole, userData.userImage]);
+    getImage();
+  }, [userData.userImage]);
 
   const handleOptionChange = (value) => {
     setSelectedOption(value);
@@ -161,7 +155,6 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const handleSubmission = async () => {
     const imageUrl = await triggerApiWithImage(fileData);
-    console.log(imageUrl);
     const postData = {
       userId: userData.userId,
       issueTypeId: selectedOption,
@@ -216,9 +209,6 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
       name: fileData.name,
       type: fileData.type,
     });
-
-    console.log("formData=====", formData);
-
     try {
       const response = await sendFile(formData);
       setEntityUid(response.data.entityUid);
@@ -236,11 +226,17 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
       <View style={styles.flexBox}>
         <View style={styles.profileDetails}>
           <View style={styles.ImageProfile}>
-            {profileImage ? (
-              <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-            ) : (
-              <Image source={require('../../../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-            )}
+            <ImageBackground
+              source={require('../../../../../assets/images/ic_v_guards_user.png')}
+              style={{ width: '100%', height: '100%', borderRadius: 100 }}
+              resizeMode='contain'
+            >
+              <Image
+                source={{ uri: profileImage }}
+                style={{ width: '100%', height: '100%', borderRadius: 100 }}
+                resizeMode='contain'
+              />
+            </ImageBackground>
           </View>
           <View style={styles.profileText}>
             <Text style={styles.textDetail}>{userData.userName}</Text>

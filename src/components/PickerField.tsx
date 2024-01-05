@@ -44,7 +44,7 @@ const PickerField: React.FC<PickerFieldProps> = ({
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                 >
-                    {items.map((item) => (
+                    {items?.map((item) => (
                         <Picker.Item key={item.value} label={item.label} value={item.value} />
                     ))}
                 </Picker>

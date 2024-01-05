@@ -1,62 +1,74 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Image, Linking, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Image, Linking, TouchableOpacity, ImageBackground } from 'react-native';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getCities, getDistricts, getFile, getRetailerCategoryDealIn, getRishtaUserProfile, getStates, getUser, sendFile, updateProfile } from '../../../utils/apiservice';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getCities, getDetailsByPinCode, getDistricts, getPincodeList, getRetailerCategoryDealIn, getStates, getUser, sendFile, updateProfile } from '../../../utils/apiservice';
 import { useTranslation } from 'react-i18next';
-import { UserData } from '../../../utils/modules/UserData';
+import { Cities, District, State, UserData } from '../../../utils/modules/UserData';
 import InputField from '../../../components/InputField';
 import Buttons from '../../../components/Buttons';
 import PickerField from '../../../components/PickerField';
 import DatePickerField from '../../../components/DatePickerField';
 import Popup from '../../../components/Popup';
-import Snackbar from 'react-native-snackbar';
 import ImagePickerField from '../../../components/ImagePickerField';
 import MultiSelectField from '../../../components/MultiSelectField';
 import Loader from '../../../components/Loader';
 import moment from 'moment';
+import { getImageUrl } from '../../../utils/FileUtils';
+import { height, width } from '../../../utils/dimensions';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 
 const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
 
-  const baseURL = 'https://www.vguardrishta.com/img/appImages/Profile/';
   const ecardURL = 'https://www.vguardrishta.com/img/appImages/eCard/';
 
   const [userData, setUserData] = useState<UserData | any>();
   const [postData, setPostData] = useState<UserData | any>();
-  const [profileImage, setProfileImage] = useState(null);
-  const [isShopAddressDifferent, setIsShopAddressDifferent] = useState('Yes');
-  const [enrolledOtherSchemeYesNo, setEnrolledOtherSchemeYesNo] = useState('Yes');
+  const [profileImage, setProfileImage] = useState("");
+  const [isShopAddressDifferent, setIsShopAddressDifferent] = useState('');
+  const [enrolledOtherSchemeYesNo, setEnrolledOtherSchemeYesNo] = useState('');
   const [additionalFieldsCount, setAdditionalFieldsCount] = useState(1);
   const [retailerCategoryDealIn, setRetailerCategoryDealIn] = useState([]);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
-  const [IdFrontUid, setIdFrontUid] = useState("");
-  const [IdBackUid, setIdBackUid] = useState("");
-  const [gstUid, setGstUid] = useState("");
   const [selfie, setSelfie] = useState("");
-  const [states, setStates] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [cities, setCities] = useState([]);
+  const [states, setStates] = useState<State | any>();
+  const [districts, setDistricts] = useState<District | any>();
+  const [cities, setCities] = useState<Cities | any>();
+  const [currStates, setCurrStates] = useState<State | any>();
+  const [currDistricts, setCurrDistricts] = useState<District | any>();
+  const [currCities, setCurrCities] = useState<Cities | any>();
   const [stateId, setStateId] = useState("");
+  const [currStateId, setCurrStateId] = useState("");
   const [loader, showLoader] = useState(true);
+  const [uiSwitch, setUIswitch] = React.useState({ currentpincode: false, pincode: false })
+
 
   useEffect(() => {
     getUser()
       .then(response => response.json())
       .then(res => {
-        console.log(res);
+        // console.log(res);
         const trimmedGender = res.gender.trim();
         res.gender = trimmedGender;
         setUserData(res);
         setPostData(res);
         setStateId(res.stateId);
-        setGstUid(res.kycDetails.gstFront);
+        setCurrStateId(res.currStateId);
         setSelfie(res.kycDetails.selfie);
-        setIdBackUid(res.kycDetails.aadharOrVoterOrDlBack);
-        setIdFrontUid(res.kycDetails.aadharOrVoterOrDLFront);
+        setEnrolledOtherSchemeYesNo(res.enrolledOtherSchemeYesNo);
+        // console.log("<><><><<", res)
+        if (res.currLandmark == res.landmark &&
+          res.currentAddress == res.permanentAddress &&
+          res.currStreetAndLocality == res.streetAndLocality &&
+          res.currPinCode == res.pinCode) {
+          setIsShopAddressDifferent('Yes');
+        }
+        else {
+          setIsShopAddressDifferent('No');
+        }
         const image = selfie;
         showLoader(false);
       })
@@ -78,21 +90,25 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
 
   useEffect(() => {
-    if (stateId !== undefined && stateId !== "") {
+    if (stateId) {
       fetchData();
     }
-  }, [stateId, selfie]);
+  }, [stateId]);
 
   const fetchData = async () => {
     try {
       const statesResponse = await getStates();
       const statesData = await statesResponse.data;
       setStates(statesData);
+      setCurrStates(statesData);
 
       const defaultState = postData.stateId;
+      const currDefaultState = postData.currStateId;
 
       const districtsResponse = await getDistricts(defaultState);
       const districtsData = await districtsResponse.data;
+      const currDistrictsResponse = await getDistricts(currDefaultState);
+      const currDistrictsData = await currDistrictsResponse.data;
 
       if (Array.isArray(districtsData)) {
         setDistricts(districtsData);
@@ -100,10 +116,23 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         if (Array.isArray(districtsData) && districtsData.length > 0) {
           const citiesResponse = await getCities(postData.distId);
           const citiesData = await citiesResponse.data;
+          console.log("CITIES-----------", citiesData);
           setCities(citiesData);
         }
       } else {
         console.error('Error: Districts data is not an array.', districtsData);
+      }
+      if (Array.isArray(currDistrictsData)) {
+        setCurrDistricts(currDistrictsData);
+
+        if (Array.isArray(currDistrictsData) && currDistrictsData.length > 0) {
+          const citiesResponse = await getCities(postData.currDistId);
+          const citiesData = await citiesResponse.data;
+          console.log("CITIES-----------", citiesData);
+          setCurrCities(citiesData);
+        }
+      } else {
+        console.error('Error: Districts data is not an array.', currDistrictsData);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -111,24 +140,18 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   useEffect(() => {
-    if (userData?.roleId && userData?.kycDetails?.selfie) {
-      const getImage = async () => {
-        try {
-          const profileImageUrl = await getFile(userData.kycDetails.selfie, 'PROFILE', 2);
-          if (profileImageUrl.status === 500) {
-            setProfileImage(null);
-          }
-          else {
-            setProfileImage(profileImageUrl.url);
-          }
-        } catch (error) {
-          console.log('Error while fetching profile image:', error);
-        }
-      };
+    const getImage = async () => {
+      try {
+        // const profileImageUrl = await getFile(userData.kycDetails.selfie, 'PROFILE', 2);
+        const profileImageUrl = await getImageUrl(userData.kycDetails.selfie, 'Profile');
+        setProfileImage(profileImageUrl);
+      } catch (error) {
+        console.log('Error while fetching profile image:', error);
+      }
+    };
 
-      getImage();
-    }
-  }, [userData?.roleId, userData?.kycDetails?.selfie]);
+    getImage();
+  }, [userData?.kycDetails?.selfie]);
 
   const openEVisitingCard = () => {
     Linking.openURL(ecardURL + userData.ecardPath);
@@ -146,7 +169,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       const updatedPostData = { ...postData };
 
       if (selfieFileData.uri !== "" && selfieUid !== null) {
-        console.log(selfieUid);
+        // console.log(selfieUid);
         setPostDataOfImage('selfie', selfieUid);
         updatedPostData.kycDetails.selfie = selfieUid;
       }
@@ -162,8 +185,8 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       }
 
       if (GstFileData.uri !== "" && gstUid !== null) {
-        setPostDataOfImage('gstFront', gstUid);
-        updatedPostData.kycDetails.gstFront = gstUid;
+        setPostDataOfImage('gstPic', gstUid);
+        updatedPostData.gstPic = gstUid;
       }
 
       return Promise.resolve(updatedPostData);
@@ -180,7 +203,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       const dobDate = moment(postData?.dob, 'DD MMM YYYY').toDate();
       const minAllowedDate = new Date(currentDate);
       minAllowedDate.setFullYear(currentDate.getFullYear() - 18);
-  
+
       if (dobDate < minAllowedDate) {
         handleSendImage()
           .then(updatedPostData => {
@@ -202,6 +225,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
             console.error('Error in handleSubmit:', error);
           });
       } else {
+        showLoader(false);
         setPopupContent('The age should be at least 18 years.');
         setPopupVisible(true);
       }
@@ -213,6 +237,21 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const handleChange = (label: string, value: string) => {
     if (label == "isShopDifferent") {
       setIsShopAddressDifferent(value)
+      if (value == 'Yes') {
+        setPostData((prevData: UserData) => ({
+          ...prevData,
+          currLandmark: postData.landmark,
+          currCity: postData.city,
+          currDist: postData.dist,
+          currState: postData.state,
+          currPinCode: postData.pinCode,
+          currStateId: postData.stateId,
+          currCityId: postData.cityId,
+          currDistId: postData.distId,
+          currStreetAndLocality: postData.streetAndLocality,
+          currentAddress: postData.permanentAddress
+        }))
+      }
     }
     else if (label == "enrolledOtherSchemeYesNo") {
       setEnrolledOtherSchemeYesNo(value)
@@ -226,15 +265,13 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     else if (label == "gstYesNo") {
       setPostData((prevData: UserData) => ({
         ...prevData,
-        kycDetails: {
-          ...prevData.kycDetails,
-          [label]: value
-        }
+        [label]: value
       }))
     }
   }
 
-  const handleInputChange = (value: string, label: string) => {
+
+  const handleInputChange = async (value: string, label: string) => {
     setPostData((prevData: UserData) => {
       let updatedValue: any = value;
       if (['annualBusinessPotential'].includes(label)) {
@@ -353,20 +390,30 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const setPostDataOfImage = (label: string, value: string) => {
-    console.log(label, value)
-    setPostData((prevData: UserData) => ({
-      ...prevData,
-      kycDetails: {
-        ...prevData.kycDetails,
-        [label]: value,
-      }
-    }));
+    // console.log(label, value)
+    if (label == 'gstPic') {
+      setPostData((prevData: UserData) => ({
+        ...prevData,
+        [label]: value
+      }));
+    }
+    else {
+      setPostData((prevData: UserData) => ({
+        ...prevData,
+        kycDetails: {
+          ...prevData.kycDetails,
+          [label]: value,
+        }
+      }));
+    }
+
   };
 
 
   const handleStateSelect = async (text: string, type: string) => {
-    const selectedCategory = states.find(category => category.stateName === text);
+    let selectedCategory: any;
     if (type == "permanent") {
+      selectedCategory = states.find(category => category.stateName === text);
       setPostData((prevData: UserData) => ({
         ...prevData,
         state: text,
@@ -374,6 +421,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       }));
     }
     else if (type == "current") {
+      selectedCategory = currStates.find(category => category.stateName === text);
       setPostData((prevData: UserData) => ({
         ...prevData,
         currState: text,
@@ -383,12 +431,18 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     getDistricts(selectedCategory?.id)
       .then(response => response.data)
       .then((data) => {
-        setDistricts(data);
+        if (type == 'permanent') {
+          setDistricts(data);
+        }
+        if (type == 'current') {
+          setCurrDistricts(data);
+        }
       })
   }
   const handleDistrictSelect = async (text: string, type: string) => {
-    const selectedCategory = districts.find(category => category.districtName === text);
+    let selectedCategory: any;
     if (type == "permanent") {
+      selectedCategory = districts.find(category => category.districtName === text);
       setPostData((prevData: UserData) => ({
         ...prevData,
         dist: text,
@@ -396,6 +450,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       }));
     }
     else if (type == "current") {
+      selectedCategory = currDistricts.find(category => category.districtName === text);
       setPostData((prevData: UserData) => ({
         ...prevData,
         currDist: text,
@@ -405,12 +460,18 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     getCities(selectedCategory?.id)
       .then(response => response.data)
       .then((data) => {
-        setCities(data);
+        if (type == 'permanent') {
+          setCities(data);
+        }
+        if (type == 'current') {
+          setCurrCities(data);
+        }
       })
   }
   const handleCitySelect = async (text: string, type: string) => {
-    const selectedCategory = cities.find(category => category.cityName === text);
+    let selectedCategory: any;
     if (type == "permanent") {
+      selectedCategory = cities.find(category => category.cityName === text);
       setPostData((prevData: UserData) => ({
         ...prevData,
         city: text,
@@ -418,6 +479,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       }));
     }
     else if (type == "current") {
+      selectedCategory = currCities.find(category => category.cityName === text);
       setPostData((prevData: UserData) => ({
         ...prevData,
         currCity: text,
@@ -467,16 +529,110 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     return additionalFields;
   };
 
+  const [pincode_suggestions, setPincode_Suggestions] = React.useState([])
+  const [curr_pincode_suggestions, setCurr_Pincode_Suggestions] = React.useState([])
+
+  function updateDistrictState(pincode: string, type: string) {
+    showLoader(true);
+
+    getPincodeList(pincode)
+      .then(data => {
+        const pincodeid = data.data[0].pinCodeId;
+        return getDetailsByPinCode(pincodeid);
+      })
+      .then(secondData => {
+        secondData = secondData.data;
+        console.log("SEcond Data", secondData)
+        setDistricts([{
+          distId: secondData.distId,
+          districtName: secondData.distName,
+        }]);
+        setStates([secondData]);
+        setCities([secondData]);
+
+        type === 'permanent' ?
+          setPostData((prevData: UserData) => ({
+            ...prevData,
+            dist: secondData.distName,
+            distId: secondData.distId,
+            state: secondData.stateName,
+            stateId: secondData.stateId,
+            cityId: secondData.cityId,
+            city: secondData.cityName,
+            pinCode: pincode
+          }))
+          : setPostData((prevData: UserData) => ({
+            ...prevData,
+            currDist: secondData.distName,
+            currDistId: secondData.distId,
+            currState: secondData.stateName,
+            currStateId: secondData.stateId,
+            currCityId: secondData.cityId,
+            currCity: secondData.cityName,
+            currPinCode: pincode
+          }));
+        return getCities(secondData.distId);
+      })
+      .then(cityData => {
+        cityData = cityData;
+        // console.log('Second API call:', cityData);
+        showLoader(false);
+      })
+      .catch(error => {
+        console.error('Error in Page 1:', error);
+      })
+      .finally(() => {
+        showLoader(false);
+      });
+  }
+
+  async function processPincode(pincode: string, type: string) {
+    if (pincode.length > 3) {
+      let suggestionData = await getPincodeList(pincode);
+      suggestionData = suggestionData.data;
+
+      if (Array.isArray(suggestionData) && suggestionData.length > 0) {
+        const filteredSuggestions = suggestionData.filter((item) => (
+          item.pinCode !== null
+        ));
+        if (type == 'permanent') {
+          setPincode_Suggestions(filteredSuggestions);
+        }
+        if (type == 'current') {
+          setCurr_Pincode_Suggestions(filteredSuggestions);
+        }
+        if (pincode.length == 6) {
+          updateDistrictState(pincode, type);
+        }
+      }
+    }
+    // console.log(pincode);
+
+    type === 'permanent' ? setPostData((prevData: UserData) => ({
+      ...prevData,
+      pinCode: pincode
+    })) : setPostData((prevData: UserData) => ({
+      ...prevData,
+      currPinCode: pincode
+    }))
+  }
+
   return (
     <ScrollView style={styles.mainWrapper}>
       {loader && <Loader isLoading={loader} />}
       <View style={styles.flexBox}>
         <View style={styles.ImageProfile}>
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          ) : (
-            <Image source={require('../../../assets/images/ic_v_guards_user.png')} style={{ width: '100%', height: '100%', borderRadius: 100 }} resizeMode='contain' />
-          )}
+          <ImageBackground
+            source={require('../../../assets/images/ic_v_guards_user.png')}
+            style={{ width: '100%', height: '100%', borderRadius: 100 }}
+            resizeMode='contain'
+          >
+            <Image
+              source={{ uri: profileImage }}
+              style={{ width: '100%', height: '100%', borderRadius: 100 }}
+              resizeMode='contain'
+            />
+          </ImageBackground>
         </View>
         <View style={styles.profileText}>
           <Text style={styles.textDetail}>{userData?.name}</Text>
@@ -540,33 +696,73 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           value={postData?.landmark}
           onChangeText={(text) => handleInputChange(text, 'landmark')}
         />
-        <InputField
-          label={t('strings:pincode')}
+        <Text style={{ color: colors.black, fontWeight: 'bold', marginBottom: 2 }}>{'Pincode'}</Text>
+        <DropDownPicker
+          mode="BADGE"
+          showBadgeDot={true}
+          searchable={true}
+          searchPlaceholder='Search Your Pincode'
+          loading={loader}
+          placeholder={postData?.pinCode === null ? 'Search Pincode' : `${postData?.pinCode || ""}`}
+          searchablePlaceholder="Search Pincode"
+          searchTextInputProps={{
+            maxLength: 6,
+            keyboardType: "number-pad"
+          }}
+          listMode="SCROLLVIEW"
+          scrollViewProps={{ nestedScrollEnabled: true, decelerationRate: "fast" }}
+          open={uiSwitch.pincode}
+          items={pincode_suggestions.map((item) => ({
+            label: item.pinCode,
+            value: item.pinCode,
+          }
+          ))}
+          setOpen={() => setUIswitch({ pincode: !uiSwitch.pincode })}
           value={postData?.pinCode}
-          onChangeText={(text) => handleInputChange(text, 'pinCode')}
-          numeric
-          maxLength={6}
+          onSelectItem={(item) => {
+            // console.log(item)
+            processPincode(`${item.value}`, 'permanent')
+          }}
+          onChangeSearchText={(text) => processPincode(text, 'permanent')}
+          dropDownContainerStyle={{
+            height: height / 5,
+            borderWidth: 2,
+            borderColor: colors.grey,
+            elevation: 0,
+            backgroundColor: "white",
+          }}
+          style={{
+            backgroundColor: 'white',
+            elevation: 0,
+            opacity: 0.9,
+            borderWidth: 2,
+            height: height / 15,
+            borderColor: colors.grey,
+            marginBottom: 20,
+            borderRadius: 5
+          }}
         />
+
         <PickerField
           label={t('strings:lbl_state')}
           disabled={false}
           selectedValue={postData?.state}
           onValueChange={(text: string) => handleStateSelect(text, 'permanent')}
-          items={states.map(state => ({ label: state.stateName, value: state.stateName }))}
+          items={states?.map(state => ({ label: state.stateName, value: state.stateName }))}
         />
         <PickerField
           label={t('strings:district')}
           disabled={false}
           selectedValue={postData?.dist}
           onValueChange={(text: string) => handleDistrictSelect(text, 'permanent')}
-          items={districts.map(district => ({ label: district.districtName, value: district.districtName }))}
+          items={districts?.map(district => ({ label: district.districtName, value: district.districtName }))}
         />
         <PickerField
           label={t('strings:city')}
           disabled={false}
           selectedValue={postData?.city}
           onValueChange={(text: string) => handleCitySelect(text, 'permanent')}
-          items={cities.map(city => ({ label: city.cityName, value: city.cityName }))}
+          items={cities?.map(city => ({ label: city.cityName, value: city.cityName }))}
         />
         <PickerField
           label={t('strings:is_shop_address_different')}
@@ -593,33 +789,72 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
               value={postData?.currLandmark}
               onChangeText={(text) => handleInputChange(text, 'currLandmark')}
             />
-            <InputField
-              label={t('strings:pincode')}
+            <Text style={{ color: colors.black, fontWeight: 'bold', marginBottom: 2 }}>{'Pincode'}</Text>
+            <DropDownPicker
+              mode="BADGE"
+              showBadgeDot={true}
+              searchable={true}
+              searchPlaceholder='Search Your Pincode'
+              loading={loader}
+              placeholder={postData?.currPinCode === null ? 'Search Pincode' : `${postData?.currPinCode || ""}`}
+              searchablePlaceholder="Search Pincode"
+              searchTextInputProps={{
+                maxLength: 6,
+                keyboardType: "number-pad"
+              }}
+              listMode="SCROLLVIEW"
+              scrollViewProps={{ nestedScrollEnabled: true, decelerationRate: "fast" }}
+              open={uiSwitch.currentpincode}
+              items={curr_pincode_suggestions.map((item) => ({
+                label: item.pinCode,
+                value: item.pinCode,
+              }
+              ))}
+              setOpen={() => setUIswitch({ currentpincode: !uiSwitch.currentpincode })}
               value={postData?.currPinCode}
-              onChangeText={(text) => handleInputChange(text, 'currPinCode')}
-              numeric
-              maxLength={6}
+              onSelectItem={(item) => {
+                // console.log(item)
+                processPincode(`${item.value}`, 'current')
+              }}
+              onChangeSearchText={(text) => processPincode(text, 'current')}
+              dropDownContainerStyle={{
+                height: height / 5,
+                borderWidth: 2,
+                borderColor: colors.grey,
+                elevation: 0,
+                backgroundColor: "white",
+              }}
+              style={{
+                backgroundColor: 'white',
+                elevation: 0,
+                opacity: 0.9,
+                borderWidth: 2,
+                height: height / 15,
+                borderColor: colors.grey,
+                marginBottom: 20,
+                borderRadius: 5
+              }}
             />
             <PickerField
               label={t('strings:lbl_state')}
               disabled={false}
               selectedValue={postData?.currState}
               onValueChange={(text: string) => handleStateSelect(text, 'current')}
-              items={states.map(state => ({ label: state.stateName, value: state.stateName }))}
+              items={currStates?.map(state => ({ label: state.stateName, value: state.stateName }))}
             />
             <PickerField
               label={t('strings:district')}
               disabled={false}
               selectedValue={postData?.currDist}
               onValueChange={(text: string) => handleDistrictSelect(text, 'current')}
-              items={districts.map(district => ({ label: district.districtName, value: district.districtName }))}
+              items={currDistricts?.map(district => ({ label: district.districtName, value: district.districtName }))}
             />
             <PickerField
               label={t('strings:city')}
               disabled={false}
               selectedValue={postData?.currCity}
               onValueChange={(text: string) => handleCitySelect(text, 'current')}
-              items={cities.map(city => ({ label: city.cityName, value: city.cityName }))}
+              items={currCities?.map(city => ({ label: city.cityName, value: city.cityName }))}
             />
           </>
         ) : null}
@@ -705,16 +940,22 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           onImageChange={handleImageChange}
           imageRelated='PROFILE'
           initialImage={userData?.kycDetails?.selfie}
+          getImageRelated='Profile'
+          editable={false}
         />
         <ImagePickerField label='Id Proof* (Front)'
           onImageChange={handleImageChange}
           imageRelated='ID_CARD_FRONT'
           initialImage={userData?.kycDetails?.aadharOrVoterOrDLFront}
+          getImageRelated='IdCard'
+          editable={false}
         />
         <ImagePickerField label='Id Proof* (Back)'
           onImageChange={handleImageChange}
           imageRelated="ID_CARD_BACK"
           initialImage={userData?.kycDetails?.aadharOrVoterOrDlBack}
+          getImageRelated='IdCard'
+          editable={false}
         />
         <InputField
           label={t('strings:id_proof_no')}
@@ -723,19 +964,22 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         />
         <PickerField
           label={t('strings:do_you_have_gst_number')}
-          selectedValue={postData?.kycDetails?.gstYesNo}
+          selectedValue={postData?.gstYesNo}
           onValueChange={(text: string) => handleChange("gstYesNo", text)}
           items={selectYesorNo}
         />
         <InputField
           label={t('strings:gst_no')}
-          value={postData?.kycDetails?.gstNo}
+          value={postData?.gstNo}
           onChangeText={(text) => handleInputChange(text, 'kycDetails.gstNo')}
+          disabled={true}
         />
         <ImagePickerField label='GST Photo'
           onImageChange={handleImageChange}
           imageRelated="GST"
-          initialImage={userData?.kycDetails?.gstFront}
+          initialImage={userData?.gstPic}
+          getImageRelated='GST'
+          editable={false}
         />
 
         <View style={styles.button}>
