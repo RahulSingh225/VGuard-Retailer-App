@@ -8,6 +8,7 @@ import {
   ScrollView,
   Button,
   TextInput,
+  ToastAndroid,
 } from 'react-native';
 import React, {useState, useEffect, useTransition} from 'react';
 import colors from '../../../../../../../colors';
@@ -17,17 +18,59 @@ import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
 import Buttons from '../../../../../../components/Buttons';
 import arrowIcon from '../../../../../../assets/images/arrow.png';
-import {sendFile} from '../../../../../../utils/apiservice';
+import {sendCustomerData, sendFile} from '../../../../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {CustomerData} from '../../../../../../utils/modules/CustomerData';
+import {Props} from 'react-native-paper';
+import RewardBox from '../../../../../../components/ScratchCard';
+import Popup from '../../../../../../components/Popup';
 
-const AddWarranty = () => {
+const AddWarranty = ({navigation}) => {
   const {t} = useTranslation();
+  const [isPopupVisible, setPopupVisible] = useState(false);
 
   const [qrcode, setQrcode] = useState('1234567890');
   const [skuDetails, setSkuDetails] = useState('VS-400');
   const [purchaseDate, setPurchaseDate] = useState('12-12-2012');
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
+  const [scratchCardProps, setScratchCardProps] = useState({
+    rewardImage: {
+      width: 100,
+      height: 100,
+      resourceLocation: require('../../../../../../assets/images/ic_rewards_gift.png') /*resourceUrl:"https://www.leavesofgrassnewyork.com/cdn/shop/products/gift-card_612x.jpg?v=1614324792"*/,
+    },
+    rewardResultText: {
+      color: 'black',
+      fontSize: 16,
+      textContent: 'YOU WON',
+      fontWeight: '700',
+    },
+    text1: {color: 'black', fontSize: 16, textContent: '', fontWeight: '700'},
+    text2: {
+      color: 'black',
+      fontSize: 16,
+      textContent: 'POINTS',
+      fontWeight: '700',
+    },
+    text3: {
+      color: '#9c9c9c',
+      fontSize: 12,
+      textContent: ' ',
+      fontWeight: '700',
+    },
+    button: {
+      buttonColor: '#F0C300',
+      buttonTextColor: 'black',
+      buttonText: '',
+      buttonAction: () => {},
+      fontWeight: '400',
+    },
+    textInput: false,
+  });
+  const [popupContent, setPopupContent] = useState('');
 
+  const [scratchCard, setScratchCard] = useState(false);
+  const [scratchable, setScratchable] = useState(false);
   const [sellingPrice, setSellingPrice] = useState(null);
   const [selectedBillImage, setSelectedBillImage] = useState(null);
   const [selectedBillImageName, setSelectedBillImageName] = useState('');
@@ -35,7 +78,7 @@ const AddWarranty = () => {
   const [selectedWarrantyImageName, setSelectedWarrantyImageName] =
     useState('');
   const [couponResponse, setCouponResponse] = useState(null);
-  const [customerDetails, setCustomerDetails] = useState(null);
+  const [customerDetails, setCustomerDetails] = useState<CustomerData>();
   const [imageType, setImageType] = useState('');
 
   useEffect(() => {
@@ -49,7 +92,7 @@ const AddWarranty = () => {
     });
   }, []);
 
-  const handleImagePickerPress = type => {
+  const handleImagePickerPress = (type: React.SetStateAction<string>) => {
     setImageType(type);
     setShowImagePickerModal(true);
   };
@@ -73,13 +116,13 @@ const AddWarranty = () => {
             name: response.assets[0].fileName,
           };
           if (imageType == 'bill') {
-            setSelectedBillImage(response.assets[0].uri);
+            setSelectedBillImage(response.assets[0]);
             setSelectedBillImageName(response.assets[0].fileName);
           } else if (imageType == 'warranty') {
-            setSelectedWarrantyImage(response.assets[0].uri);
+            setSelectedWarrantyImage(response.assets[0]);
             setSelectedWarrantyImageName(response.assets[0].fileName);
           }
-          triggerApiWithImage(fileData);
+          //triggerApiWithImage(fileData);
         }
       },
     );
@@ -105,26 +148,33 @@ const AddWarranty = () => {
             name: response.assets[0].fileName,
           };
           if (imageType == 'bill') {
-            setSelectedBillImage(response.assets[0].uri);
+            setSelectedBillImage(response.assets[0]);
             setSelectedBillImageName(response.assets[0].fileName);
           } else if (imageType == 'warranty') {
-            setSelectedWarrantyImage(response.assets[0].uri);
+            setSelectedWarrantyImage(response.assets[0]);
             setSelectedWarrantyImageName(response.assets[0].fileName);
           }
-          triggerApiWithImage(fileData);
+          //triggerApiWithImage(fileData);
         }
       },
     );
   };
-  const triggerApiWithImage = async fileData => {
+  const triggerApiWithImage = async (
+    fileData: {uri: any; type: any; fileName: any} | null,
+    documentType: string,
+  ) => {
     const formData = new FormData();
     formData.append('USER_ROLE', 2);
 
-    formData.append('file', fileData);
+    formData.append('file', {
+      uri: fileData.uri,
+      type: fileData.type,
+      name: fileData.fileName,
+    });
 
-    if (imageType == 'bill') {
+    if (documentType == 'bill') {
       formData.append('image_related', 'BILL');
-    } else if (imageType == 'warranty') {
+    } else if (documentType == 'warranty') {
       formData.append('image_related', 'WARRANTY');
     }
 
@@ -140,16 +190,177 @@ const AddWarranty = () => {
       console.error('API Error:', error);
     }
   };
-  async function saveData(){
 
-const postData = {
-  
-}
+  async function saveData() {
+    if (!customerDetails?.contactNo) {
+      ToastAndroid.show(
+        t('strings:enter_mandatory_fields'),
+        ToastAndroid.SHORT,
+      );
+      return;
+    }
+    if (
+      selectedBillImage == null &&
+      couponResponse.anomaly == 1 &&
+      customerDetails.dealerCategory != 'Sub-Dealer'
+    ) {
+      ToastAndroid.show(
+        t('strings:enter_mandatory_fields'),
+        ToastAndroid.SHORT,
+      );
+      return;
+    }
+    const bill = await triggerApiWithImage(selectedBillImage, 'bill');
+    const warranty = await triggerApiWithImage(
+      selectedWarrantyImage,
+      'warranty',
+    );
+    const postData: CustomerData = {
+      contactNo: customerDetails.contactNo,
+      name: customerDetails.name,
+      email: customerDetails.email,
+      alternateNo: customerDetails.alternateNo,
+      city: customerDetails.city,
+      district: customerDetails.district,
+      state: customerDetails.state,
+      pinCode: customerDetails.pinCode,
+      landmark: customerDetails.landmark,
+      dealerCategory: customerDetails.dealerCategory,
+      currAdd: customerDetails.currAdd,
+      dealerName: customerDetails.dealerName,
+      dealerAdd: customerDetails.dealerAdd,
+      dealerPinCode: customerDetails.dealerPinCode,
+      dealerState: customerDetails.dealerState,
+      dealerDist: customerDetails.dealerDist,
+      dealerCity: customerDetails.dealerCity,
+      addedBy: customerDetails.addedBy,
+      dealerNumber: customerDetails.dealerNumber,
+      transactId: '',
+      billDetails: selectedBillImageName,
+      warrantyPhoto: selectedWarrantyImageName,
+      sellingPrice: sellingPrice,
+      emptStr: '',
+      cresp: {
+        custIdForProdInstall: '',
+        modelForProdInstall: '',
+        errorCode: couponResponse.errorCode,
+        errorMsg: couponResponse.errorMsg,
+        statusType: '',
+        balance: '',
+        currentPoints: '',
+        couponPoints: '',
+        promotionPoints: '',
+        transactId: '',
+        schemePoints: '',
+        basePoints: '',
+        clubPoints: '',
+        scanDate: '',
+        scanStatus: '',
+        copuonCode: '',
+        bitEligibleScratchCard: '',
+        pardId: '',
+        partNumber: '',
+        partName: '',
+        couponCode: '',
+        skuDetail: '',
+        purchaseDate: '',
+        categoryId: '',
+        category: '',
+        anomaly: '',
+        warranty: '',
+      },
+      selectedProd: {
+        specs: '',
+        pointsFormat: '',
+        product: '',
+        productName: '',
+        productCategory: '',
+        productCode: '',
+        points: '',
+        imageUrl: '',
+        userId: '',
+        productId: '',
+        paytmMobileNo: '',
+      },
+      latitude: location.latitude,
+      longitude: location.longitude,
+      geolocation: '',
+    };
+    const response = await sendCustomerData(postData);
+    const result = await response.json();
+    if (result.errorCode == 1) {
+      var couponPoints = result.couponPoints;
+      var basePoints = result.basePoints;
+      // var couponPoints = "100";
+      // var basePoints = "200";
+      basePoints ? (basePoints = `Base Points: ${basePoints}`) : null;
 
+      console.log('COUPON POINTS:===', couponPoints);
+      console.log('BASE POINTS:========', basePoints);
+      setScratchCardProps({
+        rewardImage: {
+          width: 100,
+          height: 100,
+          resourceLocation: require('../../../../../../assets/images/ic_rewards_gift.png'),
+        },
+        rewardResultText: {
+          color: colors.black,
+          fontSize: 16,
+          textContent: 'YOU WON',
+          fontWeight: '700',
+        },
+        text1: {
+          color: colors.black,
+          fontSize: 16,
+          textContent: couponPoints,
+          fontWeight: '700',
+        },
+        text2: {
+          color: colors.black,
+          fontSize: 16,
+          textContent: 'POINTS',
+          fontWeight: '700',
+        },
+        text3: {
+          color: colors.grey,
+          fontSize: 12,
+          textContent: basePoints,
+          fontWeight: '700',
+        },
+        button: {
+          buttonColor: colors.yellow,
+          buttonTextColor: colors.black,
+          buttonText: 'Scan Again',
+          buttonAction: () =>
+            navigation.reset({index: 0, routes: [{name: 'Scan Code'}]}),
+          fontWeight: '400',
+        },
+        textInput: false,
+      });
+      setScratchCard(true);
+    } else {
+      setPopupVisible(true);
+      setPopupContent(result.errorMsg);
+    }
   }
   return (
     <ScrollView style={styles.mainWrapper}>
       <Text style={styles.heading}>Register Product</Text>
+      {scratchCard && (
+        <RewardBox
+          scratchCardProps={scratchCardProps}
+          visible={scratchCard}
+          scratchable={scratchable}
+          onClose={() => navigation.reset({index: 0, routes: [{name: 'Home'}]})}
+        />
+      )}
+      {isPopupVisible && (
+        <Popup
+          isVisible={isPopupVisible}
+          onClose={() => setPopupVisible(false)}>
+          {popupContent}
+        </Popup>
+      )}
       <View style={styles.form}>
         <View style={styles.inputRow}>
           <Text style={styles.label}>{t('strings:qr_code')}</Text>
@@ -190,7 +401,7 @@ const postData = {
             <View style={styles.inputImage}>
               {selectedBillImage ? (
                 <Image
-                  source={{uri: selectedBillImage}}
+                  source={{uri: selectedBillImage.uri}}
                   style={{width: 30, height: 30}}
                   resizeMode="cover"
                 />
@@ -229,7 +440,7 @@ const postData = {
             <View style={styles.inputImage}>
               {selectedWarrantyImage ? (
                 <Image
-                  source={{uri: selectedWarrantyImage}}
+                  source={{uri: selectedWarrantyImage.uri}}
                   style={{width: 30, height: 30}}
                   resizeMode="cover"
                 />
@@ -278,7 +489,7 @@ const postData = {
             style={styles.button}
             label={t('strings:add_customer_details')}
             variant="filled"
-            onPress={()=>saveData()}
+            onPress={() => saveData()}
             width="100%"
             iconHeight={10}
             iconWidth={30}

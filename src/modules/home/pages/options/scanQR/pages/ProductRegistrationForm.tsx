@@ -142,7 +142,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
         dealerCity: customerFormData.dealerCity,
         addedBy: addedBy,
         dealerNumber: customerFormData.dealerContactNo,
-        nameTitle: '',
+        transactId:'',
         billDetails: '',
         warrantyPhoto: '',
         sellingPrice: '',
@@ -205,7 +205,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
       } else {
         AsyncStorage.setItem('CUSTOMER_DETAILS', JSON.stringify(postData)).then(
           r => {
-            navigation.navigate('AddWarranty');
+            navigation.navigate('Scan Code');
           },
         );
       }

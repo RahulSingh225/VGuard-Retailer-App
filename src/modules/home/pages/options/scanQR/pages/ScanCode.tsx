@@ -163,24 +163,26 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
         apiResponse = await sendScanInCoupon(CouponData);
         const r = await apiResponse.json();
         if (r.errorCode == 3) {
-          AsyncStorage.setItem('COUPON_RESPONSE', JSON.stringify(r)).then(r=>{
+          AsyncStorage.setItem('COUPON_RESPONSE', JSON.stringify(r)).then(r => {
             setOkPopupContent({
               text: r.errorMsg,
               okAction: () => navigation.navigate('Product Registration Form'),
             });
-          })
-         
+          });
         } else {
           setOkPopupContent({
             text: r.errorMsg,
             okAction: () => setOkPopupVisible(false),
           });
         }
-        setOkPopupVisible(true)
+        setOkPopupVisible(true);
       } else {
         apiResponse = await isValidBarcode(CouponData, 0, '', 0, null);
         const r = await apiResponse.json();
-
+        const result = await AsyncStorage.setItem(
+          'COUPON_RESPONSE',
+          JSON.stringify(r),
+        );
         CouponResponse = r;
         if (r.errorCode == 1) {
           setQrcode('');

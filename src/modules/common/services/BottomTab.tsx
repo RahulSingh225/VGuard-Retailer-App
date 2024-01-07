@@ -35,10 +35,10 @@ const CustomTabHeader: React.FC<{ route: any; handleLanguageButtonPress: () => v
           <Text style={{ color: colors.black, fontSize: responsiveFontSize(2.5), fontWeight: 'bold' }}>
             {route.name}
           </Text>
-          <TouchableOpacity style={styles.languageContainer} onPress={handleLanguageButtonPress}>
+          {/* <TouchableOpacity style={styles.languageContainer} onPress={handleLanguageButtonPress}>
             <Text style={{ color: colors.black }}>{t('strings:language')}</Text>
             <Image style={{ width: 15, height: 15, marginLeft: 5 }} source={require('../../../assets/images/down_yellow_arrow.png')} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         <Image source={require('../../../assets/images/group_910.png')} style={{ width: 83, height: 30, marginLeft: 10 }} />
       </View>
