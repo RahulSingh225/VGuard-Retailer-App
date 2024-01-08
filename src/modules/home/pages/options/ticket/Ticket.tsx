@@ -32,6 +32,7 @@ import { Button } from 'react-native-paper';
 import Popup from '../../../../../components/Popup';
 import ImagePickerField from '../../../../../components/ImagePickerField';
 import { getImageUrl } from '../../../../../utils/FileUtils';
+import Loader from '../../../../../components/Loader';
 
 const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
   const baseURL =
@@ -61,6 +62,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [descriptionInput, setDescriptionInput] = useState('');
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
+  const [loader, showLoader] = useState(true);
 
   useEffect(() => {
     AsyncStorage.getItem('USER').then((r) => {
@@ -80,6 +82,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
       .then((response) => response.json())
       .then((data) => {
         setOptions(data);
+        showLoader(false);
         setIsOptionsLoading(false);
       })
       .catch((error) => {
@@ -154,7 +157,8 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
 
 
   const handleSubmission = async () => {
-    const imageUrl = await triggerApiWithImage(fileData);
+    showLoader(true);
+    let imageUrl = await triggerApiWithImage(fileData);
     const postData = {
       userId: userData.userId,
       issueTypeId: selectedOption,
@@ -162,18 +166,22 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
       description: descriptionInput,
     };
     console.log("Post Data========", postData)
-    if (postData.userId != '' && postData.issueTypeId != '' && postData.description != '') {
+    if (postData.userId != '' && postData.issueTypeId != '') {
       sendTicket(postData)
         .then((response) => {
+          console.log("RESPONSE", response)
           if (response.status === 200) {
+            console.log(response.data, " :<<>><<");
             setSelectedOption('');
             setEntityUid('');
             setDescriptionInput('');
-            setPopupContent('Ticket Created Successfully');
             setPopupVisible(true);
+            setPopupContent(response.data.message);
+            showLoader(false);
           } else {
             setPopupContent('Failed to create ticket');
             setPopupVisible(true);
+            showLoader(false);
             throw new Error('Failed to create ticket');
           }
         })
@@ -201,28 +209,32 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }) => {
-    const formData = new FormData();
-    formData.append('USER_ROLE', '2');
-    formData.append('image_related', 'TICKET');
-    formData.append('file', {
-      uri: fileData.uri,
-      name: fileData.name,
-      type: fileData.type,
-    });
-    try {
-      const response = await sendFile(formData);
-      setEntityUid(response.data.entityUid);
-      return response.data.entityUid;
-    } catch (error) {
-      setPopupContent("Error uploading image");
-      setPopupVisible(true)
-      console.error('API Error:', error);
+    if (fileData.uri != "") {
+      const formData = new FormData();
+      formData.append('USER_ROLE', '2');
+      formData.append('image_related', 'TICKET');
+      formData.append('file', {
+        uri: fileData.uri,
+        name: fileData.name,
+        type: fileData.type,
+      });
+      try {
+        const response = await sendFile(formData);
+        setEntityUid(response.data.entityUid);
+        return response.data.entityUid;
+      } catch (error) {
+        setPopupContent("Error uploading image");
+        setPopupVisible(true)
+        console.error('API Error:', error);
+      }
     }
+    return "";
   };
 
 
   return (
     <ScrollView style={styles.mainWrapper}>
+      {loader && <Loader isLoading={loader} />}
       <View style={styles.flexBox}>
         <View style={styles.profileDetails}>
           <View style={styles.ImageProfile}>

@@ -123,6 +123,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = () => {
                 longitude: '',
                 geolocation: ''
             };
+            console.log(postData);
             const response = await sendCustomerData(postData);
 
             console.log("Dealer Pincode===========", postData.addedBy);

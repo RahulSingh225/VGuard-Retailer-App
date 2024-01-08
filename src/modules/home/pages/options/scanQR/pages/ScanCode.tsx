@@ -25,6 +25,7 @@ import {
   captureSale,
   getBonusPoints,
   sendCouponPin,
+  sendScanInCoupon,
 } from '../../../../../../utils/apiservice';
 import ScratchCard from '../../../../../../components/ScratchCard';
 import { scanQR } from 'react-native-simple-qr-reader';
@@ -48,6 +49,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
   const [popupContent, setPopupContent] = useState('');
   const [okPopupContent, setOkPopupContect] = useState('');
   const [scratchable, setScratchable] = useState(false);
+  const [loader, showLoader] = useState(false);
   const [scratchCardProps, setScratchCardProps] = useState(
     {
         rewardImage : { width:100, height:100, resourceLocation:require("../../../../../../assets/images/ic_rewards_gift.png"), /*resourceUrl:"https://www.leavesofgrassnewyork.com/cdn/shop/products/gift-card_612x.jpg?v=1614324792"*/ },
@@ -127,19 +129,22 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
   }
 
   async function sendBarcode() {
-
+    showLoader(true);
     if (qrCode && qrCode != '') {
       var apiResponse;
       if (type == 'airCooler') {
         apiResponse = await isValidBarcode(CouponData, 1, '', 0, null);
         const r = await apiResponse.json();
+        showLoader(false);
         console.log("Response:", r);
       } else if (type == 'fan') {
+        showLoader(false);
         navigation.navigate('Product Registration');
       } else {
         apiResponse = await isValidBarcode(CouponData, 0, '', 0, null);
         const r = await apiResponse.json();
         console.log("Response-----:", r);
+        showLoader(false);
         CouponResponse = r;
         if (r.errorCode == 1) {
           setQrcode('');
@@ -205,12 +210,14 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         else {
           setPopupVisible(true);
           setPopupContent(t('strings:something_wrong'));
+          showLoader(false);
         }
       }
     }
     else {
       setPopupVisible(true);
       setPopupContent("Please enter Coupon Code or Scan a QR");
+      showLoader(false);
     }
   }
 
@@ -320,13 +327,13 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
           />
 
         )}
-        <View style={styles.imageContainer}>
+        <TouchableOpacity style={styles.imageContainer} onPress={() => scan()}>
           <Image
             source={require('../../../../../../assets/images/ic_scan_code_2.png')}
             style={{ width: '100%', height: '100%' }}
             resizeMode="contain"
           />
-        </View>
+        </TouchableOpacity>
         <View style={[{ height: responsiveHeight(5), width: '100%' }]}>
           <Buttons
             label={t('strings:click_here_to_scan_a_unique_code')}
@@ -480,7 +487,8 @@ async function isValidBarcode(
     CouponData.dealerCategory = dealerCategory;
   }
   if (pinFourDigit == '') {
-    result = await captureSale(CouponData);
+    // result = await captureSale(CouponData);
+    result = await sendScanInCoupon(CouponData);
     console.log(CouponData);
     return result;
   } else {
