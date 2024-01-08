@@ -46,8 +46,8 @@ const InputField: React.FC<InputFieldProps> = ({
 
 
   return (
-    <View style={[styles.container, isFocused || hasInput || imageName ? styles.focusedContainer : null]}>
-      <Text style={[styles.label, isFocused || hasInput || imageName ? styles.focusedLabel : null]}>{label}</Text>
+    <View style={[styles.container, isFocused || hasInput || isImage ? styles.focusedContainer : null]}>
+      <Text style={[styles.label, isFocused || hasInput || isImage ? styles.focusedLabel : null]}>{label}</Text>
       {isImage ? (
         <View style={{ flexDirection: 'row' }}>
           <TextInput

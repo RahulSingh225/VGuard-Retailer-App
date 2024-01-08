@@ -723,8 +723,8 @@ export function getProductWiseOffers() {
   return createDigestGetRequest(path);
 }
 
-export function getRedemptionHistory() {
-  const path = "product/redemptionHistory?type=''";
+export function getRedemptionHistory(type:string) {
+  const path = `product/redemptionHistory?type=${type}`;
   return createDigestGetRequest(path);
 }
 
