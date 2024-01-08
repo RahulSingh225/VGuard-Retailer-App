@@ -245,6 +245,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
         } else {
           setPopupVisible(true);
           setPopupContent(t('strings:something_wrong'));
+          showLoader(false);
         }
       }
     } else {
@@ -356,7 +357,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
             onClose={checkBonusPoints}
           />
         )}
-        <View style={styles.imageContainer}>
+        <TouchableOpacity style={styles.imageContainer} onPress={() => scan()}>
           <Image
             source={require('../../../../../../assets/images/ic_scan_code_2.png')}
             style={{width: '100%', height: '100%'}}
@@ -526,7 +527,8 @@ async function isValidBarcode(
     CouponData.dealerCategory = dealerCategory;
   }
   if (pinFourDigit == '') {
-    result = await captureSale(CouponData);
+    // result = await captureSale(CouponData);
+    result = await sendScanInCoupon(CouponData);
     console.log(CouponData);
     return result;
   } else {

@@ -659,8 +659,8 @@ export function getTicketTypes() {
 }
 
 export function sendTicket(data: any) {
-  const path = 'ticket/create';
-  return createDigestPostRequest(path, data);
+    const path = "ticket/create";
+    return createPostRequest(path, data);
 }
 
 export function getWhatsNew() {
@@ -1009,13 +1009,13 @@ export function getTdsList(accementYear: string) {
 }
 
 export function getFiscalYear() {
-  const path = 'user/getFiscalYear';
-  return createDigestGetRequest(path);
+    const path = "user/getFiscalYear";
+    return createGetRequest(path);
 }
 
 export function getMonth() {
-  const path = 'user/getMonth';
-  return createDigestGetRequest(path);
+    const path = "user/getMonth";
+    return createGetRequest(path);
 }
 
 export function getTdsStatementList(month: any) {

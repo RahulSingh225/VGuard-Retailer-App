@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Modal, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Modal, Dimensions, ImageBackground } from 'react-native';
 import { Button } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
 import { launchCamera, launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
@@ -21,7 +21,7 @@ interface ImagePickerFieldProps {
 }
 
 
-const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChange, imageRelated, initialImage, getImageRelated, editable }) => {
+const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChange, imageRelated, initialImage, getImageRelated, editable = true }) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
     const [showImagePickerModal, setShowImagePickerModal] = useState(false);
@@ -53,7 +53,7 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
     const handleImagePickerPress = () => {
         setShowImagePickerModal(true);
     };
-    
+
     const handleImageModalToggle = () => {
         setShowImageModal(!showImageModal);
     };
@@ -111,11 +111,11 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
     };
     return (
         <View style={styles.container}>
-            <Popup isVisible={isPopupVisible} onClose={()=>setPopupVisible(false)}>
+            <Popup isVisible={isPopupVisible} onClose={() => setPopupVisible(false)}>
                 <Text>{popupContent}</Text>
             </Popup>
-            <TouchableOpacity style={[styles.input, isImageSelected && styles.selectedContainer]} 
-            onPress={editable ? handleImagePickerPress : undefined}
+            <TouchableOpacity style={[styles.input, isImageSelected && styles.selectedContainer]}
+                onPress={editable ? handleImagePickerPress : undefined}
             >
                 <View style={[styles.labelContainer, !selectedImage && styles.notSelectedLabelContainer]}>
                     <Text style={[styles.notfocusedLabel, isImageSelected && styles.focusedLabel]} >
@@ -127,7 +127,18 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
                     <View style={styles.imageContainer}>
                         <Text style={styles.imageName}>{label}</Text>
                         <TouchableOpacity onPress={handleImageModalToggle}>
-                            <Image source={{ uri: selectedImage }} style={styles.image} resizeMode="cover" />
+                            <ImageBackground
+                                source={require('../assets/images/no_image.webp')}
+                                style={styles.image}
+                                resizeMode="cover"
+                            >
+                                <Image
+                                    source={{ uri: selectedImage }}
+                                    style={styles.image}
+                                    resizeMode="cover"
+                                />
+                            </ImageBackground>
+                            {/* <Image source={{ uri: selectedImage }} style={styles.image} resizeMode="cover" /> */}
                         </TouchableOpacity>
                     </View>
 

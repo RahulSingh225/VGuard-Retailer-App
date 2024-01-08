@@ -1,7 +1,7 @@
 // InputField.tsx
 
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, ImageBackground } from 'react-native';
 import colors from '../../colors';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 
@@ -46,7 +46,7 @@ const InputField: React.FC<InputFieldProps> = ({
 
 
   return (
-    <View style={[styles.container, isFocused || hasInput ||  imageName ? styles.focusedContainer : null]}>
+    <View style={[styles.container, isFocused || hasInput || imageName ? styles.focusedContainer : null]}>
       <Text style={[styles.label, isFocused || hasInput || imageName ? styles.focusedLabel : null]}>{label}</Text>
       {isImage ? (
         <View style={{ flexDirection: 'row' }}>
@@ -57,7 +57,17 @@ const InputField: React.FC<InputFieldProps> = ({
             {...rest}
           />
           <TouchableOpacity onPress={onPressImage}>
-            <Image source={{ uri: imageSource }} style={styles.image} resizeMode="cover" />
+            <ImageBackground
+              source={require('../assets/images/no_image.webp')}
+              style={styles.image}
+              resizeMode="cover"
+            >
+              <Image
+                source={{ uri: imageSource }}
+                style={styles.image}
+                resizeMode="cover"
+              />
+            </ImageBackground>
           </TouchableOpacity>
         </View>
       ) : (
@@ -115,6 +125,7 @@ const styles = StyleSheet.create({
     width: 35,
     height: 35,
     alignSelf: 'flex-end',
+    // backgroundColor: colors.lightGrey
   },
   error: {
     color: 'red',

@@ -9,7 +9,7 @@ import { Table, Row, Rows } from 'react-native-table-component';
 import { getTdsStatementList } from '../../../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface TDSProps {}
+interface TDSProps { }
 
 interface StatementList {
   redDate: string;
@@ -81,8 +81,6 @@ const TDSStatement: React.FC<TDSProps> = () => {
     setFiscalYearValue(item);
     setPostData((prevData) => ({
       ...prevData,
-      id: selectedMonth,
-      month: selectedMonth,
       year: item,
     }));
   };
@@ -94,7 +92,6 @@ const TDSStatement: React.FC<TDSProps> = () => {
       ...prevData,
       id: item.id,
       month: item.month,
-      year: fiscalYearValue,
     }));
   };
 
@@ -108,13 +105,18 @@ const TDSStatement: React.FC<TDSProps> = () => {
           getMonth(),
         ]);
 
-        const fiscalYearResult = await fiscalYearResponse.json();
-        const monthResult = await monthResponse.json();
-
+        const fiscalYearResult = await fiscalYearResponse.data;
+        const monthResult = await monthResponse.data;
         setFiscalYearData(fiscalYearResult);
         setFiscalYearValue(fiscalYearResult[0]);
         setMonthData(monthResult);
         setSelectedMonth(monthResult[0]?.month);
+        setPostData((prevData) => ({
+          ...prevData,
+          id: monthResult[0].id,
+          month: monthResult[0].month,
+          year: fiscalYearResult[0],
+        }));
         showLoader(false);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -141,6 +143,7 @@ const TDSStatement: React.FC<TDSProps> = () => {
     getTdsStatementList(postData)
       .then((response) => response.json())
       .then((responseData) => {
+        console.log("POSTDATA", postData)
         console.log(responseData)
         setStatementList(responseData);
       })
@@ -151,7 +154,7 @@ const TDSStatement: React.FC<TDSProps> = () => {
   }, [postData]);
 
   let data: any[] = [];
-  if(statementList && statementList.length > 0){
+  if (statementList && statementList.length > 0) {
     console.log("Statement List", statementList)
     data = statementList?.map((data) => [
       data?.redDate.toString(),
@@ -195,20 +198,21 @@ const TDSStatement: React.FC<TDSProps> = () => {
             source={require('../../../../../assets/images/ic_ticket_drop_down2.png')}
           />
         </View>
-      </TouchableOpacity>   
-      <Table style={[{zIndex: -999, minHeight: responsiveHeight(50)}]}>
-        {data.length === 0 ? (
-          <Rows
-            data={[['No Data']]}
-            textStyle={[styles.text, { color: colors.grey, fontWeight: 'bold', textAlign: 'center' }]}
-          />
-        ) : (
-          <>
-            <Row data={tableHead} style={styles.head} textStyle={styles.text} />
+      </TouchableOpacity>
+      <Table style={[{ zIndex: -999, minHeight: responsiveHeight(50) }]}>
+        <>
+          <Row data={tableHead} style={styles.head} textStyle={styles.text} />
+          {data.length === 0 ? (
+            <View style={[styles.noDataRow, { flex: 1, alignItems: 'center', justifyContent: 'center' }]}>
+              <Text style={styles.text}>No Data</Text>
+            </View>
+          ) : (
             <Rows data={data} textStyle={styles.text} />
-          </>
-        )}
+          )}
+        </>
       </Table>
+
+
       {isFocusMonth && (
         <CustomMonthDropdown data={monthData} value={selectedMonth} onChange={handleDropdownMonth} />
       )}
@@ -221,6 +225,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginTop: 15,
     paddingBottom: 50,
+  },
+  noDataRow: {
+    flex: 1,
+    flexDirection: 'row',
   },
   greyText: {
     color: colors.grey,
