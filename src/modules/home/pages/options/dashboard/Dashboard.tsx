@@ -20,17 +20,19 @@ import {
 import { useTranslation } from 'react-i18next';
 import NeedHelp from '../../../../../components/NeedHelp';
 import CustomTouchableOption from '../../../../../components/CustomTouchableOption';
-import { getFile } from '../../../../../utils/apiservice';
+import { getFile, getMonthWiseEarning } from '../../../../../utils/apiservice';
 import { getImageUrl } from '../../../../../utils/FileUtils';
 
 interface UserData {
   userName: string;
   userCode: string;
-  totalPointsEarned: string;
-  redeemedPoints: string;
-  schemePoints: string;
   userImage: string;
   userRole: string;
+}
+interface PointsData {
+  totalPointsEarned: string;
+  totalPointsRedeemed: string;
+  schemePoints: string;
 }
 
 const Dashboard: React.FC = () => {
@@ -41,28 +43,38 @@ const Dashboard: React.FC = () => {
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
   const [profileImage, setProfileImage] = useState("");
+  const [selectedYear, setSelectedYear] = useState(moment().format('YYYY'));
+  const [selectedMonth, setSelectedMonth] = useState(moment().format('MM'));
+
 
   const [userData, setUserData] = useState<UserData>({
     userName: '',
     userCode: '',
-    schemePoints: '',
-    redeemedPoints: '',
-    totalPointsEarned: '',
     userImage: '',
-    userRole: '',
+    userRole: ''
+  });
+  const [pointsData, setPointsData] = useState<PointsData>({
+    schemePoints: '',
+    totalPointsRedeemed: '',
+    totalPointsEarned: ''
   });
 
-  const showPicker = useCallback((value: boolean) => setShow(value), []);
+  const onValueChange = (event: any, newDate?: Date) => {
+    const selectedDate = newDate || date;
+    const selectedMonthDate = moment(selectedDate).format('MM');
+    const selectedYearDate = moment(selectedDate).format('YYYY');
 
-  const onValueChange = useCallback(
-    (event: any, newDate?: Date) => {
-      const selectedDate = newDate || date;
+    console.log('Selected Month:', selectedMonthDate);
+    console.log('Selected Year:', selectedYearDate);
 
-      showPicker(false);
-      setDate(selectedDate);
-    },
-    [date, showPicker],
-  );
+    getMonthWiseEarning(selectedMonthDate, selectedYearDate)
+      .then((data) => data.json())
+      .then((data) => {
+        setPointsData(data);
+      });
+
+    setShow(false);
+  };
 
   useEffect(() => {
     AsyncStorage.getItem('USER').then((r) => {
@@ -70,14 +82,19 @@ const Dashboard: React.FC = () => {
       const data: UserData = {
         userName: user.name,
         userCode: user.userCode,
-        redeemedPoints: user.pointsSummary.redeemedPoints,
-        totalPointsEarned: user.pointsSummary.totalPointsEarned,
-        schemePoints: user.pointsSummary.schemePoints,
         userImage: user.kycDetails.selfie,
         userRole: user.professionId,
       };
       setUserData(data);
     });
+  }, []);
+  useEffect(() => {
+    console.log(selectedMonth, ":", selectedYear)
+    getMonthWiseEarning(selectedMonth, selectedYear)
+      .then((data) => data.json())
+      .then((data) => {
+        setPointsData(data);
+      })
   }, []);
 
   useEffect(() => {
@@ -116,7 +133,7 @@ const Dashboard: React.FC = () => {
           <Text style={styles.textDetail}>{userData.userCode}</Text>
         </View>
       </View>
-      <TouchableOpacity onPress={() => showPicker(true)}>
+      <TouchableOpacity onPress={() => setShow(true)}>
         <SafeAreaView style={styles.datepicker}>
           <Text style={styles.text}>{moment(date).format('MMMM YYYY')}</Text>
           <Image
@@ -124,31 +141,35 @@ const Dashboard: React.FC = () => {
             resizeMode="contain"
             source={require('../../../../../assets/images/unfold_arrow.png')}
           />
-          {show && (
-            <MonthPicker
-              onChange={onValueChange}
-              value={date}
-              locale="en"
-            />
-          )}
         </SafeAreaView>
       </TouchableOpacity>
+      {show && (
+        <MonthPicker
+          onChange={(event, newDate) => {
+            onValueChange(event, newDate);
+            setDate(newDate || date);
+          }}
+          value={date}
+          locale="en"
+        />
+
+      )}
 
       <View style={styles.points}>
         <View style={styles.leftPoint}>
           <Text style={styles.greyText}>{t('strings:points_earned')}</Text>
 
-          <Text style={styles.point}>{userData?.totalPointsEarned ? userData?.totalPointsEarned : 0}</Text>
+          <Text style={styles.point}>{pointsData?.totalPointsEarned ? pointsData?.totalPointsEarned : 0}</Text>
         </View>
         <View style={styles.middlePoint}>
           <Text style={styles.greyText}>{t('strings:usp_scheme_points')}</Text>
           <Text style={styles.point}>
-            {userData?.schemePoints ? userData?.schemePoints : 0}
+            {pointsData?.schemePoints ? pointsData?.schemePoints : 0}
           </Text>
         </View>
         <View style={styles.rightPoint}>
           <Text style={styles.greyText}>{t('strings:points_redeemed')}</Text>
-          <Text style={styles.point}>{userData?.redeemedPoints ? userData?.redeemedPoints : 0}</Text>
+          <Text style={styles.point}>{pointsData?.totalPointsRedeemed ? pointsData?.totalPointsRedeemed : 0}</Text>
 
         </View>
       </View>

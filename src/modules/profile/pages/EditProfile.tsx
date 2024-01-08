@@ -603,6 +603,23 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         }
         if (pincode.length == 6) {
           updateDistrictState(pincode, type);
+          console.log("SHOP ADDRESS", isShopAddressDifferent);
+          if (isShopAddressDifferent == 'Yes') {
+            console.log("<><><><")
+            setPostData((prevData: UserData) => ({
+              ...prevData,
+              currLandmark: postData.landmark,
+              currCity: postData.city,
+              currDist: postData.dist,
+              currState: postData.state,
+              currPinCode: pincode,
+              currStateId: postData.stateId,
+              currCityId: postData.cityId,
+              currDistId: postData.distId,
+              currStreetAndLocality: postData.streetAndLocality,
+              currentAddress: postData.permanentAddress
+            }))
+          }
         }
       }
     }

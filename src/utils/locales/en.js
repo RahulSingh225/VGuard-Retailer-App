@@ -469,7 +469,7 @@ export default {
         tds_amt: "TDS Amt",
         tds_perc: "TDS %",
         select_fiscal_year: "Select Fiscal Year",
-        material_code: "Mat Code",
+        material_code: "Material Code",
         location_is_disabled: "Location is Disabled, Please enable the Location",
         enable: "Enable",
         lbl_current_address_mandatory_ret: "<b>Shop address*</b> House/Flat/Block No.",

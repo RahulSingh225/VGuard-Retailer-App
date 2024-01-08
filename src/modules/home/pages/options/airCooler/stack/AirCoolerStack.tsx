@@ -2,9 +2,9 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import colors from '../../../../../../../colors';
 import AirCooler from '../AirCooler';
-import RedemptionHistory from '../../redeemPoints/RedemptionHistory';
-import UniqueCodeHistory from '../../scanQR/pages/UniqueCodeHistory';
 import { Image } from 'react-native';
+import AirCoolerRedemptionHistory from '../AirCoolerRedemptionHistory';
+import AirCoolerNumberOfScans from '../AirCoolerNumberOfScans';
 
 const AirCoolerStack: React.FC = () => {
   const Stack = createNativeStackNavigator();
@@ -32,14 +32,14 @@ const AirCoolerStack: React.FC = () => {
       />
       <Stack.Screen
         name="Redemption History"
-        component={RedemptionHistory}
+        component={AirCoolerRedemptionHistory}
         options={{
           headerShown: true,
         }}
       />
       <Stack.Screen
         name="Unique Code History"
-        component={UniqueCodeHistory}
+        component={AirCoolerNumberOfScans}
         options={{
           headerShown: true,
         }}

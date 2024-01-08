@@ -31,12 +31,14 @@ import colors from '../../../../../../colors';
 import Buttons from '../../../../../components/Buttons';
 import arrowIcon from '../../../../../assets/images/arrow.png';
 import Popup from '../../../../../components/Popup';
+import { getImageUrl } from '../../../../../utils/FileUtils';
 
 type BankProps = {};
 
 const Bank: React.FC<BankProps> = () => {
     const { t } = useTranslation();
     const [select, setSelect] = useState<string | null>(null);
+    const [points, setPoints] = useState<string>('');
     const [accNo, setAccNo] = useState<string>('');
     const [accHolder, setAccHolder] = useState<string>('');
     const [accType, setAccType] = useState<string>('');
@@ -51,7 +53,7 @@ const Bank: React.FC<BankProps> = () => {
     const [popupContent, setPopupContent] = useState('');
     const [isPopupVisible, setPopupVisible] = useState(false);
     const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
-    
+
     const handleImageClick = () => {
         setShowImagePreviewModal(true);
     };
@@ -114,11 +116,12 @@ const Bank: React.FC<BankProps> = () => {
 
     const getFileUri = async (selectedImageName: string) => {
         try {
-            const UserRole = await AsyncStorage.getItem('userRole');
-            const response = await getFile(selectedImageName, 'CHEQUE', UserRole);
-            console.log(response, 'file');
-            setSelectedImage(response.url);
-            return response;
+            if (selectedImageName != '') {
+                const response = await getImageUrl(selectedImageName, 'Cheque');
+                console.log(response, 'file');
+                setSelectedImage(response);
+                return response;
+            }
         } catch (error) {
             console.error('Error getting file:', error);
             throw error;
@@ -203,6 +206,7 @@ const Bank: React.FC<BankProps> = () => {
             bankNameAndBranch: bankName,
             bankIfsc: ifscCode,
             checkPhoto: entityUid,
+            points: points
         };
         if (postData.bankAccNo != "" &&
             postData.bankAccHolderName != "" &&
@@ -210,7 +214,8 @@ const Bank: React.FC<BankProps> = () => {
             postData.bankAccType != "" &&
             postData.bankNameAndBranch != "" &&
             postData.bankIfsc != "" &&
-            postData.checkPhoto != ""
+            postData.checkPhoto != "" &&
+            postData.points != ""
         ) {
             bankTranfer(postData)
                 .then((response) => {
@@ -249,6 +254,17 @@ const Bank: React.FC<BankProps> = () => {
                     </Text>
                 </View>
                 <View style={styles.form}>
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder={t(
+                                'strings:enter_points_to_be_redeemed',
+                            )}
+                            placeholderTextColor={colors.grey}
+                            value={points}
+                            onChangeText={(value) => setPoints(value)}
+                        />
+                    </View>
                     <View style={styles.inputContainer}>
                         <TextInput
                             style={styles.input}
@@ -323,21 +339,12 @@ const Bank: React.FC<BankProps> = () => {
                         <TouchableOpacity
                             style={styles.inputContainer}
                             onPress={handleImagePickerPress}>
-                            {selectedImage ? (
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder={selectedImageName}
-                                    placeholderTextColor={colors.grey}
-                                    editable={false}
-                                />
-                            ) : (
                                 <TextInput
                                     style={styles.input}
                                     placeholder={t('strings:cancelled_cheque_copy')}
                                     placeholderTextColor={colors.grey}
                                     editable={false}
                                 />
-                            )}
                             <TouchableOpacity
                                 onPress={handleImageClick}>
                                 <View style={styles.inputImage}>

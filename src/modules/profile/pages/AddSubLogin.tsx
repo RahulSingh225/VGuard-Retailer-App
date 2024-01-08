@@ -77,6 +77,7 @@ const AddSubLogin: React.FC<{ navigation: any }> = ({ navigation }) => {
                     label={t('strings:lbl_name_mandatory')}
                     value={inputName}
                     onChangeText={(text) => handleInputChange(text, 'Name')}
+                    maxLength={10}
                 />
                 <InputField
                     label={t('strings:lbl_contact_number_mandatory')}
