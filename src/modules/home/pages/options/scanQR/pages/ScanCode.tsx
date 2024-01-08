@@ -40,7 +40,7 @@ interface ScanCodeProps {
 }
 
 const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
-  const type = route.params.type;
+  const type = route?.params?.type;
   const {t} = useTranslation();
   const [qrCode, setQrcode] = useState<string>('');
   const [scratchCard, showScratchCard] = useState<boolean>(false);
@@ -363,7 +363,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
             style={{width: '100%', height: '100%'}}
             resizeMode="contain"
           />
-        </View>
+        </TouchableOpacity>
         <View style={[{height: responsiveHeight(5), width: '100%'}]}>
           <Buttons
             label={t('strings:click_here_to_scan_a_unique_code')}
