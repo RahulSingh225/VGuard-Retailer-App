@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+/* eslint-disable react/no-unstable-nested-components */
+import React, {useState} from 'react';
 import HomeScreen from '../pages/HomeScreen';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import colors from '../../../../colors';
-import { CustomTabHeader } from '../../common/services/BottomTab';
-import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {CustomTabHeader} from '../../common/services/BottomTab';
+import {
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import LanguagePicker from '../../../components/LanguagePicker';
 import ProfileStack from '../../profile/stack/ProfileStack';
 import ScanStack from '../pages/options/scanQR/stack/ScanStack';
@@ -26,7 +34,7 @@ const HomeStack: React.FC = () => {
   type HomeStackParams = {
     Home: undefined;
     'Scan QR': undefined;
-    'Dashboard': undefined;
+    Dashboard: undefined;
     'Redeem Products': undefined;
     'Update KYC': undefined;
     schemes: undefined;
@@ -47,7 +55,7 @@ const HomeStack: React.FC = () => {
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
 
   const handleLanguageButtonPress = () => {
-    console.log("handleLanguageButtonPress...........")
+    console.log('handleLanguageButtonPress...........');
     setShowLanguagePicker(true);
   };
 
@@ -65,13 +73,17 @@ const HomeStack: React.FC = () => {
             backgroundColor: colors.yellow,
           },
           headerShown: false,
-        }}
-      >
+        }}>
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={({ route }) => ({
-            headerTitle: () => <CustomTabHeader handleLanguageButtonPress={handleLanguageButtonPress} route={route} />,
+          options={({route}) => ({
+            headerTitle: () => (
+              <CustomTabHeader
+                handleLanguageButtonPress={handleLanguageButtonPress}
+                route={route}
+              />
+            ),
             headerShown: true,
           })}
         />
@@ -83,12 +95,20 @@ const HomeStack: React.FC = () => {
         <Stack.Screen name="new" component={NewStack} />
         <Stack.Screen name="ticket" component={TicketStack} />
         <Stack.Screen name="Air Cooler" component={AirCoolerStack} />
-        <Stack.Screen name="Redemption History" component={RedemptionHistory} options={{
+        <Stack.Screen
+          name="Redemption History"
+          component={RedemptionHistory}
+          options={{
             headerShown: true,
-          }}/>
-        <Stack.Screen name="Unique Code History" component={UniqueCodeHistory} options={{
+          }}
+        />
+        <Stack.Screen
+          name="Unique Code History"
+          component={UniqueCodeHistory}
+          options={{
             headerShown: true,
-          }}/>
+          }}
+        />
         <Stack.Screen
           name="Update PAN"
           component={UpdatePAN}
@@ -96,11 +116,13 @@ const HomeStack: React.FC = () => {
             headerShown: true,
             headerRight: () => (
               <Image
-                style={{ width: 70, height: 50 }}
+                style={{width: 70, height: 50}}
                 resizeMode="contain"
                 source={require('../../../assets/images/group_910.png')}
-              />),
-          }} />
+              />
+            ),
+          }}
+        />
         <Stack.Screen
           name="Update Bank"
           component={Bank}
@@ -108,10 +130,11 @@ const HomeStack: React.FC = () => {
             headerShown: true,
             headerRight: () => (
               <Image
-                style={{ width: 70, height: 50 }}
+                style={{width: 70, height: 50}}
                 resizeMode="contain"
                 source={require('../../../assets/images/group_910.png')}
-              />),
+              />
+            ),
           }}
         />
         <Stack.Screen
@@ -121,10 +144,11 @@ const HomeStack: React.FC = () => {
             headerShown: true,
             headerRight: () => (
               <Image
-                style={{ width: 70, height: 50 }}
+                style={{width: 70, height: 50}}
                 resizeMode="contain"
                 source={require('../../../assets/images/group_910.png')}
-              />),
+              />
+            ),
           }}
         />
         <Stack.Screen
@@ -134,10 +158,11 @@ const HomeStack: React.FC = () => {
             headerShown: true,
             headerRight: () => (
               <Image
-                style={{ width: 70, height: 50 }}
+                style={{width: 70, height: 50}}
                 resizeMode="contain"
                 source={require('../../../assets/images/group_910.png')}
-              />),
+              />
+            ),
           }}
         />
         <Stack.Screen
@@ -147,10 +172,11 @@ const HomeStack: React.FC = () => {
             headerShown: true,
             headerRight: () => (
               <Image
-                style={{ width: 70, height: 50 }}
+                style={{width: 70, height: 50}}
                 resizeMode="contain"
                 source={require('../../../assets/images/group_910.png')}
-              />),
+              />
+            ),
           }}
         />
         <Stack.Screen
@@ -165,8 +191,7 @@ const HomeStack: React.FC = () => {
         animationType="slide"
         transparent={true}
         visible={showLanguagePicker}
-        onRequestClose={handleCloseLanguagePicker}
-      >
+        onRequestClose={handleCloseLanguagePicker}>
         <View style={styles.languagePickerContainer}>
           <LanguagePicker onCloseModal={handleCloseLanguagePicker} />
           <TouchableOpacity onPress={handleCloseLanguagePicker}>

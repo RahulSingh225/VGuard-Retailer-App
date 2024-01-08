@@ -3,6 +3,10 @@ import {AuthProvider} from './src/components/AuthContext';
 import AppNavigator from './src/components/AppNavigator';
 import {Alert, PermissionsAndroid} from 'react-native';
 import notificationListener from './src/modules/notifications/pages/PushNotification';
+import ProductRegistrationForm from './src/modules/home/pages/options/scanQR/pages/ProductRegistrationForm';
+import Test from './src/modules/home/pages/options/scanQR/pages/AddWarranty';
+import AddWarranty from './src/modules/home/pages/options/scanQR/pages/AddWarranty';
+
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -42,6 +46,8 @@ const App: React.FC = () => {
       console.error('Permission request error:', error);
     }
   }
+
+ 
   return (
     <AuthProvider>
       <AppNavigator />
