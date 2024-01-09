@@ -95,7 +95,7 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       showLoader(false);
 
       if (response.status === 200) {
-        var r = await response.json();
+        var r = await response.data;
         console.log(r);
         login(r);
       }

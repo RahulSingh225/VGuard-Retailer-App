@@ -23,10 +23,12 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
   const [userData, setUserData] = useState<User | null>(null);
   const [profileImage, setProfileImage] = useState("");
+  const [disableOptions, setDisableOptions] = useState(false);
 
   const loadUserDetails = async () => {
     try {
       const userString = await AsyncStorage.getItem('USER');
+      const diffAcc = await AsyncStorage.getItem('diffAcc');
       if (userString) {
         const user = JSON.parse(userString);
         const shapedUser = {
@@ -38,6 +40,9 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           redeemedPoints: user?.pointsSummary.redeemedPoints || 0,
           numberOfScan: user?.pointsSummary.numberOfScan || 0
         };
+        if(diffAcc == "1"){
+          setDisableOptions(true);
+        }
         setUserData(shapedUser);
       }
     } catch (error) {
@@ -121,6 +126,7 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               text="strings:redeem_points"
               iconSource={require('../../../assets/images/ic_redeem_points.webp')}
               screenName="Redeem Products"
+              diffAcc = {disableOptions}
             />
             <CustomTouchableOption
               text="strings:dashboard"
@@ -133,6 +139,7 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               text="strings:update_pan"
               iconSource={require('../../../assets/images/ic_update_kyc.webp')}
               screenName="Update PAN"
+              diffAcc = {disableOptions}
             />
             <CustomTouchableOption
               text="strings:scheem_offers"
@@ -167,6 +174,7 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               text="strings:update_bank"
               iconSource={require('../../../assets/images/ic_raise_ticket.webp')}
               screenName="Update Bank"
+              diffAcc = {disableOptions}
             />
             <CustomTouchableOption
               text="strings:tds_certificate"
