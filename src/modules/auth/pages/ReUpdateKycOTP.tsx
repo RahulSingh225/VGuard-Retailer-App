@@ -91,8 +91,9 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
       };
 
       let response = await validateReverifyOtp(userCredentials);
+      console.log("RESPONSE", response)
       let message = response.data.message;
-      if (response.status === 200) {
+      if (response.status === 200 && response.data.message == "OTP verified successfully, please proceed with the registration.") {
         AsyncStorage.setItem('username', number.toString()).then(() => {
           AsyncStorage.setItem('password', otp.toString()).then(() => {
             AsyncStorage.setItem('authtype', 'otp').then(() => {
