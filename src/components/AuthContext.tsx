@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, Dispatch, SetStateAction } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createDigestPostRequest } from '../utils/apiservice';
+import { logoutUser } from '../utils/apiservice';
 
 interface User {
   // Define your user properties here
@@ -27,24 +27,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [popupAuthContent, setPopupContent] = useState('Please Enter Credentials of a Retailer');
 
   const login = async (user: User) => {
-    const userRole = user?.roleId;
-    console.log("USERDATA", user);
-    if(userRole == 2){
       await AsyncStorage.setItem('USER', JSON.stringify(user));
       setIsUserAuthenticated(true);
-    }
-    else{
-      setShowPopup(true);
-    }
   };
 
   const logout = async () => {
     try {
-      const path = 'user/logoutUser';
-      createDigestPostRequest(path, '');
+      const response = await logoutUser();
+      console.log(response.data, "LOGOUT");
       await AsyncStorage.removeItem('USER');
-      await AsyncStorage.removeItem('username');
-      await AsyncStorage.removeItem('password');
+      await AsyncStorage.removeItem('refreshToken');
       setIsUserAuthenticated(false);
     } catch (error) {
       console.error('Error while logging out:', error);

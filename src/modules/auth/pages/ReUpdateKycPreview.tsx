@@ -48,7 +48,7 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
     const handleSubmit = () => {
         console.log("Post Data:----", postData);
         reUpdateUserForKyc(postData)
-            .then(response => response.json())
+            .then(response => response.data)
             .then((responseData) => {
                 console.log("RESPONSE DATA:", responseData);
                 setPopupVisible(true);
@@ -61,13 +61,13 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
                     const password = AsyncStorage.getItem('password');
     
                     loginWithOtp(username, password)
-                        .then(response => response.json())
+                        .then(response => response.data)
                         .then(async (loginResponse) => {
                             console.log(loginResponse);
                             showLoader(false);
     
                             if (loginResponse.status === 200) {
-                                var r = await loginResponse.json();
+                                var r = await loginResponse.data;
                                 console.log(r);
                                 login(r);
                             } else {

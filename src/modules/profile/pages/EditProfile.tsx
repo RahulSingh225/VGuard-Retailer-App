@@ -48,7 +48,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   useEffect(() => {
     getUser()
-      .then(response => response.json())
+      .then(response => response.data)
       .then(res => {
         // console.log(res);
         const trimmedGender = res.gender.trim();
@@ -79,7 +79,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       })
 
     getRetailerCategoryDealIn()
-      .then(response => response.json())
+      .then(response => response.data)
       .then((responseData) => {
         setRetailerCategoryDealIn(responseData);
       })
@@ -209,7 +209,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           .then(updatedPostData => {
             console.log("POSTDATA", updatedPostData);
             updateProfile(updatedPostData)
-              .then(response => response.json())
+              .then(response => response.data)
               .then((responseData) => {
                 setPopupVisible(true);
                 setPopupContent(responseData?.message);

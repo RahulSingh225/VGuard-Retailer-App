@@ -19,7 +19,7 @@ const ProductWiseEarning: React.FC = () => {
 
   useEffect(() => {
     getProdWiseEarning()
-      .then(response => response.json())
+      .then(response => response.data)
       .then(responseData => {
         setProductDetails(responseData);
         console.log(responseData)

@@ -287,7 +287,7 @@ const AddWarranty = ({navigation}) => {
       geolocation: '',
     };
     const response = await sendCustomerData(postData);
-    const result = await response.json();
+    const result = await response.data;
     if (result.errorCode == 1) {
       var couponPoints = result.couponPoints;
       var basePoints = result.basePoints;

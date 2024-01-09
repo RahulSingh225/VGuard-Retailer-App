@@ -54,7 +54,7 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
         otpType: "Voice"
       };
       let validationResponse = await generateOtpForLogin(body);
-      validationResponse = await validationResponse.json();
+      validationResponse = await validationResponse.data;
       console.log(validationResponse.code, '<><><><><');
       if (validationResponse.code === 200) {
         const successMessage = validationResponse.message;

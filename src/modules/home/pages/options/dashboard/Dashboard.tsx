@@ -68,7 +68,7 @@ const Dashboard: React.FC = () => {
     console.log('Selected Year:', selectedYearDate);
 
     getMonthWiseEarning(selectedMonthDate, selectedYearDate)
-      .then((data) => data.json())
+      .then((data) => data.data)
       .then((data) => {
         setPointsData(data);
       });
@@ -91,7 +91,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     console.log(selectedMonth, ":", selectedYear)
     getMonthWiseEarning(selectedMonth, selectedYear)
-      .then((data) => data.json())
+      .then((data) => data.data)
       .then((data) => {
         setPointsData(data);
       })

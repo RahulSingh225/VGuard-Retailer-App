@@ -34,7 +34,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     //   const user = JSON.parse(r || '');
     //   setUserData(user);
     // });
-    getUser().then(response => response.json())
+    getUser().then(response => response.data)
       .then(res => {
         console.log(res);
         setUserData(res);

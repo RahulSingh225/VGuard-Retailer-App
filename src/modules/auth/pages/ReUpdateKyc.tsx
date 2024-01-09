@@ -56,7 +56,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     showLoader(false);
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                return response.json();
+                return response.data;
             })
             .then(res => {
                 const result = res;

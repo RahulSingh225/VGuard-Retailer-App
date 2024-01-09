@@ -198,7 +198,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
         customerFormData.category,
       );
       console.log('Dealer Pincode===========', postData.addedBy);
-      const result = await response.json();
+      const result = await response.data;
       if (result.code == 1) {
         setPopupVisible(true);
         setPopupContent(result.message);
@@ -227,7 +227,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
 
       const response = await getCustDetByMobile(contactNo);
 
-      const result = await response.json();
+      const result = await response.data;
 
       if (result.name) {
         const customerDetails = result;
