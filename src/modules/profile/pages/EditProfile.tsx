@@ -59,7 +59,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         setCurrStateId(res.currStateId);
         setSelfie(res.kycDetails.selfie);
         setEnrolledOtherSchemeYesNo(res.enrolledOtherSchemeYesNo);
-        // console.log("<><><><<", res)
+        console.log("<><><><<<><<><<><><", res)
         if (res.currLandmark == res.landmark &&
           res.currentAddress == res.permanentAddress &&
           res.currStreetAndLocality == res.streetAndLocality &&
@@ -69,6 +69,20 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         else {
           setIsShopAddressDifferent('No');
         }
+        const countNonEmptyStrings = (fields) => {
+          console.log("COUNT:::::::", fields.filter(field => typeof field === 'string' && field.trim() !== '').length)
+          return fields.filter(field => typeof field === 'string' && field.trim() !== '').length;
+        };
+
+        const fieldsToCheck = [
+          res.otherSchemeBrand,
+          res.otherSchemeBrand2,
+          res.otherSchemeBrand3,
+          res.otherSchemeBrand4,
+          res.otherSchemeBrand5,
+        ];
+
+        setAdditionalFieldsCount(countNonEmptyStrings(fieldsToCheck));
         const image = selfie;
         showLoader(false);
       })
@@ -116,7 +130,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         if (Array.isArray(districtsData) && districtsData.length > 0) {
           const citiesResponse = await getCities(postData.distId);
           const citiesData = await citiesResponse.data;
-          console.log("CITIES-----------", citiesData);
           setCities(citiesData);
         }
       } else {
@@ -128,7 +141,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         if (Array.isArray(currDistrictsData) && currDistrictsData.length > 0) {
           const citiesResponse = await getCities(postData.currDistId);
           const citiesData = await citiesResponse.data;
-          console.log("CITIES-----------", citiesData);
           setCurrCities(citiesData);
         }
       } else {
@@ -254,7 +266,16 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       }
     }
     else if (label == "enrolledOtherSchemeYesNo") {
-      setEnrolledOtherSchemeYesNo(value)
+      setEnrolledOtherSchemeYesNo(value);
+      let enrolledOtherSchemeNum = 0;
+      if (value == "Yes") {
+        enrolledOtherSchemeNum = 1;
+      }
+      setPostData((prevData: UserData) => ({
+        ...prevData,
+        [label]: value,
+        enrolledOtherScheme: enrolledOtherSchemeNum
+      }))
     }
     else if (label == "maritalStatus") {
       setPostData((prevData: UserData) => ({
@@ -301,6 +322,22 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           ...prevData,
           [label]: value,
           genderPos: genderNum
+        }
+      })
+    }
+    if (label == "maritalStatus") {
+      let maritalStatusNum = "";
+      if (value == "Married") {
+        maritalStatusNum = "1";
+      }
+      else if (value == "UnMarried") {
+        maritalStatusNum = "2"
+      }
+      setPostData((prevData: UserData) => {
+        return {
+          ...prevData,
+          [label]: value,
+          maritalStatusId: maritalStatusNum
         }
       })
     }
@@ -494,21 +531,22 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
     for (let i = 2; i <= additionalFieldsCount; i++) {
       if (i <= 5) {
+        const brandKey = `otherSchemeBrand${i}`;
+        const likedKey = `abtOtherSchemeLiked${i}`;
+
         additionalFields.push(
           <View key={i}>
             <InputField
               label={t('strings:if_yes_please_mention_scheme_and_brand_name')}
-              value={postData?.[`otherSchemeBrand${i}`]}
-              onChangeText={(text) => handleInputChange(text, `otherSchemeBrand${i}`)}
-              numeric
+              value={postData?.[brandKey]}
+              onChangeText={(text) => handleInputChange(text, brandKey)}
             />
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
               <View style={{ flex: 1 }}>
                 <InputField
                   label={t('strings:if_yes_what_you_liked_about_the_program')}
-                  value={postData?.[`abtOtherSchemeLiked${i}`]}
-                  onChangeText={(text) => handleInputChange(text, `abtOtherSchemeLiked${i}`)}
-                  numeric
+                  value={postData?.[likedKey]}
+                  onChangeText={(text) => handleInputChange(text, likedKey)}
                 />
               </View>
               {i < 5 && (
@@ -528,6 +566,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
     return additionalFields;
   };
+
 
   const [pincode_suggestions, setPincode_Suggestions] = React.useState([])
   const [curr_pincode_suggestions, setCurr_Pincode_Suggestions] = React.useState([])
@@ -979,12 +1018,17 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           value={postData?.kycDetails?.aadharOrVoterOrDlNo}
           onChangeText={(text) => handleInputChange(text, 'kycDetails.aadharOrVoterOrDlNo')}
         />
-        <PickerField
+        <InputField
+          label={t('strings:do_you_have_gst_number')}
+          value={postData?.gstYesNo}
+          onChangeText={(text) => handleInputChange(text, 'gstYesNo')}
+        />
+        {/* <PickerField
           label={t('strings:do_you_have_gst_number')}
           selectedValue={postData?.gstYesNo}
           onValueChange={(text: string) => handleChange("gstYesNo", text)}
           items={selectYesorNo}
-        />
+        /> */}
         <InputField
           label={t('strings:gst_no')}
           value={postData?.gstNo}
