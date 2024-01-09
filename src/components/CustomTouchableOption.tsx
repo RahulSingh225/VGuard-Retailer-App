@@ -9,15 +9,17 @@ import {
   responsiveFontSize
 } from "react-native-responsive-dimensions";
 import Popup from './Popup';
+import Snackbar from 'react-native-snackbar';
 
 interface CustomTouchableOptionProps {
   text: string;
-  iconSource: any; // Adjust the type based on your icon source type
+  iconSource: any;
   screenName: string;
   disabled?: boolean;
+  diffAcc?: boolean;
 }
 
-const CustomTouchableOption: React.FC<CustomTouchableOptionProps> = ({ text, iconSource, screenName, disabled = false }) => {
+const CustomTouchableOption: React.FC<CustomTouchableOptionProps> = ({ text, iconSource, screenName, disabled = false, diffAcc = false }) => {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const [isPopupVisible, setPopupVisible] = useState(false);
@@ -28,9 +30,21 @@ const CustomTouchableOption: React.FC<CustomTouchableOptionProps> = ({ text, ico
       setPopupContent("Coming Soon!")
     }
     else {
-      navigation.navigate(screenName)
+      if(diffAcc == true) {
+        showSnackbar('User not allowed');
+      }
+      else{
+        navigation.navigate(screenName)
+      }
     }
   }
+
+  const showSnackbar = (message: string) => {
+    Snackbar.show({
+      text: message,
+      duration: Snackbar.LENGTH_SHORT,
+    });
+  };
   return (
     <>
     <TouchableOpacity

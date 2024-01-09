@@ -10,6 +10,7 @@ import InputField from '../../../components/InputField';
 import Popup from '../../../components/Popup';
 import Loader from '../../../components/Loader';
 import { getImageUrl } from '../../../utils/FileUtils';
+import Snackbar from 'react-native-snackbar';
 
 const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
@@ -25,27 +26,35 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [chequeImageName, setChequeImageName] = useState("");
   const [imageOpen, setimageOpen] = useState("")
   const [loading, setLoading] = useState(true);
+  const [disableOptions, setDisableOptions] = useState(false);
+
   const handleImageClick = (imageSource: string | "") => {
     setShowImagePreviewModal(true);
     setimageOpen(imageSource);
   };
   useEffect(() => {
-    // AsyncStorage.getItem('USER').then(r => {
-    //   const user = JSON.parse(r || '');
-    //   setUserData(user);
-    // });
-    getUser().then(response => response.json())
-      .then(res => {
+    const fetchData = async () => {
+      try {
+        const diffAcc = await AsyncStorage.getItem('diffAcc');
+        if(diffAcc == "1"){
+          setDisableOptions(true);
+        }
+        const response = await getUser();
+        const res = await response.json();
+  
         console.log(res);
         setUserData(res);
         setLoading(false);
-      })
-      .catch(error => {
+      } catch (error) {
         setPopupContent("Something Went Wrong!");
         setPopupVisible(true);
         setLoading(false);
-      })
+      }
+    };
+  
+    fetchData();
   }, []);
+  
   const fetchChequeCopy = async () => {
     try {
       const source = await renderField("Cancelled Cheque Copy");
@@ -76,6 +85,22 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
       getImage();
     }
   }, [userData?.roleId, userData?.kycDetails?.selfie]);
+
+  const showSnackbar = (message: string) => {
+    Snackbar.show({
+      text: message,
+      duration: Snackbar.LENGTH_SHORT,
+    });
+  };
+
+  const handleAddSubLogin = async () => {
+    if(disableOptions == true) {
+      showSnackbar('User not allowed');
+    }
+    else{
+      navigation.navigate('Add Sub-Login')
+    }
+  }
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
 
@@ -251,7 +276,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
         </TouchableHighlight>
         <TouchableHighlight
           style={styles.button}
-          onPress={() => navigation.navigate('Add Sub-Login')}
+          onPress={handleAddSubLogin}
         >
           <Text style={styles.buttonText}>{t('strings:add_sub_login')}</Text>
         </TouchableHighlight>
