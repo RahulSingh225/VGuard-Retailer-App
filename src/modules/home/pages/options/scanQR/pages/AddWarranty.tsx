@@ -83,10 +83,12 @@ const AddWarranty = ({navigation}) => {
 
   useEffect(() => {
     AsyncStorage.getItem('COUPON_RESPONSE').then(r => {
+     
       setCouponResponse(JSON.parse(r));
-      setQrcode(JSON.parse(r).categoryId);
-      setSkuDetails(JSON.parse(r).category);
+      setQrcode(JSON.parse(r).copuonCode);
+      setSkuDetails(JSON.parse(r).skuDetail);
       AsyncStorage.getItem('CUSTOMER_DETAILS').then(r => {
+    
         setCustomerDetails(JSON.parse(r));
       });
     });

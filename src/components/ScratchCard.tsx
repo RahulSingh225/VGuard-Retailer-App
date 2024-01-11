@@ -24,6 +24,7 @@ interface RewardImageProps {
 
 interface ButtonProps {
   buttonText?: string;
+  buttonAction?:Function;
 }
 
 interface ScratchCardComponentProps {
@@ -207,7 +208,7 @@ const RewardBox: React.FC<ScratchCardComponentProps> = ({
             {scratchCardProps?.button?.buttonText && (
               <TouchableOpacity
                 style={styles.modalButton}
-                onPress={() => console.log('Register warranty ')}>
+                onPress={scratchCardProps?.button?.buttonAction}>
                 <Text style={styles.regWarButton}>
                   {scratchCardProps?.button?.buttonText}
                 </Text>
