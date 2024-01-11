@@ -25,6 +25,7 @@ import {Props} from 'react-native-paper';
 import RewardBox from '../../../../../../components/ScratchCard';
 import Popup from '../../../../../../components/Popup';
 import getLocation from '../../../../../../utils/geolocation';
+import Loader from '../../../../../../components/Loader';
 
 const AddWarranty = ({navigation}) => {
   const {t} = useTranslation();
@@ -35,6 +36,7 @@ const AddWarranty = ({navigation}) => {
   const [skuDetails, setSkuDetails] = useState('VS-400');
   const [purchaseDate, setPurchaseDate] = useState('');
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
+  const [loader, showLoader] = useState(true);
   const [scratchCardProps, setScratchCardProps] = useState({
     rewardImage: {
       width: 100,
@@ -106,6 +108,7 @@ const AddWarranty = ({navigation}) => {
         if (position != null) {
           setLatitude(position.latitude.toString());
           setLongitude(position.longitude.toString());
+          showLoader(false);
         } else {
           console.log('Position is undefined or null');
         }
@@ -375,6 +378,7 @@ const AddWarranty = ({navigation}) => {
   }
   return (
     <ScrollView style={styles.mainWrapper}>
+      {loader && <Loader />}
       <Text style={styles.heading}>Register Product</Text>
       {scratchCard && (
         <RewardBox

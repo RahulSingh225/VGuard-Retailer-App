@@ -34,6 +34,7 @@ import Popup from '../../../../../../components/Popup';
 import PopupWithOkAndCancel from '../../../../../../components/PopupWithOkAndCancel';
 import PopupWithPin from '../../../../../../components/PopupWithPin';
 import RewardBox from '../../../../../../components/ScratchCard';
+import Loader from '../../../../../../components/Loader';
 interface ScanCodeProps {
   navigation: any;
   route: any;
@@ -53,6 +54,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
   const [isOkPopupVisible, setOkPopupVisible] = useState(false);
   const [isPinPopupVisible, setPinPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
+  const [loader, showLoader] = useState(true);
   const [okPopupContent, setOkPopupContent] = useState<OkPopupContent>({
     text: '',
     okAction: null,
@@ -132,6 +134,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
   }, []);
 
   const getUserLocation = () => {
+    
     getLocation()
       .then(position => {
         if (position != null) {
@@ -140,6 +143,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
             latitude: position.latitude.toString(),
             longitude: position.longitude.toString(),
           }));
+          showLoader(false);
         } else {
           console.log('Position is undefined or null');
         }
@@ -193,6 +197,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
         CouponResponse = r;
         console.log("RESPONSE", r);
         if (r.errorCode == 1) {
+          showLoader(false);
           setQrcode('');
           setOkPopupVisible(true);
           setOkPopupContent({
@@ -201,9 +206,11 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
           });
         } else if (r.errorCode == 2) {
           setPinPopupVisible(true);
+          showLoader(false);
         } else if (r.errorMsg && r.errorMsg != '') {
           setPopupVisible(true);
           setPopupContent(r.errorMsg);
+          showLoader(false);
           // setPinPopupVisible(true);
         } else {
           setPopupVisible(true);
@@ -311,6 +318,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+      {loader && <Loader />}
       <View style={styles.mainWrapper}>
         {scratchCard && (
           <RewardBox
