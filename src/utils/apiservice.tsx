@@ -493,7 +493,7 @@ export function getDownloads() {
 
 export function getAppVersion() {
     const path = 'user/retversion';
-    return createDigestGetRequest(path);
+    return createGetRequest(path);
 }
 
 export function updateUser(data: any) {
