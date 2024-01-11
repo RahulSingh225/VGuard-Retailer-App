@@ -168,14 +168,13 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
               text: r.errorMsg,
               okAction: () => navigation.navigate('Product Registration Form'),
             });
+            setOkPopupVisible(true);
           });
         } else {
-          setOkPopupContent({
-            text: r.errorMsg,
-            okAction: () => setOkPopupVisible(false),
-          });
+          setPopupVisible(true);
+          setPopupContent(r.errorMsg);
         }
-        setOkPopupVisible(true);
+        
       } else {
         apiResponse = await isValidBarcode(CouponData, 0, '', 0, null);
         const r = await apiResponse.json();
