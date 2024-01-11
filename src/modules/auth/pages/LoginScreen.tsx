@@ -24,6 +24,7 @@ import notSelectedTickImage from '../../../assets/images/tick_1_notSelected.png'
 import LanguagePicker from '../../../components/LanguagePicker';
 import language from '../../../assets/images/language.png';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
+import DeviceInfo from 'react-native-device-info';
 
 const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -34,7 +35,7 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const pkg = require('../../../../package.json');
-  const version = pkg.version;
+  const version = DeviceInfo.getVersion();
 
   const handleCloseLanguagePicker = () => {
     setShowLanguagePicker(false);

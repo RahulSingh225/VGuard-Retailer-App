@@ -24,14 +24,16 @@ import {CustomerData} from '../../../../../../utils/modules/CustomerData';
 import {Props} from 'react-native-paper';
 import RewardBox from '../../../../../../components/ScratchCard';
 import Popup from '../../../../../../components/Popup';
+import getLocation from '../../../../../../utils/geolocation';
 
 const AddWarranty = ({navigation}) => {
   const {t} = useTranslation();
   const [isPopupVisible, setPopupVisible] = useState(false);
-
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
   const [qrcode, setQrcode] = useState('1234567890');
   const [skuDetails, setSkuDetails] = useState('VS-400');
-  const [purchaseDate, setPurchaseDate] = useState('12-12-2012');
+  const [purchaseDate, setPurchaseDate] = useState('');
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
   const [scratchCardProps, setScratchCardProps] = useState({
     rewardImage: {
@@ -82,6 +84,9 @@ const AddWarranty = ({navigation}) => {
   const [imageType, setImageType] = useState('');
 
   useEffect(() => {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('en-US');
+    setPurchaseDate(formattedDate);
     AsyncStorage.getItem('COUPON_RESPONSE').then(r => {
      
       setCouponResponse(JSON.parse(r));
@@ -92,7 +97,23 @@ const AddWarranty = ({navigation}) => {
         setCustomerDetails(JSON.parse(r));
       });
     });
+    getUserLocation();
   }, []);
+
+  const getUserLocation = () => {
+    getLocation()
+      .then(position => {
+        if (position != null) {
+          setLatitude(position.latitude.toString());
+          setLongitude(position.longitude.toString());
+        } else {
+          console.log('Position is undefined or null');
+        }
+      })
+      .catch(error => {
+        console.error('Error getting location:', error);
+      });
+  };
 
   const handleImagePickerPress = (type: React.SetStateAction<string>) => {
     setImageType(type);
@@ -184,9 +205,13 @@ const AddWarranty = ({navigation}) => {
       const response = await sendFile(formData);
       if (imageType == 'bill') {
         setSelectedBillImageName(response.data.entityUid);
+        console.log(response.data.entityUid)
+        return response.data.entityUid;
       }
       if (imageType == 'warranty') {
         setSelectedWarrantyImageName(response.data.entityUid);
+        console.log(response.data.entityUid)
+        return response.data.entityUid;
       }
     } catch (error) {
       console.error('API Error:', error);
@@ -217,7 +242,8 @@ const AddWarranty = ({navigation}) => {
       selectedWarrantyImage,
       'warranty',
     );
-    const postData: CustomerData = {
+    console.log("<><<<><><<>")
+    const postData = {
       contactNo: customerDetails.contactNo,
       name: customerDetails.name,
       email: customerDetails.email,
@@ -245,8 +271,8 @@ const AddWarranty = ({navigation}) => {
       cresp: {
         custIdForProdInstall: '',
         modelForProdInstall: '',
-        errorCode: couponResponse.errorCode,
-        errorMsg: couponResponse.errorMsg,
+        errorCode: couponResponse?.errorCode,
+        errorMsg: couponResponse?.errorMsg,
         statusType: '',
         balance: '',
         currentPoints: '',
@@ -284,12 +310,14 @@ const AddWarranty = ({navigation}) => {
         productId: '',
         paytmMobileNo: '',
       },
-      latitude: location.latitude,
-      longitude: location.longitude,
+      latitude: latitude,
+      longitude: longitude,
       geolocation: '',
     };
+    console.log("POST DATA")
     const response = await sendCustomerData(postData);
     const result = await response.json();
+    console.log("RESPONSE<><><><", result);
     if (result.errorCode == 1) {
       var couponPoints = result.couponPoints;
       var basePoints = result.basePoints;
@@ -342,7 +370,7 @@ const AddWarranty = ({navigation}) => {
       setScratchCard(true);
     } else {
       setPopupVisible(true);
-      setPopupContent(result.errorMsg);
+      setPopupContent(t('strings:something_wrong'));
     }
   }
   return (

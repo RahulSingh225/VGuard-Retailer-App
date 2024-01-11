@@ -14,7 +14,7 @@ const ScanStack: React.FC = () => {
     'Scan Code': undefined;
     'Unique Code History': undefined;
     'Product Registration Form': undefined;
-    'AddWarranty': undefined;
+    'Add Warranty': undefined;
   };
 
   const Stack = createNativeStackNavigator<ScanStackParams>();
@@ -57,7 +57,7 @@ const ScanStack: React.FC = () => {
           }}
         />
         <Stack.Screen
-          name="AddWarranty"
+          name="Add Warranty"
           component={AddWarranty}
           options={{
             headerShown: true,

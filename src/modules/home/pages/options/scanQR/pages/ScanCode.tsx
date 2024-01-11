@@ -39,6 +39,11 @@ interface ScanCodeProps {
   route: any;
 }
 
+interface OkPopupContent {
+  text: string;
+  okAction: (() => void) | null;
+}
+
 const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
   const type = route?.params?.type;
   const {t} = useTranslation();
@@ -48,8 +53,8 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
   const [isOkPopupVisible, setOkPopupVisible] = useState(false);
   const [isPinPopupVisible, setPinPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
-  const [okPopupContent, setOkPopupContent] = useState({
-    text: null,
+  const [okPopupContent, setOkPopupContent] = useState<OkPopupContent>({
+    text: '',
     okAction: null,
   });
   const [scratchable, setScratchable] = useState(false);
@@ -146,6 +151,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
 
   const handleQrText = (coupon: string) => {
     setQrcode(coupon);
+    console.log(coupon,"<><><<>")
     setCouponData(prevCouponData => ({
       ...prevCouponData,
       couponCode: coupon,
@@ -154,12 +160,14 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
 
   async function sendBarcode() {
     if (qrCode && qrCode != '') {
+      console.log(qrCode, "<><><<<>");
       var apiResponse;
       if (type == 'airCooler') {
         apiResponse = await isValidBarcode(CouponData, 1, '', 0, null);
         const r = await apiResponse.json();
         console.log('Response:', r);
       } else if (type == 'SCAN_IN') {
+        console.log("<><><", CouponData)
         apiResponse = await sendScanInCoupon(CouponData);
         const r = await apiResponse.json();
         if (r.errorCode == 3) {
@@ -183,58 +191,14 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
           JSON.stringify(r),
         );
         CouponResponse = r;
+        console.log("RESPONSE", r);
         if (r.errorCode == 1) {
           setQrcode('');
-          var couponPoints = r.couponPoints;
-          var basePoints = r.basePoints;
-          // var couponPoints = "100";
-          // var basePoints = "200";
-          basePoints ? (basePoints = `Base Points: ${basePoints}`) : null;
-
-          console.log('COUPON POINTS:===', couponPoints);
-          console.log('BASE POINTS:========', basePoints);
-
-          setScratchCardProps({
-            rewardImage: {
-              width: 100,
-              height: 100,
-              resourceLocation: require('../../../../../../assets/images/ic_rewards_gift.png'),
-            },
-            rewardResultText: {
-              color: colors.black,
-              fontSize: 16,
-              textContent: 'YOU WON',
-              fontWeight: '700',
-            },
-            text1: {
-              color: colors.black,
-              fontSize: 16,
-              textContent: couponPoints,
-              fontWeight: '700',
-            },
-            text2: {
-              color: colors.black,
-              fontSize: 16,
-              textContent: 'POINTS',
-              fontWeight: '700',
-            },
-            text3: {
-              color: colors.grey,
-              fontSize: 12,
-              textContent: basePoints,
-              fontWeight: '700',
-            },
-            button: {
-              buttonColor: colors.yellow,
-              buttonTextColor: colors.black,
-              buttonText: 'Register Warranty',
-              buttonAction: () => navigation.navigate('AddWarranty'),
-              fontWeight: '400',
-            },
-            textInput: false,
+          setOkPopupVisible(true);
+          setOkPopupContent({
+            text: t('strings:valid_coupon_please_proceed_to_prod_regi'),
+            okAction: () => navigation.navigate('Add Warranty'),
           });
-          setScratchable(true);
-          showScratchCard(true);
         } else if (r.errorCode == 2) {
           setPinPopupVisible(true);
         } else if (r.errorMsg && r.errorMsg != '') {
@@ -256,11 +220,11 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
   const scan = async () => {
     scanQR()
       .then(result => {
-        setQrcode(result);
-        console.log(qrCode);
+        setQrcode(result.toString());
+        const data = result.toString();
         setCouponData(prevCouponData => ({
           ...prevCouponData,
-          couponCode: qrCode,
+          couponCode: data,
         }));
         return result;
       })
@@ -424,11 +388,16 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
       )}
       {isOkPopupVisible && (
         <PopupWithOkAndCancel
-          isVisible={isOkPopupVisible}
-          onClose={() => okPopupContent.okAction}
-          onOk={() => okPopupContent.okAction}>
-          {okPopupContent.text}
-        </PopupWithOkAndCancel>
+        isVisible={isOkPopupVisible}
+        onClose={() => {
+          setOkPopupVisible(false);
+        }}
+        onOk={() => {
+          okPopupContent.okAction();
+        }}
+      >
+        {okPopupContent.text}
+      </PopupWithOkAndCancel>
       )}
       {isPinPopupVisible && (
         <PopupWithPin
@@ -539,3 +508,55 @@ async function isValidBarcode(
 }
 
 export default ScanCode;
+
+
+// var couponPoints = r.couponPoints;
+//           var basePoints = r.basePoints;
+//           // var couponPoints = "100";
+//           // var basePoints = "200";
+//           basePoints ? (basePoints = `Base Points: ${basePoints}`) : null;
+
+//           console.log('COUPON POINTS:===', couponPoints);
+//           console.log('BASE POINTS:========', basePoints);
+
+//           setScratchCardProps({
+//             rewardImage: {
+//               width: 100,
+//               height: 100,
+//               resourceLocation: require('../../../../../../assets/images/ic_rewards_gift.png'),
+//             },
+//             rewardResultText: {
+//               color: colors.black,
+//               fontSize: 16,
+//               textContent: 'YOU WON',
+//               fontWeight: '700',
+//             },
+//             text1: {
+//               color: colors.black,
+//               fontSize: 16,
+//               textContent: couponPoints,
+//               fontWeight: '700',
+//             },
+//             text2: {
+//               color: colors.black,
+//               fontSize: 16,
+//               textContent: 'POINTS',
+//               fontWeight: '700',
+//             },
+//             text3: {
+//               color: colors.grey,
+//               fontSize: 12,
+//               textContent: basePoints,
+//               fontWeight: '700',
+//             },
+//             button: {
+//               buttonColor: colors.yellow,
+//               buttonTextColor: colors.black,
+//               buttonText: 'Register Warranty',
+//               buttonAction: () => navigation.navigate('AddWarranty'),
+//               fontWeight: '400',
+//             },
+//             textInput: false,
+//           });
+//           setScratchable(true);
+//           showScratchCard(true);
