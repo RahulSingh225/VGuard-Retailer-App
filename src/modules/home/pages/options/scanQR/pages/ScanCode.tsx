@@ -527,7 +527,8 @@ async function isValidBarcode(
   }
   if (pinFourDigit == '') {
     // result = await captureSale(CouponData);
-    result = await sendScanInCoupon(CouponData);
+    result = await validateRetailerCoupon(CouponData);
+    
     console.log(CouponData);
     return result;
   } else {

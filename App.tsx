@@ -47,7 +47,6 @@ const App: React.FC = () => {
     }
   }
 
- 
   return (
     <AuthProvider>
       <AppNavigator />
