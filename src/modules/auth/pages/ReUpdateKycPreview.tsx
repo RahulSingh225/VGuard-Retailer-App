@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, Linking, TouchableOpacity, Modal } from 'react-native';
 import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
-import { getFile, loginWithOtp, loginWithPassword, reUpdateUserForKyc, updateKycReatiler } from '../../../utils/apiservice';
+import { reUpdateUserForKyc, updateKycReatiler } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { UserData } from '../../../utils/modules/UserData';
@@ -10,8 +10,6 @@ import InputField from '../../../components/InputField';
 import Buttons from '../../../components/Buttons';
 import Popup from '../../../components/Popup';
 import Loader from '../../../components/Loader';
-import { useAuth } from '../../../components/AuthContext';
-import { getImageUrl } from '../../../utils/FileUtils';
 import ImagePickerField from '../../../components/ImagePickerField';
 interface ReUpdateKycPreviewProps {
     navigation: any;
@@ -22,8 +20,6 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
     const [postData, setPostData] = useState<UserData | any>();
     const [isPopupVisible, setPopupVisible] = useState(false);
     const [popupContent, setPopupContent] = useState('');
-    const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
-    const [imageOpen, setimageOpen] = useState("");
     const [loader, showLoader] = useState(true);
 
     useEffect(() => {
@@ -188,26 +184,6 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
                     </View>
                 </View>
             </View>
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={showImagePreviewModal}
-                onRequestClose={() => setShowImagePreviewModal(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <TouchableOpacity
-                        onPress={() => setShowImagePreviewModal(false)}
-                    >
-                        <Image resizeMode='contain' style={{ width: 50, height: 50 }} source={require('../../../assets/images/ic_close.png')} />
-                    </TouchableOpacity>
-
-                    <Image
-                        source={{ uri: imageOpen }}
-                        style={{ width: '70%', height: '70%' }}
-                        resizeMode="contain"
-                    />
-                </View>
-            </Modal>
             {isPopupVisible && (
                 <Popup isVisible={isPopupVisible} onClose={handleClose}>
                     {popupContent}
