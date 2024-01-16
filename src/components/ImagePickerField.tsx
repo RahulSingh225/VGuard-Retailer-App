@@ -13,7 +13,7 @@ const { width, height } = Dimensions.get('window');
 
 interface ImagePickerFieldProps {
     label: string;
-    onImageChange: (image: string, type: string, imageName: string, label: string) => void;
+    onImageChange?: (image: string, type: string, imageName: string, label: string) => void;
     imageRelated: string;
     initialImage?: string;
     getImageRelated?: string;
@@ -26,7 +26,7 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
     const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
     const [showImagePickerModal, setShowImagePickerModal] = useState(false);
     const [select, setSelect] = useState('');
-    const [isImageSelected, setIsImageSelected] = useState(false); // New state
+    const [isImageSelected, setIsImageSelected] = useState(false);
     const [entityUid, setEntityUid] = useState<string>('');
     const [isPopupVisible, setPopupVisible] = useState(false);
     const [popupContent, setPopupContent] = useState("");

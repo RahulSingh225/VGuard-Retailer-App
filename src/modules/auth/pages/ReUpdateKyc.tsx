@@ -42,93 +42,109 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
 
 
     useEffect(() => {
-        fetchData();
         setPostData((prevData: UserData) => ({
             ...prevData,
             contactNo: usernumber
         }));
     }, []);
+      
 
     useEffect(() => {
-        getUser()
-            .then(response => {
-                if (!response.ok) {
-                    showLoader(false);
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(res => {
-                const result = res;
-                setPostData(result);
-                if (res.currLandmark == res.landmark &&
-                    res.currentAddress == res.permanentAddress &&
-                    res.currStreetAndLocality == res.streetAndLocality &&
-                    res.currPinCode == res.pinCode) {
-                    setIsShopAddressDifferent('Yes');
-                }
-                else {
-                    setIsShopAddressDifferent('No');
-                }
-                showLoader(false);
-            })
-            .catch(error => {
-                console.error('Error fetching user profile:', error);
-            });
-    }, [usernumber]);
+        const fetchDataAndUpdatePostData = async () => {
+          try {
+            const response = await getUser();
+            
+            if (!response.ok) {
+              showLoader(false);
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+      
+            const res = await response.json();
+            console.log(res);
+      
+            setPostData(res);
+      
+            if (
+              res.currLandmark == res.landmark &&
+              res.currentAddress == res.permanentAddress &&
+              res.currStreetAndLocality == res.streetAndLocality &&
+              res.currPinCode == res.pinCode
+            ) {
+              setIsShopAddressDifferent('Yes');
+            }
+            else if (res.currLandmark != res.landmark &&
+                res.currentAddress != res.permanentAddress &&
+                res.currStreetAndLocality != res.streetAndLocality &&
+                res.currPinCode != res.pinCode) {
+              setIsShopAddressDifferent('No');
+            }
+            if (res.gstYesNo == 'yess') {
+                setPostData((prevData: UserData) => ({
+                  ...prevData,
+                  gstYesNo: 'Yes',
+                  gstNo: res.gstNo,
+                  gstPic: res.gstPic,
+                }));
+              }
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+          }
+        };
+      
+        fetchDataAndUpdatePostData();
+      }, [usernumber]);
 
-    // const fetchState = async () => {
-    //     try {
-    //         const statesResponse = await getStates();
-    //         const statesData = await statesResponse.data;
-    //         setStates(statesData);
-    //     }
-    //     catch (error) {
-    //         console.error('Error fetching data:', error);
-    //     }
-    // }
+      useEffect(() => {
+        fetchData();
+    }, [postData?.stateId, postData?.distId, postData?.currDistId, postData?.currStateId]);
 
     const fetchData = async () => {
-        try {
-            const statesResponse = await getStates();
-            const statesData = await statesResponse.data;
-            setStates(statesData);
-            setCurrStates(statesData);
-
-            const defaultState = postData.stateId;
-            const currDefaultState = postData.currStateId;
-
-            const districtsResponse = await getDistricts(defaultState);
-            const districtsData = await districtsResponse.data;
-            const currDistrictsResponse = await getDistricts(currDefaultState);
-            const currDistrictsData = await currDistrictsResponse.data;
-
-            if (Array.isArray(districtsData)) {
-                setDistricts(districtsData);
-
-                if (Array.isArray(districtsData) && districtsData.length > 0) {
-                    const citiesResponse = await getCities(postData.distId);
-                    const citiesData = await citiesResponse.data;
-                    console.log("CITIES-----------", citiesData);
-                    setCities(citiesData);
+        if(postData.stateId && postData.distId && postData.currStateId && postData.currDistId){
+            try {
+                const statesResponse = await getStates();
+                const statesData = await statesResponse.data;
+                setStates(statesData);
+                setCurrStates(statesData);
+    
+                const defaultState = postData.stateId;
+                const currDefaultState = postData.currStateId;
+    
+                const districtsResponse = await getDistricts(defaultState);
+                const districtsData = await districtsResponse.data;
+                const currDistrictsResponse = await getDistricts(currDefaultState);
+                const currDistrictsData = await currDistrictsResponse.data;
+    
+                if (Array.isArray(districtsData)) {
+                    setDistricts(districtsData);
+    
+                    if (Array.isArray(districtsData) && districtsData.length > 0) {
+                        const citiesResponse = await getCities(postData.distId);
+                        const citiesData = await citiesResponse.data;
+                        console.log("CITIES-----------", citiesData);
+                        setCities(citiesData);
+                    }
+                } else {
+                    console.error('Error: Districts data is not an array.', districtsData);
                 }
-            } else {
-                console.error('Error: Districts data is not an array.', districtsData);
-            }
-            if (Array.isArray(currDistrictsData)) {
-                setCurrDistricts(currDistrictsData);
-
-                if (Array.isArray(currDistrictsData) && currDistrictsData.length > 0) {
-                    const citiesResponse = await getCities(postData.currDistId);
-                    const citiesData = await citiesResponse.data;
-                    console.log("CITIES-----------", citiesData);
-                    setCurrCities(citiesData);
+                if (Array.isArray(currDistrictsData)) {
+                    setCurrDistricts(currDistrictsData);
+    
+                    if (Array.isArray(currDistrictsData) && currDistrictsData.length > 0) {
+                        const citiesResponse = await getCities(postData.currDistId);
+                        const citiesData = await citiesResponse.data;
+                        console.log("CITIES-----------", citiesData);
+                        setCurrCities(citiesData);
+                    }
+                } else {
+                    console.error('Error: Districts data is not an array.', currDistrictsData);
                 }
-            } else {
-                console.error('Error: Districts data is not an array.', currDistrictsData);
+                showLoader(false);
+            } catch (error) {
+                console.error('Error fetching data:', error);
             }
-        } catch (error) {
-            console.error('Error fetching data:', error);
+        }
+        else{
+            showLoader(false);
         }
     };
 
@@ -176,8 +192,8 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 if (value == "") {
                     errors.push('Aadhaar Number should not be empty');
                 }
-            case 'kycDetails.gstNo':
-                if (postData?.kycDetails?.gstYesNo == "Yes" && value == "") {
+            case 'gstNo':
+                if (postData?.gstYesNo == "Yes" && value == "") {
                     errors.push('GST No. should not be empty');
                 }
             default:
@@ -237,8 +253,8 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             }
 
             if (GstFileData.uri !== "" && gstUid !== null) {
-                setPostDataOfImage('gstFront', gstUid);
-                updatedPostData.kycDetails.gstFront = gstUid;
+                setPostDataOfImage('gstPic', gstUid);
+                updatedPostData.gstPic = gstUid;
             }
 
             return Promise.resolve(updatedPostData);
@@ -286,13 +302,10 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     currPinCode: postData.pinCode
                 }))
             }
-        } else if (label === 'kycDetails.gstYesNo') {
+        } else if (label === 'gstYesNo') {
             setPostData((prevData: UserData) => ({
                 ...prevData,
-                kycDetails: {
-                    ...prevData.kycDetails,
-                    gstYesNo: value,
-                },
+                gstYesNo: value,
             }));
         }
     };
@@ -399,10 +412,10 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         getDistricts(selectedCategory?.id)
             .then(response => response.data)
             .then((data) => {
-                if(type=='permanent'){
+                if (type == 'permanent') {
                     setDistricts(data);
                 }
-                if(type=='current'){
+                if (type == 'current') {
                     setCurrDistricts(data);
                 }
             })
@@ -428,10 +441,10 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         getCities(selectedCategory?.id)
             .then(response => response.data)
             .then((data) => {
-                if(type=='permanent'){
+                if (type == 'permanent') {
                     setCities(data);
                 }
-                if(type=='current'){
+                if (type == 'current') {
                     setCurrCities(data);
                 }
             })
@@ -468,7 +481,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             })
             .then(secondData => {
                 secondData = secondData.data;
-                if(type == 'permanent'){
+                if (type == 'permanent') {
                     setDistricts([{
                         distId: secondData.distId,
                         districtName: secondData.distName,
@@ -476,7 +489,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     setStates([secondData]);
                     setCities([secondData]);
                 }
-                if(type == 'current'){
+                if (type == 'current') {
                     setCurrDistricts([{
                         distId: secondData.distId,
                         districtName: secondData.distName,
@@ -530,10 +543,10 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 const filteredSuggestions = suggestionData.filter((item) => (
                     item.pinCode !== null
                 ));
-                if(type=='permanent'){
+                if (type == 'permanent') {
                     setPincode_Suggestions(filteredSuggestions);
                 }
-                if(type=='current'){
+                if (type == 'current') {
                     setCurr_Pincode_Suggestions(filteredSuggestions);
                 }
                 if (pincode.length == 6) {
@@ -571,31 +584,36 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 <Text style={{ fontWeight: 'bold', color: 'black' }}>Edit your details below</Text>
             </View>
             <View style={styles.detailsContainer}>
+
                 <View style={{ gap: 10, marginBottom: 20 }}>
                     <View style={{ display: 'flex' }}>
-                        <Text style={{
-                            borderWidth: 1,
-                            borderColor: colors.grey,
-                            padding: 10,
-                            fontWeight: 'bold',
-                            fontSize: 18,
-                            color: colors.grey,
-                            height: 'auto',
-                            width: 'auto',
-                            alignSelf: 'flex-start',
-                            borderRadius: 5
-                        }}>
+                        <Text
+                            style={{
+                                borderWidth: 1,
+                                borderColor: colors.grey,
+                                padding: 10,
+                                fontWeight: 'bold',
+                                fontSize: 18,
+                                color: colors.grey,
+                                height: 'auto',
+                                width: 'auto',
+                                alignSelf: 'flex-start',
+                                borderRadius: 5,
+                            }}
+                        >
                             Remarks
                         </Text>
                     </View>
-                    <View style={styles.reasons}>
-                        <Text style={{ color: 'red' }}>{postData?.rejectedReasonsStr || ''}</Text>
-                    </View>
+                    {postData?.rejectedReasonsStr && (
+                        <View style={styles.reasons}>
+                            <Text style={{ color: 'red' }}>{postData.rejectedReasonsStr}</Text>
+                        </View>
+                    )}
                 </View>
                 <InputField
                     label={t('strings:retailer_name')}
                     value={postData?.name}
-                    onChangeText={(text) => handleInputChange(text, 'name')}
+                    disabled={true}
                 />
                 <InputField
                     label={t('strings:contact_number')}
@@ -605,7 +623,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 <InputField
                     label={t('strings:store_firm_name')}
                     value={postData?.firmName}
-                    onChangeText={(text) => handleInputChange(text, 'firmName')}
+                    disabled={true}
                 />
                 <Text style={styles.subHeading}>{t('strings:permanent_address')}</Text>
                 <InputField
@@ -815,22 +833,22 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 />
                 <PickerField
                     label={t('strings:do_you_have_gst_number')}
-                    selectedValue={postData?.kycDetails?.gstYesNo}
-                    onValueChange={(text: string) => handleChange("kycDetails.gstYesNo", text)}
+                    selectedValue={postData?.gstYesNo}
+                    onValueChange={(text: string) => handleChange("gstYesNo", text)}
                     items={selectYesorNo}
                 />
-                {postData?.kycDetails?.gstYesNo == "Yes" ? (
+                {postData?.gstYesNo == "Yes" ? (
                     <>
                         <InputField
                             label={t('strings:gst_no')}
-                            value={postData?.kycDetails?.gstNo}
-                            onChangeText={(text) => handleInputChange(text, 'kycDetails.gstNo')}
+                            value={postData?.gstNo}
+                            onChangeText={(text) => handleInputChange(text, 'gstNo')}
                         />
                         <ImagePickerField
                             label='GST Photo'
                             onImageChange={handleImageChange}
                             imageRelated="GST"
-                            initialImage={postData?.kycDetails?.gstFront}
+                            initialImage={postData?.gstPic}
                             getImageRelated='GST'
                         />
                     </>

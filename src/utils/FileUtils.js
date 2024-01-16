@@ -18,7 +18,7 @@ export function getImageUrl(uuid, folderName) {
       baseUrl += 'img/appImages/PanCard/';
       break;
     case 'GST':
-      baseUrl += 'retimg/appImages/GST/';
+      baseUrl += 'img/appImages/GST/';
       break;
     default:
       break;

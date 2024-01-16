@@ -11,6 +11,8 @@ import Buttons from '../../../components/Buttons';
 import Popup from '../../../components/Popup';
 import Loader from '../../../components/Loader';
 import { useAuth } from '../../../components/AuthContext';
+import { getImageUrl } from '../../../utils/FileUtils';
+import ImagePickerField from '../../../components/ImagePickerField';
 interface ReUpdateKycPreviewProps {
     navigation: any;
 }
@@ -21,10 +23,6 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
     const [isPopupVisible, setPopupVisible] = useState(false);
     const [popupContent, setPopupContent] = useState('');
     const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
-    const [gstImageName, setGstImageName] = useState("");
-    const [idFrontImageName, setIdFrontImageName] = useState("");
-    const [idBackImageName, setIdBackImageName] = useState("");
-    const [panImageName, setPanImageName] = useState("");
     const [imageOpen, setimageOpen] = useState("");
     const [loader, showLoader] = useState(true);
 
@@ -32,17 +30,11 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
         AsyncStorage.getItem('VGUSER').then(result => {
             setUserData(JSON.parse(result))
             console.log("<><><><", result);
-            setPostData(JSON.parse(result))
+            setPostData(JSON.parse(result));
             showLoader(false);
         })
     }, []);
 
-    const handleImageClick = (imageSource: string | "") => {
-        setShowImagePreviewModal(true);
-        setimageOpen(imageSource);
-    };
-
-    const { login } = useAuth();
 
 
     const handleSubmit = () => {
@@ -53,110 +45,26 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
                 console.log("RESPONSE DATA:", responseData);
                 setPopupVisible(true);
                 setPopupContent(responseData?.message);
-                
-                if (responseData?.code === 200) {
-                    AsyncStorage.removeItem('VGUSER');
 
-                    const username = AsyncStorage.getItem('username');
-                    const password = AsyncStorage.getItem('password');
-    
-                    loginWithOtp(username, password)
-                        .then(response => response.json())
-                        .then(async (loginResponse) => {
-                            console.log(loginResponse);
-                            showLoader(false);
-    
-                            if (loginResponse.status === 200) {
-                                var r = await loginResponse.json();
-                                console.log(r);
-                                login(r);
-                            } else {
-                                setPopupVisible(!isPopupVisible);
-                                setPopupContent("Something went wrong!");
-                            }
-                        })
-                        .catch(loginError => {
-                            console.error('Login error:', loginError);
-                        });
+                if (responseData?.code === 200 && responseData.message=="Your KYC re-submission successful") {
+                    AsyncStorage.removeItem('VGUSER');
                 }
             })
             .catch(error => {
                 console.error('Error posting data:', error);
             });
     };
-    
+
+    const handleClose = () => {
+        setPopupVisible(false);
+        if(popupContent == "Your KYC re-submission successful"){
+            navigation.navigate("login");
+        }
+    }
+
     const handleEdit = async () => {
         navigation.navigate('ReUpdateKyc', { usernumber: postData.contactNo });
     }
-    const [gstCopySource, setGstCopySource] = useState<string | null>(null);
-    const [idFrontCopySource, setIdFrontCopySource] = useState<string | null>(null);
-    const [idBackCopySource, setIdBackCopySource] = useState<string | null>(null);
-    const [panCopySource, setPanCopySource] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchChequeCopy = async () => {
-            try {
-                const gstSource = await renderField("GST Photo");
-                setGstCopySource(gstSource);
-                const idFrontSource = await renderField("Id Proof* (Front)");
-                setIdFrontCopySource(idFrontSource);
-                const idBackSource = await renderField("Id Proof* (Back)");
-                setIdBackCopySource(idBackSource);
-                const panSource = await renderField("Pan Card (Front)");
-                setPanCopySource(panSource);
-            } catch (error) {
-                console.error("Error fetching photo:", error);
-            }
-        };
-
-        const fetchImageNames = () => {
-            setGstImageName(userData?.kycDetails?.gstFront || "");
-            setIdFrontImageName(userData?.kycDetails?.aadharOrVoterOrDlFront || "");
-            setIdBackImageName(userData?.kycDetails?.aadharOrVoterOrDlBack || "");
-            setPanImageName(userData?.kycDetails?.panCardFront || "");
-        };
-
-        fetchChequeCopy();
-        fetchImageNames();
-    }, [
-        userData?.kycDetails?.aadharOrVoterOrDlFront, 
-        userData?.kycDetails?.aadharOrVoterOrDlBack, 
-        userData?.kycDetails?.panCardFront,
-        userData?.kycDetails?.gstFront]);
-
-    const renderField = async (fieldName: string): string => {
-        if (fieldName === 'GST Photo') {
-            const gstFront = userData.kycDetails.gstFront;
-            setGstImageName(gstFront)
-            const gstPhoto = await getFile(gstFront, 'GST', "2");
-            const url = gstPhoto.url
-            console.log("URL", url)
-            return url;
-        }
-        else if (fieldName === "Id Proof* (Front)") {
-            const idfront = userData.kycDetails.aadharOrVoterOrDLFront;
-            console.log("FRONT SOURCE-----------", idfront)
-            setIdFrontImageName(idfront)
-            const idFrontPhoto = await getFile(idfront, 'ID_CARD_FRONT', "2");
-            const url = idFrontPhoto.url
-            console.log("URL", url)
-            return url;
-        }
-        else if (fieldName === "Id Proof* (Back)") {
-            const idback = userData.kycDetails.aadharOrVoterOrDlBack;
-            setIdBackImageName(idback)
-            const idBackPhoto = await getFile(idback, 'ID_CARD_BACK', "2");
-            const url = idBackPhoto.url
-            return url;
-        }
-        else if (fieldName === "Pan Card (Front)") {
-            const panFront = userData.kycDetails.panCardFront;
-            setPanImageName(panFront)
-            const panPhoto = await getFile(panFront, 'PAN_CARD_FRONT', "2");
-            const url = panPhoto.url
-            return url;
-        }
-    };
 
     return (
         <ScrollView style={styles.mainWrapper}>
@@ -208,31 +116,28 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
                     value={postData?.city}
                     disabled={true}
                 />
-                <InputField
-                    label="Id Proof* (Front)"
-                    isImage
-                    imageName={idFrontImageName}
-                    imageSource={idFrontCopySource}
-                    onPressImage={() => handleImageClick(idFrontCopySource)}
+                <ImagePickerField label='Aadhar Card* (Front)'
+                    imageRelated='ID_CARD_FRONT'
+                    initialImage={postData?.kycDetails?.aadharOrVoterOrDLFront}
+                    getImageRelated='IdCard'
+                    editable={false}
                 />
-                <InputField
-                    label='Id Proof* (Back)'
-                    isImage
-                    imageName={idBackImageName}
-                    imageSource={idBackCopySource}
-                    onPressImage={() => handleImageClick(idBackCopySource)}
+                <ImagePickerField label='Aadhar Card* (Back)'
+                    imageRelated="ID_CARD_BACK"
+                    initialImage={postData?.kycDetails?.aadharOrVoterOrDlBack}
+                    getImageRelated='IdCard'
+                    editable={false}
                 />
                 <InputField
                     label={t('strings:id_proof_no')}
                     value={postData?.kycDetails?.aadharOrVoterOrDlNo}
                     disabled={true}
                 />
-                <InputField
-                    label='Pan Card (Front)*'
-                    isImage
-                    imageName={panImageName}
-                    imageSource={panCopySource}
-                    onPressImage={() => handleImageClick(panCopySource)}
+                <ImagePickerField label='Pan Card* (Front)'
+                    imageRelated="PAN_CARD_FRONT"
+                    initialImage={postData?.kycDetails?.panCardFront}
+                    getImageRelated='PanCard'
+                    editable={false}
                 />
                 <InputField
                     label={t('strings:update_pan_number_manually')}
@@ -241,20 +146,27 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
                 />
                 <InputField
                     label={t('strings:do_you_have_gst_number')}
-                    value={postData?.kycDetails?.gstYesNo}
+                    value={postData?.gstYesNo}
                     disabled={true}
                 />
                 <InputField
                     label={t('strings:gst_no')}
-                    value={postData?.kycDetails?.gstNo}
+                    value={postData?.gstNo}
                     disabled={true}
                 />
-                <InputField
+                {/* <InputField
                     label="GST Photo"
                     isImage
                     imageName={gstImageName}
                     imageSource={gstCopySource}
                     onPressImage={() => handleImageClick(gstCopySource)}
+                /> */}
+                <ImagePickerField
+                    label='GST Photo'
+                    imageRelated="GST"
+                    initialImage={postData?.gstPic}
+                    getImageRelated='GST'
+                    editable={false}
                 />
 
                 <View style={styles.buttons}>
@@ -297,7 +209,7 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
                 </View>
             </Modal>
             {isPopupVisible && (
-                <Popup isVisible={isPopupVisible} onClose={() => setPopupVisible(false)}>
+                <Popup isVisible={isPopupVisible} onClose={handleClose}>
                     {popupContent}
                 </Popup>
             )}
@@ -311,7 +223,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      },
+    },
     mainWrapper: {
         padding: 15,
         flex: 1,
