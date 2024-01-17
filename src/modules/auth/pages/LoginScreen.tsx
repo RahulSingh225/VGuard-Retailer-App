@@ -25,6 +25,7 @@ import LanguagePicker from '../../../components/LanguagePicker';
 import language from '../../../assets/images/language.png';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import DeviceInfo from 'react-native-device-info';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -42,8 +43,21 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   useEffect(() => {
-    console.log('Language changed:', i18n.language);
+    const clearAsyncStorage = async () => {
+      try {
+        await AsyncStorage.removeItem('USER');
+        await AsyncStorage.removeItem('username');
+        await AsyncStorage.removeItem('password');
+        await AsyncStorage.removeItem('diffAcc');
+        console.log('Language changed:', i18n.language);
+      } catch (error) {
+        console.error('Error clearing AsyncStorage:', error);
+      }
+    };
+  
+    clearAsyncStorage();
   }, [i18n.language]);
+  
 
   const showSnackbar = (message: string) => {
     Snackbar.show({

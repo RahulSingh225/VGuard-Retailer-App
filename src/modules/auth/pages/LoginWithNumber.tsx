@@ -15,15 +15,18 @@ import Buttons from '../../../components/Buttons';
 import arrowIcon from '../../../assets/images/arrow.png';
 import { generateOtpForLogin, loginWithOtp } from '../../../utils/apiservice';
 import Popup from '../../../components/Popup';
+import Loader from '../../../components/Loader';
 
 const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [number, setNumber] = useState('');
   const [preferedLanguage, setpreferedLanguage] = useState(1);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [popupMessage, setPopupMessage] = useState('');
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState('');
+  const [loader, showLoader] = useState(false);
 
   const handleValidation = async () => {
+    showLoader(true);
     try {
       const body = {
         loginOtpUserName: number,
@@ -31,6 +34,7 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
       };
       let validationResponse = await generateOtpForLogin(body);
       console.log(validationResponse.status, '<><><><><');
+      showLoader(false);
       setMessage(validationResponse.data.message);
       if (validationResponse.data.message === "Please enter OTP to proceed with the login process") {
         const successMessage = validationResponse.data.message;
@@ -43,6 +47,9 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
         setPopupMessage(errorMessage);
       }
     } catch (error) {
+      showLoader(false);
+      setIsPopupVisible(true);
+        setPopupMessage('Something went wrong!');
       console.error('Error during validation:', error);
     }
   };
@@ -94,6 +101,7 @@ const LoginWithNumber: React.FC<{ navigation: any }> = ({ navigation }) => {
   )
 }
 <View style={styles.registerUser}>
+  <Loader isLoading={loader} />
   <View style={styles.mainWrapper}>
     <Image
       source={require('../../../assets/images/rishta_retailer_logo.webp')}

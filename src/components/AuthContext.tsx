@@ -5,7 +5,7 @@ import { UserData } from '../utils/modules/UserData';
 
 interface AuthContextProps {
   isUserAuthenticated: boolean;
-  login: (user: User) => Promise<void>;
+  login: (user: UserData) => Promise<void>;
   logout: () => Promise<void>;
   popupAuthContent: string;
   showPopup: boolean;
@@ -28,10 +28,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const diffAcc = user.diffAcc;
     console.log("USERDATA", user);
     if(userRole == "2"){
+      console.log("><><><<, userrole is 2")
+      setIsUserAuthenticated(true);
       await AsyncStorage.setItem('USER', JSON.stringify(user));
       await AsyncStorage.setItem('diffAcc', diffAcc);
       console.log("DIFFACCCOUNT", diffAcc)
-      setIsUserAuthenticated(true);
     }
     else{
       setShowPopup(true);

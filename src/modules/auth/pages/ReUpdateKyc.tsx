@@ -56,6 +56,8 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             
             if (!response.ok) {
               showLoader(false);
+              setPopupContent("Something went wrong!");
+              setPopupVisible(true);
               throw new Error(`HTTP error! Status: ${response.status}`);
             }
       

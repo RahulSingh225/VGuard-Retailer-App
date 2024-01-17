@@ -36,6 +36,8 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
   const [countdown, setCounter] = useState<number | null>(null);
   const [otpsentflag, setotpsentflag] = useState(false);
   const [otp, setOtp] = useState('');
+  const [loader, showLoader] = useState(false);
+
   let intervalId: NodeJS.Timeout;
 
   useEffect(() => {
@@ -48,12 +50,32 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
     return () => clearInterval(intervalId);
   }, [countdown]);
 
+  useEffect(() => {
+    console.log("><><><<<><><<><><")
+    const clearAsyncStorage = async () => {
+      try {
+        console.log("REMOVING");
+        await AsyncStorage.removeItem('USER');
+        await AsyncStorage.removeItem('username');
+        await AsyncStorage.removeItem('password');
+        await AsyncStorage.removeItem('diffAcc');
+        console.log("REMOVED");
+      } catch (error) {
+        console.error('Error clearing AsyncStorage:', error);
+      }
+    };
+  
+    clearAsyncStorage();
+  }, []);
+
   const handleValidation = async () => {
     try {
-      let data = { loginOtpUserName: number, otpType: null };
+      showLoader(true);
+      let data = { loginOtpUserName: number, otpType: "SMS" };
       console.log(data);
       let validationResponse = await generateOtpForReverify(data);
       console.log(validationResponse);
+      showLoader(false);
       // Assuming validationResponse is an object with a 'data' property containing the message
       if (validationResponse.status === 200) {
         setCounter(60);
@@ -79,11 +101,14 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
         }
       }, 60000);
     } catch (error) {
+      setIsPopupVisible(true);
+      setPopupMessage("Something went wrong!");
       console.error('Error during validation:', error);
     }
   };
 
   const loginUserWithOtp = async () => {
+    showLoader(true);
     try {
       let userCredentials = {
         loginOtpUserName: number,
@@ -92,8 +117,10 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
 
       let response = await validateReverifyOtp(userCredentials);
       console.log("RESPONSE", response)
+      showLoader(false);
       let message = response.data.message;
       if (response.status === 200 && response.data.message == "OTP verified successfully, please proceed with the registration.") {
+        console.log("<><><", number, otp)
         AsyncStorage.setItem('username', number.toString()).then(() => {
           AsyncStorage.setItem('password', otp.toString()).then(() => {
             AsyncStorage.setItem('authtype', 'otp').then(() => {
@@ -105,14 +132,20 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
       } else {
         setIsPopupVisible(true);
         setPopupMessage(message);
+        showLoader(false);
+
       }
       console.log(response);
     } catch (error) {
       console.log(error);
+      showLoader(false);
+
     }
   };
 
   const calltogetopt = async () => {
+    showLoader(true);
+
     try {
       let userCredentials = {
         loginOtpUserName: number,
@@ -121,6 +154,7 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
 
       let response = await generateOtpForLogin(userCredentials);
       let message = response.message;
+      
       if (response.code === 200) {
         setCounter(60);
         setotpsentflag(true);
@@ -131,8 +165,11 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
         setPopupMessage(message);
       }
       console.log(response);
+      showLoader(false);
     } catch (error) {
       console.log(error);
+      showLoader(false);
+
     }
   };
 

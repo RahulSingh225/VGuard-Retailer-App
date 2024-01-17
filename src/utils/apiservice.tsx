@@ -25,6 +25,8 @@ export const createDigestGetRequest = async (relativeUrl = {}) => {
             Authtype: authType,
         };
 
+        console.log(username, ":::", password, ":::", authType)
+
         if (username && password && authType) {
             const response = await digestFetch(url, {
                 method: 'GET',
@@ -32,6 +34,8 @@ export const createDigestGetRequest = async (relativeUrl = {}) => {
                 username,
                 password,
             });
+
+            console.log("RESPONSE<><><apiservice", response);
 
             return response;
         } else {
@@ -73,9 +77,11 @@ export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
 };
 
 export const createPostRequest = async (relativeUrl: string, data: any) => {
+    console.log("DATA", data)
     try {
+        console.log("Sending axios post request")
         const response = await api.post(relativeUrl, data);
-        console.log(response);
+        console.log(response, "Axios post request response");
         return response;
     } catch (error) {
         console.error('Error:', error);
@@ -227,6 +233,7 @@ export const loginPasswordDigest = async (
 //         throw error;
 //     }
 // };
+
 export const loginOtpDigest = async (
     relativeUrl: string,
     username: string,
@@ -237,32 +244,76 @@ export const loginOtpDigest = async (
         const headers = {
             Accept: 'application/json',
             'Content-Type': 'application/json',
-            authType: 'otp',
+            AuthType: 'otp',
         };
+
         await AsyncStorage.clear();
-        let response = null;
-        console.log(response);
-        response = await digestFetch(url, {
-            method: 'GET',
+        console.log("<>><<><", headers, username, password)
+
+        const response = await digestFetch(url, {
+            method: 'POST',
             headers,
             username,
             password,
         });
 
-        const userName = username;
-        const Password = password;
-
-        if (response.status == 200) {
+        if (response.status === 200) {
+            const resp = response.json();
+            const userName = resp.userId;
+            const Password = resp.password;
+            console.log(resp, '<><><<><<><<><>USERNAME');
             await AsyncStorage.setItem('username', userName);
             await AsyncStorage.setItem('password', Password);
-            await AsyncStorage.setItem('authtype', 'otp');
+            await AsyncStorage.setItem('authtype', 'password');
             await update_fcm_token();
         }
+
         return response;
     } catch (error) {
         throw error;
     }
 };
+// export const loginOtpDigest = async (
+//     relativeUrl: string,
+//     username: string,
+//     password: string,
+// ) => {
+//     try {
+//         console.log("Startng")
+//         const url = BASE_URL + relativeUrl;
+//         const headers = {
+//             Accept: 'application/json',
+//             'Content-Type': 'application/json',
+//             AuthType: 'otp',
+//         };
+//         await AsyncStorage.clear();
+//         console.log("<<>><<><>><");
+//         // let response = null;
+//         // console.log(response);
+//         const response = await digestFetch(url, {
+//             method: 'GET',
+//             headers,
+//             username,
+//             password,
+//         });
+
+//         console.log(response.json(), "LOGIN WITH OTP")
+//         const res = response.json()
+//         const userName = username;
+
+
+//         if (response.status == 200) {
+//             const Password = password;
+//             await AsyncStorage.setItem('username', userName);
+//             await AsyncStorage.setItem('password', Password);
+//             await AsyncStorage.setItem('authtype', 'otp');
+//             await update_fcm_token();
+//         }
+//         return response;
+//     } catch (error) {
+//         throw error;
+//     }
+// };
 
 const update_fcm_token = async () => {
     const path = 'pushNotification/registerToken';
@@ -285,7 +336,7 @@ export function loginWithPassword(username: string, password: string) {
     return loginPasswordDigest(path, username, password);
 }
 export function loginWithOtp(username: string, otp: string) {
-    const path = 'user/userDetails/login';
+    const path = 'user/userDetails';
     console.log('<><><><', username);
     return loginOtpDigest(path, username, otp);
 }

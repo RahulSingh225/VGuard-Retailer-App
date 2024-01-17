@@ -46,14 +46,12 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
 
     if (countdown > 0) {
       timer = setInterval(() => {
-        console.log('Countdown tick:', countdown);
         setCountdown((prevCountdown) => prevCountdown - 1);
       }, 1000); // The interval is set to 1000 milliseconds (1 second)
     }
 
     return () => {
       clearInterval(timer);
-      console.log('Timer cleared');
     };
   }, [countdown]);
 
@@ -92,7 +90,7 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
     showLoader(true);
     const body = {
       loginOtpUserName: number,
-      otpType: null
+      otpType: "SMS"
     };
     try {
       let validationResponse = await generateOtpForLogin(body);
@@ -150,7 +148,7 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
               }
             })
             .then((r) => {
-              console.log(r);
+              console.log("<><><<><>", r);
               login(r);
               showLoader(false);
             })
