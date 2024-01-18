@@ -46,15 +46,13 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     const clearAsyncStorage = async () => {
       try {
         await AsyncStorage.removeItem('USER');
-        await AsyncStorage.removeItem('username');
-        await AsyncStorage.removeItem('password');
         await AsyncStorage.removeItem('diffAcc');
         console.log('Language changed:', i18n.language);
       } catch (error) {
         console.error('Error clearing AsyncStorage:', error);
       }
     };
-  
+
     clearAsyncStorage();
   }, [i18n.language]);
   

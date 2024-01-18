@@ -22,7 +22,7 @@ const ActiveScheme: React.FC = () => {
 
   useEffect(() => {
     getActiveSchemeOffers()
-      .then(response => response.json())
+      .then(response => response.data)
       .then(responseData => {
         setData(responseData);
         console.log('<><<><<><>><', responseData, '<><<<><><><><><><<><');

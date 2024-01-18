@@ -75,7 +75,7 @@ const TDS: React.FC<TDSProps> = () => {
       try {
         const [assessmentYearResponse] = await Promise.all([getAy()]);
 
-        const assessmentYearResult = await assessmentYearResponse.json();
+        const assessmentYearResult = await assessmentYearResponse.data;
 
         setAssessmentYearData(assessmentYearResult);
         setAssessmentYearValue(assessmentYearResult[0]);
@@ -92,7 +92,7 @@ const TDS: React.FC<TDSProps> = () => {
   useEffect(() => {
     console.log(assessmentYearValue)
     getTdsList(assessmentYearValue)
-      .then(response => response.json())
+      .then(response => response.data)
       .then(responseData => {
         if (Array.isArray(responseData)) {
           setCertificateList(responseData);

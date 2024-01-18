@@ -60,10 +60,10 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (userData?.userRole && userData.selfieImage) {
       const getImage = async () => {
         try {
-          // const profileImageUrl = await getFile(userData.selfieImage, 'PROFILE', "2");
-          const profileImageUrl = await getImageUrl(userData.selfieImage, 'Profile');
+          const profileImageUrl = await getFile(userData.selfieImage, 'PROFILE', "2");
+          // const profileImageUrl = await getImageUrl(userData.selfieImage, 'Profile');
           console.log(profileImageUrl);
-          setProfileImage(profileImageUrl);
+          setProfileImage(profileImageUrl.data);
           // console.log(profileImage)
         } catch (error) {
           console.log('Error while fetching profile image:', error);

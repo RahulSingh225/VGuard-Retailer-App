@@ -21,7 +21,7 @@ const ProductWiseOfferTable: React.FC<ProductWiseOfferTableProps> = ({ route, na
   useEffect(() => {
     showLoader(true);
     getProductWiseOffersDetail(categoryId)
-      .then(response => response.json())
+      .then(response => response.data)
       .then(responseData => {
         console.log("RESPONSE DATA", responseData);
         setData(responseData);

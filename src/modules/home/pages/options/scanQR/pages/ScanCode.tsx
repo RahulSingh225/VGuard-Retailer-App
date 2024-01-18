@@ -173,12 +173,12 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
       var apiResponse;
       if (type == 'airCooler') {
         apiResponse = await isValidBarcode(CouponData, 1, '', 0, null);
-        const r = await apiResponse.json();
+        const r = await apiResponse.data;
         console.log('Response:', r);
       } else if (type == 'SCAN_IN') {
         console.log("<><><", CouponData)
         apiResponse = await sendScanInCoupon(CouponData);
-        const r = await apiResponse.json();
+        const r = await apiResponse.data;
         if (r.errorCode == 3) {
           AsyncStorage.setItem('COUPON_RESPONSE', JSON.stringify(r)).then(r => {
             setOkPopupContent({
@@ -194,7 +194,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
         
       } else {
         apiResponse = await isValidBarcode(CouponData, 0, '', 0, null);
-        const r = await apiResponse.json();
+        const r = await apiResponse.data;
         const result = await AsyncStorage.setItem(
           'COUPON_RESPONSE',
           JSON.stringify(r),
@@ -254,7 +254,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
 
   const sendPin = () => {
     sendCouponPin(CouponData)
-      .then(result => result.json())
+      .then(result => result.data)
       .then(jsonResult => {
         console.log('CouponData:', CouponData);
 
@@ -273,7 +273,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
     showScratchCard(false);
     if (CouponResponse?.transactId && CouponResponse?.bitEligibleScratchCard) {
       getBonusPoints(CouponResponse.transactId).then(response =>
-        response.json().then(result => {
+        response.data.then(result => {
           var couponPoints = result.promotionPoints;
           setScratchCardProps({
             rewardImage: {

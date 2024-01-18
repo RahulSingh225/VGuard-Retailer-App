@@ -55,7 +55,7 @@ const AirCooler: React.FC<{ navigation: any }> = ({ navigation }) => {
     const loadStarDetails = async () => {
         try {
             const response = await getAirCoolerPointsSummary();
-            const result = await response.json();
+            const result = await response.data;
             setUserStarData(result);
             return result;
         }
@@ -75,9 +75,9 @@ const AirCooler: React.FC<{ navigation: any }> = ({ navigation }) => {
         if (userData?.userRole && userData.selfieImage) {
             const getImage = async () => {
                 try {
-                    // const profileImageUrl = await getFile(userData.selfieImage, 'PROFILE', 2);
-                    const profileImageUrl = await getImageUrl(userData.selfieImage, 'Profile');
-                    setProfileImage(profileImageUrl);
+                    const profileImageUrl = await getFile(userData.selfieImage, 'Profile', "2");
+                    // const profileImageUrl = await getImageUrl(userData.selfieImage, 'Profile');
+                    setProfileImage(profileImageUrl.data);
                 } catch (error) {
                     console.log('Error while fetching profile image:', error);
                 }

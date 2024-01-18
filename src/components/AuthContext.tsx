@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      await logoutUser();
+      const response = await logoutUser();
       await AsyncStorage.removeItem('USER');
       await AsyncStorage.removeItem('diffAcc');
       setIsUserAuthenticated(false);

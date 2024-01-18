@@ -40,7 +40,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
           setDisableOptions(true);
         }
         const response = await getUser();
-        const res = await response.json();
+        const res = await response.data;
 
         console.log(res);
         setUserData(res);
