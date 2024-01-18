@@ -2,10 +2,7 @@ import axios from 'axios';
 import digestFetch from 'react-native-digest-fetch';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
-
-const API_LINK = 'http://34.100.133.239:18092';
-
-const imageURL = 'https://vguardrishta.com/';
+import DigestClient from 'digest-fetch';
 
 const BASE_URL = 'http://34.100.133.239:18092/vguard/api/';
 
@@ -21,19 +18,20 @@ export const createDigestGetRequest = async (relativeUrl = {}) => {
         const authType = await AsyncStorage.getItem('authtype');
 
         const headers = {
-            'Content-Type': 'application/json',
             Authtype: authType,
         };
 
         console.log(username, ":::", password, ":::", authType)
 
         if (username && password && authType) {
-            const response = await digestFetch(url, {
-                method: 'GET',
-                headers,
-                username,
-                password,
-            });
+            // const response = await digestFetch(url, {
+            //     method: 'GET',
+            //     headers,
+            //     username,
+            //     password,
+            // });
+            const client = new DigestClient(username, password)
+            const response = await client.fetch(url)
 
             console.log("RESPONSE<><><apiservice", response);
 
@@ -79,9 +77,7 @@ export const createDigestPostRequest = async (relativeUrl = {}, data: any) => {
 export const createPostRequest = async (relativeUrl: string, data: any) => {
     console.log("DATA", data)
     try {
-        console.log("Sending axios post request")
         const response = await api.post(relativeUrl, data);
-        console.log(response, "Axios post request response");
         return response;
     } catch (error) {
         console.error('Error:', error);
@@ -185,12 +181,15 @@ export const loginPasswordDigest = async (
             const resp = response.data;
             const userName = resp.userId;
             const Password = resp.password;
-            console.log(resp, '<><><<><<><<><>USERNAME');
             await AsyncStorage.setItem('username', userName);
             await AsyncStorage.setItem('password', Password);
             await AsyncStorage.setItem('authtype', 'password');
-            await update_fcm_token();
+            console.log(resp, '<><><<><<><<><>USERNAME');
+            console.log("<><><><><><><")
+            // await update_fcm_token();
         }
+
+        console.log("RESPONSE<><><", response.data)
 
         return response;
     } catch (error) {
@@ -198,64 +197,34 @@ export const loginPasswordDigest = async (
     }
 };
 
-// export const loginPasswordDigest = async (
-//     relativeUrl: string,
-//     username: string,
-//     password: string,
-// ) => {
-//     try {
-//         const url = BASE_URL + relativeUrl;
-//         const headers = {
-//             Accept: 'application/json',
-//             'Content-Type': 'application/json',
-//         };
-//         await AsyncStorage.clear();
-//         let response = null;
-//         console.log(response);
-//         response = await digestFetch(url, {
-//             method: 'POST',
-//             headers
-//         });
-
-//         const userName = username;
-//         const Password = password;
-
-//         if (response.status == 200) {
-//             const respUsername = response.json();
-//             console.log(respUsername, "<><><<><<><<><>USERNAME")
-//             await AsyncStorage.setItem('username', userName);
-//             await AsyncStorage.setItem('password', Password);
-//             await AsyncStorage.setItem('authtype', 'password');
-//             await update_fcm_token();
-//         }
-//         return response;
-//     } catch (error) {
-//         throw error;
-//     }
-// };
-
 export const loginOtpDigest = async (
     relativeUrl: string,
     username: string,
     password: string,
 ) => {
     try {
+        console.log("LOGGING IN")
         const url = BASE_URL + relativeUrl;
+        await AsyncStorage.clear();
         const headers = {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            AuthType: 'otp',
+            Authtype: 'otp',
+        };
+        const client = new DigestClient(username, password, headers)
+        const basicAuthHeaders = client.addBasicAuth();
+
+        const customHeaders = {
+            ...basicAuthHeaders.headers,
+            Authtype: 'otp',
         };
 
-        await AsyncStorage.clear();
-        console.log("<>><<><", headers, username, password)
+        console.log("HEADERS", customHeaders);
 
-        const response = await digestFetch(url, {
-            method: 'POST',
-            headers,
-            username,
-            password,
+        const response = await client.fetch(url, {
+            method: 'GET',
+            headers: customHeaders,
         });
+
+        console.log("RESPONSE", response)
 
         if (response.status === 200) {
             const resp = response.json();
@@ -273,47 +242,6 @@ export const loginOtpDigest = async (
         throw error;
     }
 };
-// export const loginOtpDigest = async (
-//     relativeUrl: string,
-//     username: string,
-//     password: string,
-// ) => {
-//     try {
-//         console.log("Startng")
-//         const url = BASE_URL + relativeUrl;
-//         const headers = {
-//             Accept: 'application/json',
-//             'Content-Type': 'application/json',
-//             AuthType: 'otp',
-//         };
-//         await AsyncStorage.clear();
-//         console.log("<<>><<><>><");
-//         // let response = null;
-//         // console.log(response);
-//         const response = await digestFetch(url, {
-//             method: 'GET',
-//             headers,
-//             username,
-//             password,
-//         });
-
-//         console.log(response.json(), "LOGIN WITH OTP")
-//         const res = response.json()
-//         const userName = username;
-
-
-//         if (response.status == 200) {
-//             const Password = password;
-//             await AsyncStorage.setItem('username', userName);
-//             await AsyncStorage.setItem('password', Password);
-//             await AsyncStorage.setItem('authtype', 'otp');
-//             await update_fcm_token();
-//         }
-//         return response;
-//     } catch (error) {
-//         throw error;
-//     }
-// };
 
 const update_fcm_token = async () => {
     const path = 'pushNotification/registerToken';
@@ -344,9 +272,7 @@ export function loginWithOtp(username: string, otp: string) {
 interface NewUserOtpValidationResponse {
     data: {
         message: string;
-        // Add other properties based on your API response
     };
-    // Add other properties based on your API response
 }
 
 const api = axios.create({
@@ -389,18 +315,6 @@ export function getFile(uuid: String, imageRelated: String, userRole: String) {
     return createDigestGetRequest(path);
 }
 
-// export const sendFile = async (formData: any) => {
-//     try {
-//       const path = "file";
-//       const response = await createDigestPostRequest(path, formData);
-//       const result = await response.json();
-//       return result;
-//     } catch (error) {
-//       console.error('Error sending file:', error);
-//       throw error;
-//     }
-//   };
-
 export const sendFile = (formData: FormData): Promise<any> => {
     console.log(formData);
     const config = {
@@ -411,8 +325,6 @@ export const sendFile = (formData: FormData): Promise<any> => {
     return api
         .post('file', formData, config)
         .then(response => {
-            // console.log(response.status);
-            // console.log("IMAGE RESPONSE", response);
             return response;
         })
         .catch(error => {
@@ -428,9 +340,6 @@ export const sendFile = (formData: FormData): Promise<any> => {
             throw error;
         });
 };
-
-// const path = "file";
-// return createDigestPostRequest(path, formData);
 
 export function getDistributorList() {
     const path = 'user/dist/';
@@ -666,7 +575,44 @@ export function updateLogoutStatus() {
 }
 
 export function getUser() {
+    console.log("GETTING USER")
     const path = 'user/userDetails';
+    const createDigestGetRequest = async (relativeUrl = {}) => {
+        try {
+            const url = BASE_URL + relativeUrl;
+            const username = await AsyncStorage.getItem('username');
+            const password = await AsyncStorage.getItem('password');
+            const authType = await AsyncStorage.getItem('authtype');
+
+            const headers = {
+                Authtype: authType,
+            };
+
+            console.log(username, ":::", password, ":::", authType)
+
+            if (username && password && authType) {
+                console.log(authType, "AUTHTYPE");
+                const client = new DigestClient(username, password, headers)
+                const basicAuthHeaders = client.addBasicAuth();
+
+                const customHeaders = {
+                    ...basicAuthHeaders.headers,
+                    Authtype: authType,
+                };
+
+                const response = await client.fetch(url, {
+                    method: 'GET',
+                    headers: customHeaders,
+                });
+                console.log("RESPONSE", response);
+                return response;
+            } else {
+                throw new Error('Username and/or password not found in AsyncStorage.');
+            }
+        } catch (error) {
+            throw error;
+        }
+    };
     return createDigestGetRequest(path);
 }
 

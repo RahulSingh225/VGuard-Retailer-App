@@ -22,6 +22,7 @@ import { width, height } from '../../../utils/dimensions';
 import { Colors } from '../../../utils/constants';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Loader from '../../../components/Loader';
 
 interface ReUpdateKycOTPProps {
   navigation: any;
@@ -180,6 +181,7 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <Loader isLoading={loader} />
       {isPopupVisible && (
         <Popup
           isVisible={isPopupVisible}

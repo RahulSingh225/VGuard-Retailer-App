@@ -165,6 +165,11 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
   async function sendBarcode() {
     if (qrCode && qrCode != '') {
       console.log(qrCode, "<><><<<>");
+      if(qrCode.length < 16){
+        setPopupContent("Please enter valid 16 character barcode");
+        setPopupVisible(true);
+        return;
+      }
       var apiResponse;
       if (type == 'airCooler') {
         apiResponse = await isValidBarcode(CouponData, 1, '', 0, null);
@@ -360,6 +365,8 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
               placeholderTextColor={colors.grey}
               textAlign="center"
               onChangeText={text => handleQrText(text)}
+              keyboardType='numeric'
+              maxLength={16}
             />
           </View>
         </View>

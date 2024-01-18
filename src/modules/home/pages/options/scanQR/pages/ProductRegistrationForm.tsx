@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   TextInput,
@@ -13,8 +13,8 @@ import {
   responsiveFontSize,
   responsiveHeight,
 } from 'react-native-responsive-dimensions';
-import {useTranslation} from 'react-i18next';
-import {Picker} from '@react-native-picker/picker';
+import { useTranslation } from 'react-i18next';
+import { Picker } from '@react-native-picker/picker';
 import colors from '../../../../../../../colors';
 import Buttons from '../../../../../../components/Buttons';
 import arrowIcon from '../../../../../../assets/images/arrow.png';
@@ -26,19 +26,20 @@ import {
   validateMobile,
 } from '../../../../../../utils/apiservice';
 import Snackbar from 'react-native-snackbar';
-import {CustomerData} from '../../../../../../utils/modules/CustomerData';
+import { CustomerData } from '../../../../../../utils/modules/CustomerData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Popup from '../../../../../../components/Popup';
 import DropDownPicker from 'react-native-dropdown-picker';
-import {height} from '../../../../../../utils/dimensions';
+import { height } from '../../../../../../utils/dimensions';
 import getLocation from '../../../../../../utils/geolocation';
+import Loader from '../../../../../../components/Loader';
 
 type ProductRegistrationFormProps = {};
-var location;
+var location: {};
 const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
   navigation,
 }) => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [contactNo, setContactNo] = useState('');
   const [addedBy, setAddedBy] = useState('');
   const [user, setUser] = useState(null);
@@ -85,7 +86,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
         }
       }
     }
-    setCustomerFormData(prevData => ({...prevData, pincode: pincode}));
+    setCustomerFormData(prevData => ({ ...prevData, pincode: pincode }));
 
     // console.log(pincode);
   }
@@ -122,100 +123,112 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
 
   const handleProceed = async () => {
     try {
-      const postData: CustomerData = {
-        contactNo: contactNo,
-        name: customerFormData.name,
-        email: customerFormData.email,
-        alternateNo: customerFormData.altContactNo,
-        city: customerFormData.city,
-        district: customerFormData.district,
-        state: customerFormData.state,
-        pinCode: customerFormData.pincode,
-        landmark: customerFormData.landmark,
-        dealerCategory: customerFormData.category,
-        currAdd: customerFormData.address,
-        dealerName: customerFormData.dealerName,
-        dealerAdd: customerFormData.dealerAddress,
-        dealerPinCode: customerFormData.dealerPincode,
-        dealerState: customerFormData.dealerState,
-        dealerDist: customerFormData.dealerDistrict,
-        dealerCity: customerFormData.dealerCity,
-        addedBy: addedBy,
-        dealerNumber: customerFormData.dealerContactNo,
-        transactId:'',
-        billDetails: '',
-        warrantyPhoto: '',
-        sellingPrice: '',
-        emptStr: '',
-        cresp: {
-          custIdForProdInstall: '',
-          modelForProdInstall: '',
-          errorCode: '',
-          errorMsg: '',
-          statusType: '',
-          balance: '',
-          currentPoints: '',
-          couponPoints: '',
-          promotionPoints: '',
-          transactId: '',
-          schemePoints: '',
-          basePoints: '',
-          clubPoints: '',
-          scanDate: '',
-          scanStatus: '',
-          copuonCode: '',
-          bitEligibleScratchCard: '',
-          pardId: '',
-          partNumber: '',
-          partName: '',
-          couponCode: '',
-          skuDetail: '',
-          purchaseDate: '',
-          categoryId: '',
-          category: '',
-          anomaly: '',
-          warranty: '',
-        },
-        selectedProd: {
-          specs: '',
-          pointsFormat: '',
-          product: '',
-          productName: '',
-          productCategory: '',
-          productCode: '',
-          points: '',
-          imageUrl: '',
-          userId: '',
-          productId: '',
-          paytmMobileNo: '',
-        },
-        latitude: location.latitude,
-        longitude: location.longitude,
-        geolocation: '',
-      };
-      const response = await validateMobile(
-        contactNo,
-        customerFormData.category,
-      );
-      console.log('Dealer Pincode===========', postData.addedBy);
-      const result = await response.json();
-      if (result.code == 1) {
+      if (customerFormData.email == "") {
+        setPopupContent("Please enter the customer email id to process the digital warranty");
         setPopupVisible(true);
-        setPopupContent(result.message);
-      } else {
-        AsyncStorage.setItem('CUSTOMER_DETAILS', JSON.stringify(postData)).then(
-          r => {
-            navigation.navigate('Scan Code');
-          },
-        );
+        return;
       }
-
-      return response;
+      else {
+        showLoader(true);
+        const postData: CustomerData = {
+          contactNo: contactNo,
+          name: customerFormData.name,
+          email: customerFormData.email,
+          alternateNo: customerFormData.altContactNo,
+          city: customerFormData.city,
+          district: customerFormData.district,
+          state: customerFormData.state,
+          pinCode: customerFormData.pincode,
+          landmark: customerFormData.landmark,
+          dealerCategory: customerFormData.category,
+          currAdd: customerFormData.address,
+          dealerName: customerFormData.dealerName,
+          dealerAdd: customerFormData.dealerAddress,
+          dealerPinCode: customerFormData.dealerPincode,
+          dealerState: customerFormData.dealerState,
+          dealerDist: customerFormData.dealerDistrict,
+          dealerCity: customerFormData.dealerCity,
+          addedBy: addedBy,
+          dealerNumber: customerFormData.dealerContactNo,
+          transactId: '',
+          billDetails: '',
+          warrantyPhoto: '',
+          sellingPrice: '',
+          emptStr: '',
+          cresp: {
+            custIdForProdInstall: '',
+            modelForProdInstall: '',
+            errorCode: '',
+            errorMsg: '',
+            statusType: '',
+            balance: '',
+            currentPoints: '',
+            couponPoints: '',
+            promotionPoints: '',
+            transactId: '',
+            schemePoints: '',
+            basePoints: '',
+            clubPoints: '',
+            scanDate: '',
+            scanStatus: '',
+            copuonCode: '',
+            bitEligibleScratchCard: '',
+            pardId: '',
+            partNumber: '',
+            partName: '',
+            couponCode: '',
+            skuDetail: '',
+            purchaseDate: '',
+            categoryId: '',
+            category: '',
+            anomaly: '',
+            warranty: '',
+          },
+          selectedProd: {
+            specs: '',
+            pointsFormat: '',
+            product: '',
+            productName: '',
+            productCategory: '',
+            productCode: '',
+            points: '',
+            imageUrl: '',
+            userId: '',
+            productId: '',
+            paytmMobileNo: '',
+          },
+          latitude: location.latitude,
+          longitude: location.longitude,
+          geolocation: '',
+        };
+        const response = await validateMobile(
+          contactNo,
+          customerFormData.category,
+        );
+        console.log('Dealer Pincode===========', postData.addedBy);
+        const result = await response.json();
+        if (result.code == 1) {
+          setPopupVisible(true);
+          setPopupContent(result.message);
+        } else {
+          AsyncStorage.setItem('CUSTOMER_DETAILS', JSON.stringify(postData)).then(
+            r => {
+              navigation.navigate('Scan Code');
+            },
+          );
+        }
+        showLoader(false);
+        return response;
+      }
     } catch (error) {
+      showLoader(false);
+      setPopupContent("Something went wrong!");
+      setPopupVisible(true);
       console.error('Error sending customer details', error);
     }
   };
   const getDetails = async () => {
+    showLoader(true);
     try {
       if (contactNo.length !== 10) {
         Snackbar.show({
@@ -228,6 +241,8 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
       const response = await getCustDetByMobile(contactNo);
 
       const result = await response.json();
+
+      showLoader(false);
 
       if (result.name) {
         const customerDetails = result;
@@ -243,6 +258,13 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
           district: customerDetails.district || '',
           city: customerDetails.city || '',
           address: customerDetails.currAdd || '',
+          dealerAddress: customerDetails.dealerAdd || '',
+          dealerCity: customerDetails.dealerCity || '',
+          dealerDistrict: customerDetails.dealerDist || '',
+          dealerName: customerDetails.dealerName || '',
+          dealerContactNo: customerDetails.dealerNumber || '',
+          dealerPinCode: customerDetails.dealerPinCode || '',
+          dealerState: customerDetails.dealerState || '',
         }));
 
         console.log('Customer details set:', customerDetails);
@@ -255,31 +277,20 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
 
       return result;
     } catch (error) {
+      showLoader(false);
+      setPopupVisible(true);
+      setPopupContent("Something went wrong!");
       console.error('Error Fetching Customer Details:', error);
     }
   };
 
   useEffect(() => {
     getLocation().then(r => (location = r));
-    AsyncStorage.getItem('USER').then(r => {
-      const user = JSON.parse(r || '');
-
-      setAddedBy(user.contactNo);
-      setCustomerFormData({
-        ...customerFormData,
-        dealerName: user.name,
-        dealerAddress: user.currentAddress,
-        dealerCity: user.currCity,
-        dealerContactNo: user.contactNo,
-        dealerDistrict: user.currDist,
-        dealerPincode: user.currPinCode,
-        dealerState: user.currState,
-      });
-    });
   }, []);
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <Loader isLoading={loader} />
       <View style={styles.mainWrapper}>
         <View style={styles.form}>
           <View style={styles.inputContainer}>
@@ -311,7 +322,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
               placeholderTextColor={colors.grey}
               value={customerFormData.name}
               onChangeText={value =>
-                setCustomerFormData(prevData => ({...prevData, name: value}))
+                setCustomerFormData(prevData => ({ ...prevData, name: value }))
               }
             />
           </View>
@@ -323,7 +334,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
               value={customerFormData.email}
               placeholderTextColor={colors.grey}
               onChangeText={value =>
-                setCustomerFormData(prevData => ({...prevData, email: value}))
+                setCustomerFormData(prevData => ({ ...prevData, email: value }))
               }
             />
           </View>
@@ -381,7 +392,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
               label: item.pinCode,
               value: item.pinCode,
             }))}
-            setOpen={() => setUIswitch({pincode: !uiSwitch.pincode})}
+            setOpen={() => setUIswitch({ pincode: !uiSwitch.pincode })}
             value={customerFormData?.pincode}
             onSelectItem={item => {
               // console.log(item)
@@ -406,7 +417,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
               value={customerFormData.state}
               placeholderTextColor={colors.grey}
               onChangeText={value =>
-                setCustomerFormData(prevData => ({...prevData, state: value}))
+                setCustomerFormData(prevData => ({ ...prevData, state: value }))
               }
             />
           </View>
@@ -431,7 +442,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
               value={customerFormData.city}
               placeholderTextColor={colors.grey}
               onChangeText={value =>
-                setCustomerFormData(prevData => ({...prevData, city: value}))
+                setCustomerFormData(prevData => ({ ...prevData, city: value }))
               }
             />
           </View>
@@ -442,7 +453,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
               value={customerFormData.address}
               placeholderTextColor={colors.grey}
               onChangeText={value =>
-                setCustomerFormData(prevData => ({...prevData, address: value}))
+                setCustomerFormData(prevData => ({ ...prevData, address: value }))
               }
             />
           </View>
@@ -692,7 +703,7 @@ const styles = StyleSheet.create({
     color: colors.grey,
     fontWeight: 'bold',
   },
-  modalcontainer: {alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.7)'},
+  modalcontainer: { alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.7)' },
 });
 
 export default ProductRegistrationForm;

@@ -50,7 +50,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     getUser()
       .then(response => response.json())
       .then(res => {
-        // console.log(res);
+        console.log(res);
         const trimmedGender = res.gender.trim();
         res.gender = trimmedGender;
         setUserData(res);
@@ -69,7 +69,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         else {
           setIsShopAddressDifferent('No');
         }
-        const countNonEmptyStrings = (fields) => {
+        const countNonEmptyStrings = (fields: any[]) => {
           console.log("COUNT:::::::", fields.filter(field => typeof field === 'string' && field.trim() !== '').length)
           return fields.filter(field => typeof field === 'string' && field.trim() !== '').length;
         };
@@ -450,7 +450,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const handleStateSelect = async (text: string, type: string) => {
     let selectedCategory: any;
     if (type == "permanent") {
-      selectedCategory = states.find(category => category.stateName === text);
+      selectedCategory = states.find((category: { stateName: string; }) => category.stateName === text);
       setPostData((prevData: UserData) => ({
         ...prevData,
         state: text,
@@ -458,7 +458,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       }));
     }
     else if (type == "current") {
-      selectedCategory = currStates.find(category => category.stateName === text);
+      selectedCategory = currStates.find((category: { stateName: string; }) => category.stateName === text);
       setPostData((prevData: UserData) => ({
         ...prevData,
         currState: text,
@@ -479,7 +479,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const handleDistrictSelect = async (text: string, type: string) => {
     let selectedCategory: any;
     if (type == "permanent") {
-      selectedCategory = districts.find(category => category.districtName === text);
+      selectedCategory = districts.find((category: { districtName: string; }) => category.districtName === text);
       setPostData((prevData: UserData) => ({
         ...prevData,
         dist: text,
@@ -487,7 +487,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       }));
     }
     else if (type == "current") {
-      selectedCategory = currDistricts.find(category => category.districtName === text);
+      selectedCategory = currDistricts.find((category: { districtName: string; }) => category.districtName === text);
       setPostData((prevData: UserData) => ({
         ...prevData,
         currDist: text,
@@ -508,7 +508,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const handleCitySelect = async (text: string, type: string) => {
     let selectedCategory: any;
     if (type == "permanent") {
-      selectedCategory = cities.find(category => category.cityName === text);
+      selectedCategory = cities.find((category: { cityName: string; }) => category.cityName === text);
       setPostData((prevData: UserData) => ({
         ...prevData,
         city: text,
@@ -516,7 +516,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       }));
     }
     else if (type == "current") {
-      selectedCategory = currCities.find(category => category.cityName === text);
+      selectedCategory = currCities.find((category: { cityName: string; }) => category.cityName === text);
       setPostData((prevData: UserData) => ({
         ...prevData,
         currCity: text,

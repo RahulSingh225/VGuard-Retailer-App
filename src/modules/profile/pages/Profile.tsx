@@ -36,12 +36,12 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     const fetchData = async () => {
       try {
         const diffAcc = await AsyncStorage.getItem('diffAcc');
-        if(diffAcc == "1"){
+        if (diffAcc == "1") {
           setDisableOptions(true);
         }
         const response = await getUser();
         const res = await response.json();
-  
+
         console.log(res);
         setUserData(res);
         setLoading(false);
@@ -51,27 +51,11 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, []);
-  
-  const fetchChequeCopy = async () => {
-    try {
-      const source = await renderField("Cancelled Cheque Copy");
-      setChequeCopySource(source);
-      const gstSource = await renderField("GST Photo");
-      setGstCopySource(gstSource);
-      // setLoading(false);
-    } catch (error) {
-      console.error("Error fetching cheque copy:", error);
-      // setLoading(false);
-    }
-  };
   useEffect(() => {
-    fetchChequeCopy();
-  }, [userData?.roleId, userData?.kycDetails?.selfie]);
-  useEffect(() => {
-    if (userData?.roleId && userData?.kycDetails?.selfie) {
+    if (userData?.kycDetails?.selfie) {
       const getImage = async () => {
         try {
           // const profileImageUrl = await getFile(userData.kycDetails.selfie, 'PROFILE', "2");
@@ -81,10 +65,30 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
           console.log('Error while fetching profile image:', error);
         }
       };
-
+      getImage();
+    } if (userData?.checkPhoto) {
+      const getImage = async () => {
+        try {
+          const source = await getImageUrl(userData?.checkPhoto, 'Cheque')
+          setChequeCopySource(source);
+        } catch (error) {
+          console.log('Error while fetching cheque image:', error);
+        }
+      };
       getImage();
     }
-  }, [userData?.roleId, userData?.kycDetails?.selfie]);
+    if (userData?.gstPic) {
+      const getImage = async () => {
+        try {
+          const gstSource = await getImageUrl(userData?.gstPic, 'GST')
+          setGstCopySource(gstSource);
+        } catch (error) {
+          console.log('Error while fetching GST image:', error);
+        }
+      };
+      getImage();
+    }
+  }, [userData?.roleId]);
 
   const showSnackbar = (message: string) => {
     Snackbar.show({
@@ -94,10 +98,10 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const handleAddSubLogin = async () => {
-    if(disableOptions == true) {
+    if (disableOptions == true) {
       showSnackbar('User not allowed');
     }
-    else{
+    else {
       navigation.navigate('Add Sub-Login')
     }
   }
@@ -225,22 +229,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [chequeCopySource, setChequeCopySource] = useState<string | null>(null);
   const [gstCopySource, setGstCopySource] = useState<string | "">("");
   const [frontFacadeCopySource, setFrontFacadeCopySource] = useState<string | null>(null);
-  // const [facadeCopySource, setFacadeCopySource] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchChequeCopy = async () => {
-      try {
-        const source = await renderField("Cancelled Cheque Copy");
-        const gstSource = await renderField("GST Photo");
-        setChequeCopySource(source);
-        setGstCopySource(gstSource);
-      } catch (error) {
-        console.error("Error fetching cheque copy:", error);
-      }
-    };
-
-    fetchChequeCopy();
-  }, []);
+  // const [facadeCopySource, setFacadeCopySource] = useState<string | null>(null)
 
   return (
     <ScrollView style={styles.mainWrapper}>
@@ -305,7 +294,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
             console.log("Image Pressed")
           }}
         /> */}
-        
+
         <InputField
           label="Front Facade"
           isImage
