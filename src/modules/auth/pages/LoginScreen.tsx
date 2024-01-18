@@ -105,14 +105,11 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     showLoader(true);
 
     try {
-      const response = await loginWithPassword(username, password);
-      console.log(response);
+      const response = await loginWithPassword(username, password, "2");
       showLoader(false);
-
       if (response.status === 200) {
-        var r = await response.data;
-        console.log(r);
-        login(r);
+        var r = response.data;
+        login(r.vguardRishtaUser);
       }
       else if (response.status === 500) {
         setIsPopupVisible(!isPopupVisible);

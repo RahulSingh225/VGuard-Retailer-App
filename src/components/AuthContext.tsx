@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, Dispatch, SetStateAction } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createDigestPostRequest } from '../utils/apiservice';
 import { UserData } from '../utils/modules/UserData';
+import { logoutUser } from '../utils/apiservice';
 
 interface AuthContextProps {
   isUserAuthenticated: boolean;
@@ -26,13 +26,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (user: UserData) => {
     const userRole = user.roleId;
     const diffAcc = user.diffAcc;
-    console.log("USERDATA", user);
-    if(userRole == "2"){
+    if(userRole == "2"){  
       console.log("><><><<, userrole is 2")
       setIsUserAuthenticated(true);
       await AsyncStorage.setItem('USER', JSON.stringify(user));
       await AsyncStorage.setItem('diffAcc', diffAcc);
-      console.log("DIFFACCCOUNT", diffAcc)
     }
     else{
       setShowPopup(true);
@@ -41,11 +39,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      const path = 'user/logoutUser';
-      createDigestPostRequest(path, '');
+      await logoutUser();
       await AsyncStorage.removeItem('USER');
-      await AsyncStorage.removeItem('username');
-      await AsyncStorage.removeItem('password');
       await AsyncStorage.removeItem('diffAcc');
       setIsUserAuthenticated(false);
     } catch (error) {
