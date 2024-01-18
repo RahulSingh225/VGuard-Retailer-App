@@ -24,6 +24,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [popupAuthContent, setPopupContent] = useState('Please Enter Credentials of a Retailer');
 
   const login = async (user: UserData) => {
+    console.log("LOGGING IN")
     const userRole = user.roleId;
     const diffAcc = user.diffAcc;
     if(userRole == "2"){  

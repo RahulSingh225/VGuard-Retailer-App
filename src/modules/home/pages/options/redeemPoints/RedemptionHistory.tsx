@@ -19,30 +19,17 @@ const RedemptionHistory = () => {
         console.error('Error fetching data:', error);
       });
   }, []); 
-  // const redemptionHistoryData = [
-  //   {
-  //     date: '2023-10-15',
-  //     product: 'Product A',
-  //     status: 'Active',
-  //   },
-  //   {
-  //     date: '2023-10-10',
-  //     product: 'Product B',
-  //     status: 'Delivered',
-  //   },
-  //   {
-  //     date: '2023-10-05',
-  //     product: 'Product C',
-  //     status: 'Credited',
-  //   },
-  // ];
 
   const renderItem = ({ item }) => (
     <View style={[styles.item]}>
-      <Text style={[styles.text, item.orderStatus === 'In Process' ? styles.activeText : styles.inactiveText]}>{item.transactDate}</Text>
-      <Text style={[styles.text, item.orderStatus === 'In Process' ? styles.activeText : styles.inactiveText]}>{item.productName}</Text>
-      <Text style={[styles.status, item.orderStatus === 'In Process' ? styles.activeItem : styles.inactiveItem]}>{item.orderStatus}</Text>
-    </View>
+            <Text style={[styles.text, item.orderStatus === 'In Process' ? styles.activeText : styles.inactiveText]}>{item.transactDate}</Text>
+            <View style={styles.detail}>
+                <Text style={[styles.text, item.orderStatus === 'In Process' ? styles.activeText : styles.inactiveText]}>{item.productName}</Text>
+                <Text style={[styles.smalltext]}>{t('strings:points')}: {item.points}</Text>
+                <Text style={[styles.smalltext]}>{t('strings:mobile_no')}: {item.mobileNumber}</Text>
+            </View>
+            <Text style={[styles.status, item.orderStatus === 'In Process' ? styles.activeItem : styles.inactiveItem]}>{item.orderStatus}</Text>
+        </View>
   );
 
   return (
@@ -97,8 +84,19 @@ const styles = StyleSheet.create({
   },
   text: {
     flexGrow: 1,
-    width: '30%'
+    width: '20%',
+    fontSize: responsiveFontSize(1.5),
   },
+  smalltext: {
+    fontSize: responsiveFontSize(1.5),
+    flexGrow: 1,
+    color: colors.black
+},
+detail: {
+    flexGrow: 1,
+    width: '40%',
+    flexDirection: 'column',
+},
   activeItem: {
     backgroundColor: colors.yellow,
     color: colors.black,
@@ -129,7 +127,8 @@ const styles = StyleSheet.create({
   },
   status: {
     width: '24%',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontSize: responsiveFontSize(1.5),
   }
 
 });

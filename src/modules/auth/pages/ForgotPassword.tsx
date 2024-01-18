@@ -7,6 +7,7 @@ import Buttons from '../../../components/Buttons';
 import arrowIcon from '../../../assets/images/arrow.png';
 import Popup from '../../../components/Popup';
 import { forgotPassword } from '../../../utils/apiservice';
+import Loader from '../../../components/Loader';
 
 const ForgotPassword: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
@@ -15,6 +16,7 @@ const ForgotPassword: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
+  const [loader, showLoader] = useState(false);
 
   const handleSubmit = async () => {
     // Validate the entered number
@@ -25,19 +27,21 @@ const ForgotPassword: React.FC<{ navigation: any }> = ({ navigation }) => {
       setPopupContent(t('strings:enter_valid_mobileNo'));
       return;
     }
-  
-    setPopupVisible(true);
+    showLoader(true);
     forgotPassword(number)
       .then(responsedata => {
         console.log("responsedata:", responsedata)
         const message = responsedata.data.message;
+        setPopupVisible(true);
         setPopupContent(message);
         setNumber("");
         if (message === "SMS sent for new password") {
+          showLoader(false);
           setTimeout(() => {
             navigation.navigate('login');
           }, 1000);
         } else {
+          showLoader(false);
           return;
         }
       })
@@ -46,6 +50,7 @@ const ForgotPassword: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <Loader isLoading={loader} />
       <View style={styles.forgotPasswordScreen}>
         <View style={styles.mainWrapper}>
           <Image
@@ -68,6 +73,7 @@ const ForgotPassword: React.FC<{ navigation: any }> = ({ navigation }) => {
                 setNumber(formattedText);
               }}
               keyboardType="numeric"
+              maxLength={10}
             />
             </View>
             <View style={styles.buttonContainer}>

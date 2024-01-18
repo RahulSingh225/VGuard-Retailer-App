@@ -7,7 +7,7 @@ import ProductRegistrationForm from './src/modules/home/pages/options/scanQR/pag
 import Test from './src/modules/home/pages/options/scanQR/pages/AddWarranty';
 import AddWarranty from './src/modules/home/pages/options/scanQR/pages/AddWarranty';
 import { getAppVersion } from './src/utils/apiservice';
-import { checkVersion } from "react-native-check-version";
+// import { checkVersion } from "react-native-check-version";
 import DeviceInfo from 'react-native-device-info';
 const App: React.FC = () => {
   const [appVersion, setAppVersion] = useState('');

@@ -73,7 +73,7 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const { login, showPopup, popupAuthContent, setShowPopup } = useAuth();
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [popupContent, setPopupContent] = useState(false);
+  const [popupContent, setPopupContent] = useState("");
   const [selectedOption, setSelectedOption] = useState(true);
 
   const handleTermsPress = () => {
