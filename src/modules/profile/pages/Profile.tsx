@@ -58,7 +58,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (userData?.kycDetails?.selfie) {
       const getImage = async () => {
         try {
-          // const profileImageUrl = await getFile(userData.kycDetails.selfie, 'PROFILE', "2");
+          // const profileImageUrl = await getFile(userData.kycDetails.selfie, 'Profile', "2");
           const profileImageUrl = await getImageUrl(userData.kycDetails.selfie, 'Profile');
           setProfileImage(profileImageUrl);
         } catch (error) {
@@ -149,7 +149,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (fieldName === 'Cancelled Cheque Copy') {
       const checkPhoto = userData.bankDetail.checkPhoto
       setChequeImageName(checkPhoto)
-      // const chequePhoto = await getFile(checkPhoto, 'CHEQUE', "2");
+      // const chequePhoto = await getFile(checkPhoto, 'Cheque', "2");
       const chequePhoto = await getImageUrl(checkPhoto, 'Cheque');
       const url = chequePhoto
       return url;

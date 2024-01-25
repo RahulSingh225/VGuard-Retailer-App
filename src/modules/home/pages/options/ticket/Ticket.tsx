@@ -212,7 +212,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
     if (fileData.uri != "") {
       const formData = new FormData();
       formData.append('USER_ROLE', '2');
-      formData.append('image_related', 'TICKET');
+      formData.append('imageRelated', 'Ticket');
       formData.append('file', {
         uri: fileData.uri,
         name: fileData.name,
@@ -294,7 +294,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
       )}
       <ImagePickerField label='Upload Picture (optional)'
         onImageChange={handleImageChange}
-        imageRelated='TICKET'
+        imageRelated='Ticket'
       />
       <Text style={styles.blackText}>{t('strings:description_remarks')}</Text>
       <TextInput

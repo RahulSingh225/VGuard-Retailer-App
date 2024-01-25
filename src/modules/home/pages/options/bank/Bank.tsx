@@ -184,7 +184,7 @@ const Bank: React.FC<BankProps> = () => {
   const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }) => {
     const formData = new FormData();
     formData.append('USER_ROLE', '2');
-    formData.append('image_related', 'CHEQUE');
+    formData.append('imageRelated', 'Cheque');
     formData.append('file', {
       uri: fileData.uri,
       name: fileData.name,
@@ -284,7 +284,7 @@ const Bank: React.FC<BankProps> = () => {
           <View>
             <ImagePickerField label={t('strings:cancelled_cheque_copy')}
               onImageChange={handleImageChange}
-              imageRelated='CHEQUE'
+              imageRelated='Cheque'
               initialImage={entityUid}
               getImageRelated = 'Cheque'
             />

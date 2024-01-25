@@ -187,7 +187,7 @@ const Bank: React.FC<BankProps> = () => {
     const triggerApiWithImage = async (fileData: FormData) => {
         const formData = new FormData();
         formData.append('USER_ROLE', userRole);
-        formData.append('image_related', 'CHEQUE');
+        formData.append('imageRelated', 'Cheque');
         formData.append('file', fileData);
 
         try {

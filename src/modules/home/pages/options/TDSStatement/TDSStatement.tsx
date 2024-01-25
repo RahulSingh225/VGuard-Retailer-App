@@ -108,14 +108,14 @@ const TDSStatement: React.FC<TDSProps> = () => {
         const fiscalYearResult = await fiscalYearResponse.data;
         const monthResult = await monthResponse.data;
         setFiscalYearData(fiscalYearResult);
-        setFiscalYearValue(fiscalYearResult[0]);
+        setFiscalYearValue(fiscalYearResult[0].Fiscalyear);
         setMonthData(monthResult);
         setSelectedMonth(monthResult[0]?.month);
         setPostData((prevData) => ({
           ...prevData,
           id: monthResult[0].id,
           month: monthResult[0].month,
-          year: fiscalYearResult[0],
+          year: fiscalYearResult[0].Fiscalyear,
         }));
         showLoader(false);
       } catch (error) {
@@ -140,6 +140,7 @@ const TDSStatement: React.FC<TDSProps> = () => {
   }, []);
 
   useEffect(() => {
+    console.log("POSTDATA", postData)
     getTdsStatementList(postData)
       .then((response) => response.data)
       .then((responseData) => {
@@ -168,7 +169,7 @@ const TDSStatement: React.FC<TDSProps> = () => {
 
   return (
     <ScrollView style={styles.mainWrapper}>
-      {loader && <Loader />}
+      {loader && <Loader isLoading={loader} />}
 
       <Text style={styles.greyText}>{t('strings:select_fiscal_year')}</Text>
       <TouchableOpacity onPress={() => setIsFocusFiscalYear((prev) => !prev)}>

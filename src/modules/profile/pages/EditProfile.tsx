@@ -154,7 +154,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   useEffect(() => {
     const getImage = async () => {
       try {
-        // const profileImageUrl = await getFile(userData.kycDetails.selfie, 'PROFILE', 2);
+        // const profileImageUrl = await getFile(userData.kycDetails.selfie, 'Profile', 2);
         const profileImageUrl = await getImageUrl(userData.kycDetails.selfie, 'Profile');
         setProfileImage(profileImageUrl);
       } catch (error) {
@@ -171,9 +171,9 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const handleSendImage = async () => {
     try {
-      const selfiePromise = selfieFileData.uri !== "" ? triggerApiWithImage(selfieFileData, 'PROFILE') : Promise.resolve(null);
-      const idFrontPromise = idFrontFileData.uri !== "" ? triggerApiWithImage(idFrontFileData, 'ID_CARD_FRONT') : Promise.resolve(null);
-      const idBackPromise = idBackFileData.uri !== "" ? triggerApiWithImage(idBackFileData, 'ID_CARD_BACK') : Promise.resolve(null);
+      const selfiePromise = selfieFileData.uri !== "" ? triggerApiWithImage(selfieFileData, 'Profile') : Promise.resolve(null);
+      const idFrontPromise = idFrontFileData.uri !== "" ? triggerApiWithImage(idFrontFileData, 'IdCard') : Promise.resolve(null);
+      const idBackPromise = idBackFileData.uri !== "" ? triggerApiWithImage(idBackFileData, 'IdCard') : Promise.resolve(null);
       const gstPromise = GstFileData.uri !== "" ? triggerApiWithImage(GstFileData, 'GST') : Promise.resolve(null);
 
       const [selfieUid, idFrontUid, idBackUid, gstUid] = await Promise.all([selfiePromise, idFrontPromise, idBackPromise, gstPromise]);
@@ -409,7 +409,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     try {
       const formData = new FormData();
       formData.append('USER_ROLE', '2');
-      formData.append('image_related', imageRelated);
+      formData.append('imageRelated', imageRelated);
       formData.append('file', {
         uri: fileData.uri,
         name: fileData.name,
@@ -994,21 +994,21 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         <ImagePickerField
           label='Selfie'
           onImageChange={handleImageChange}
-          imageRelated='PROFILE'
+          imageRelated='Profile'
           initialImage={userData?.kycDetails?.selfie}
           getImageRelated='Profile'
           editable={false}
         />
         <ImagePickerField label='Id Proof* (Front)'
           onImageChange={handleImageChange}
-          imageRelated='ID_CARD_FRONT'
+          imageRelated='IdCard'
           initialImage={userData?.kycDetails?.aadharOrVoterOrDLFront}
           getImageRelated='IdCard'
           editable={false}
         />
         <ImagePickerField label='Id Proof* (Back)'
           onImageChange={handleImageChange}
-          imageRelated="ID_CARD_BACK"
+          imageRelated="IdCard"
           initialImage={userData?.kycDetails?.aadharOrVoterOrDlBack}
           getImageRelated='IdCard'
           editable={false}

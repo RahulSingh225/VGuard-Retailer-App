@@ -119,7 +119,7 @@ const UpdatePAN: React.FC<BankProps> = () => {
   }) => {
     const formData = new FormData();
     formData.append('USER_ROLE', '2');
-    formData.append('image_related', 'PAN_CARD_FRONT');
+    formData.append('imageRelated', 'PanCard');
     formData.append('file', {
       uri: fileData.uri,
       name: fileData.name,
@@ -148,7 +148,7 @@ const UpdatePAN: React.FC<BankProps> = () => {
         <View style={styles.form}>
           <ImagePickerField label='Pan Card* (Front)'
             onImageChange={handleImageChange}
-            imageRelated='PAN_CARD_FRONT'
+            imageRelated='PanCard'
             initialImage={entityUid}
             getImageRelated = 'PanCard'
           />

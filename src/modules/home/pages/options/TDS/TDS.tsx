@@ -78,7 +78,7 @@ const TDS: React.FC<TDSProps> = () => {
         const assessmentYearResult = await assessmentYearResponse.data;
 
         setAssessmentYearData(assessmentYearResult);
-        setAssessmentYearValue(assessmentYearResult[0]);
+        setAssessmentYearValue(assessmentYearResult.Fiscalyear);
         showLoader(false);
       } catch (error) {
         console.error('Error fetching data:', error);

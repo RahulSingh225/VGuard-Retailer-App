@@ -208,7 +208,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         try {
             const formData = new FormData();
             formData.append('USER_ROLE', '2');
-            formData.append('image_related', imageRelated);
+            formData.append('imageRelated', imageRelated);
             formData.append('file', {
                 uri: fileData.uri,
                 name: fileData.name,
@@ -229,9 +229,9 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
 
     const handleSendImage = async () => {
         try {
-            const panPromise = panFileData.uri !== "" ? triggerApiWithImage(panFileData, 'PAN_CARD_FRONT') : Promise.resolve(null);
-            const idFrontPromise = idFrontFileData.uri !== "" ? triggerApiWithImage(idFrontFileData, 'ID_CARD_FRONT') : Promise.resolve(null);
-            const idBackPromise = idBackFileData.uri !== "" ? triggerApiWithImage(idBackFileData, 'ID_CARD_BACK') : Promise.resolve(null);
+            const panPromise = panFileData.uri !== "" ? triggerApiWithImage(panFileData, 'PanCard') : Promise.resolve(null);
+            const idFrontPromise = idFrontFileData.uri !== "" ? triggerApiWithImage(idFrontFileData, 'IdCard') : Promise.resolve(null);
+            const idBackPromise = idBackFileData.uri !== "" ? triggerApiWithImage(idBackFileData, 'IdCard') : Promise.resolve(null);
             const gstPromise = GstFileData.uri !== "" ? triggerApiWithImage(GstFileData, 'GST') : Promise.resolve(null);
 
             const [panUid, idFrontUid, idBackUid, gstUid] = await Promise.all([panPromise, idFrontPromise, idBackPromise, gstPromise]);
@@ -812,19 +812,19 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 />
                 <ImagePickerField label='Aadhar Card* (Front)'
                     onImageChange={handleImageChange}
-                    imageRelated='ID_CARD_FRONT'
+                    imageRelated='IdCard'
                     initialImage={postData?.kycDetails?.aadharOrVoterOrDLFront}
                     getImageRelated='IdCard'
                 />
                 <ImagePickerField label='Aadhar Card* (Back)'
                     onImageChange={handleImageChange}
-                    imageRelated="ID_CARD_BACK"
+                    imageRelated="IdCard"
                     initialImage={postData?.kycDetails?.aadharOrVoterOrDlBack}
                     getImageRelated='IdCard'
                 />
                 <ImagePickerField label='Pan Card* (Front)'
                     onImageChange={handleImageChange}
-                    imageRelated="PAN_CARD_FRONT"
+                    imageRelated="PanCard"
                     initialImage={postData?.kycDetails?.panCardFront}
                     getImageRelated='PanCard'
                 />

@@ -1,8 +1,8 @@
-import axios, {AxiosInstance, AxiosResponse} from 'axios';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
 
-// const BASE_URL = 'http://192.168.29.15:5000/vguard/api';
+// const BASE_URL = 'http://192.168.29.60:5000/vguard/api';
 const BASE_URL = 'http://34.93.182.174:5000/vguard/api';
 
 const api: AxiosInstance = axios.create({
@@ -19,8 +19,8 @@ async function newTokens(token: string) {
     const response: AxiosResponse = await api.post('user/refreshAccessToken', {
       token,
     });
-    const {accessToken, refreshToken} = response.data;
-    return {accessToken, newRefreshToken: refreshToken};
+    const { accessToken, refreshToken } = response.data;
+    return { accessToken, newRefreshToken: refreshToken };
   } catch (error) {
     throw new Error('Failed to refresh tokens');
   }
@@ -38,12 +38,14 @@ api.interceptors.response.use(
       const refreshToken = JSON.parse(
         (await AsyncStorage.getItem('refreshToken')) as string,
       );
+
       try {
-        const {accessToken, newRefreshToken} = await newTokens(refreshToken);
+        const { accessToken, newRefreshToken } = await newTokens(refreshToken);
         await AsyncStorage.setItem(
           'refreshToken',
           JSON.stringify(newRefreshToken),
         );
+        await AsyncStorage.setItem('accessToken', `Bearer ${accessToken}`);
         api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
@@ -59,9 +61,11 @@ async function createPostRequest(
   data: any,
 ): Promise<AxiosResponse> {
   try {
+    const accessToken = await AsyncStorage.getItem('accessToken');
     const headers = {
       Accept: 'application/json',
       'Content-Type': 'application/json',
+      Authorization: accessToken
     };
     const response: AxiosResponse = await api.post(relativeUrl, data, {
       headers,
@@ -75,7 +79,10 @@ async function createPostRequest(
 
 async function createGetRequest(relativeUrl: string): Promise<AxiosResponse> {
   try {
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    api.defaults.headers.common['Authorization'] = accessToken;
     const response = await api.get(relativeUrl);
+    console.log("RESPONSE", response.data);
     return response;
   } catch (error) {
     console.error('Error:', relativeUrl, error);
@@ -107,11 +114,12 @@ export async function loginWithPassword(
 ): Promise<AxiosResponse> {
   const path = 'user/userDetails/login';
   console.log('<><><><', username);
-  const response = await createPostRequest(path, {username, password, roleId});
+  const response = await createPostRequest(path, { username, password, roleId });
   await AsyncStorage.setItem(
     'refreshToken',
     JSON.stringify(response.data.tokens.refreshToken),
   );
+  await AsyncStorage.setItem('accessToken', `Bearer ${response.data.tokens.accessToken}`);
   api.defaults.headers.common[
     'Authorization'
   ] = `Bearer ${response.data.tokens.accessToken}`;
@@ -121,7 +129,7 @@ export async function loginWithPassword(
 export async function loginWithOtp(username: string, otp: string) {
   const path = 'user/userDetails/login';
   console.log('<><><><', username);
-  const response = await createPostRequest(path, {username, otp});
+  const response = await createPostRequest(path, { username, otp });
   api.defaults.headers.common[
     'Authorization'
   ] = `Bearer ${response.data.tokens.accessToken}`;
@@ -145,7 +153,7 @@ export const Newuserotpvalidation = async (
       mobileNo: mobileNo,
       otp: otp,
     };
-    console.log({mobileNo, otp});
+    console.log({ mobileNo, otp });
     const response = await api.post('user/validateNewUserOtp', {
       mobileNo: mobileNo,
       otp: otp,

@@ -113,13 +113,13 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
                     disabled={true}
                 />
                 <ImagePickerField label='Aadhar Card* (Front)'
-                    imageRelated='ID_CARD_FRONT'
+                    imageRelated='IdCard'
                     initialImage={postData?.kycDetails?.aadharOrVoterOrDLFront}
                     getImageRelated='IdCard'
                     editable={false}
                 />
                 <ImagePickerField label='Aadhar Card* (Back)'
-                    imageRelated="ID_CARD_BACK"
+                    imageRelated="IdCard"
                     initialImage={postData?.kycDetails?.aadharOrVoterOrDlBack}
                     getImageRelated='IdCard'
                     editable={false}
@@ -130,7 +130,7 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
                     disabled={true}
                 />
                 <ImagePickerField label='Pan Card* (Front)'
-                    imageRelated="PAN_CARD_FRONT"
+                    imageRelated="PanCard"
                     initialImage={postData?.kycDetails?.panCardFront}
                     getImageRelated='PanCard'
                     editable={false}

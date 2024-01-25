@@ -199,9 +199,9 @@ const AddWarranty = ({navigation}) => {
     });
 
     if (documentType == 'bill') {
-      formData.append('image_related', 'BILL');
+      formData.append('imageRelated', 'Bill');
     } else if (documentType == 'warranty') {
-      formData.append('image_related', 'WARRANTY');
+      formData.append('imageRelated', 'Warranty');
     }
 
     try {
