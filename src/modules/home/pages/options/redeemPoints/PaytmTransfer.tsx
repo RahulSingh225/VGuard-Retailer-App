@@ -46,9 +46,11 @@ const PaytmTransfer = () => {
       .catch(error => {
         if (error.response && error.response.data) {
           console.error('API Error:', error.response.data.message);
-          setPopupContent(error.response.data.message);
+          setPopupContent('Error making paytm transfer');
           setPopupVisible(true);
         } else {
+          setPopupContent('Error making paytm transfer');
+          setPopupVisible(true);
           console.error('API Error:', error.message);
         }
       });

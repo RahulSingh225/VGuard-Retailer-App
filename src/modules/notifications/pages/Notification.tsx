@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Image } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Image, FlatList } from 'react-native';
 import colors from '../../../../colors';
 import { responsiveFontSize, responsiveWidth } from 'react-native-responsive-dimensions';
 import { getNotifications } from '../../../utils/apiservice';
@@ -28,9 +28,11 @@ const Notification: React.FC = () => {
 
   return (
     <ScrollView style={styles.mainWrapper}>
-      {loader && <Loader />}
-      {notifications.map((item, index) => (
-        <View key={index} style={styles.messageItem}>
+      {loader && <Loader isLoading={loader} />}
+      <FlatList
+          data={notifications}
+          renderItem={({ item }) => (
+            <View style={styles.messageItem}>
           <Image
             style={styles.image}
             source={require('../../../assets/images/ic_alert_.png')}
@@ -42,7 +44,9 @@ const Notification: React.FC = () => {
             </ScrollView>
           </View>
         </View>
-      ))}
+          )}
+          keyExtractor={item => item.alertDesc}
+        />
     </ScrollView>
   );
 };

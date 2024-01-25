@@ -117,6 +117,9 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         setPopupContent("Wrong Username or Password!")
       }
     } catch (error) {
+      setIsPopupVisible(!isPopupVisible);
+      setPopupContent("Wrong Username or Password!");
+      showLoader(false);
       console.error('Login error:', error);
     }
   };
@@ -136,7 +139,7 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               icon={language}
             />
           </View>
-          {loader && <Loader />}
+          {loader && <Loader isLoading={loader} />}
           <Image
             source={require('../../../assets/images/rishta_retailer_logo.webp')}
             style={styles.imageSaathi}
@@ -327,6 +330,7 @@ const styles = StyleSheet.create({
     color: colors.black,
     height: 40,
     padding: 10,
+    flex:1
   },
   inputContainer: {
     backgroundColor: colors.white,

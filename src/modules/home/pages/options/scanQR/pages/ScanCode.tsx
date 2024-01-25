@@ -381,11 +381,12 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
           icon={arrowIcon}
         />
         <View style={styles.rightText}>
+        <TouchableOpacity
+            onPress={() => navigation.navigate('Unique Code History')}
+            style = {{flexDirection: 'row', alignItems: 'center', gap: 10}}>
           <Text style={styles.smallText}>
             {t('strings:go_to_unique_code_history')}
           </Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Unique Code History')}>
             <Image
               style={{width: 30, height: 30}}
               source={require('../../../../../../assets/images/ic_circle_right_arrow_yellow.webp')}

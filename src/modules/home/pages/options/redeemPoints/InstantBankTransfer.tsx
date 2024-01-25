@@ -20,7 +20,7 @@ import Snackbar from 'react-native-snackbar';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-    bankTranfer,
+    bankTransfer,
     getany,
     getBanks,
     updateBank,
@@ -32,6 +32,7 @@ import Buttons from '../../../../../components/Buttons';
 import arrowIcon from '../../../../../assets/images/arrow.png';
 import Popup from '../../../../../components/Popup';
 import { getImageUrl } from '../../../../../utils/FileUtils';
+import Loader from '../../../../../components/Loader';
 
 type BankProps = {};
 
@@ -53,7 +54,7 @@ const Bank: React.FC<BankProps> = () => {
     const [popupContent, setPopupContent] = useState('');
     const [isPopupVisible, setPopupVisible] = useState(false);
     const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
-
+    const [loader, showLoader] = useState(true);
     const handleImageClick = () => {
         setShowImagePreviewModal(true);
     };
@@ -67,6 +68,7 @@ const Bank: React.FC<BankProps> = () => {
             try {
                 await getUserRoleFromAsyncStorage();
                 const response = await getany();
+                showLoader(false);
                 if (response.status === 200) {
                     const data = await response.data;
                     console.log(data, '<><<error message<><>');
@@ -84,9 +86,14 @@ const Bank: React.FC<BankProps> = () => {
                         setPopupVisible(true);
                     }
                 } else {
+                    setPopupContent('Failed to get bank details');
+                    setPopupVisible(true);
                     throw new Error('Failed to get bank details');
                 }
             } catch (error) {
+                setPopupContent('Failed to get bank details');
+                setPopupVisible(true);
+                showLoader(false);
                 console.error('API Error:', error);
             }
         };
@@ -98,6 +105,9 @@ const Bank: React.FC<BankProps> = () => {
                 if (response.status === 200) {
                     return response.data;
                 } else {
+                    setPopupContent('Failed to get bank names');
+                    setPopupVisible(true);
+                    showLoader(false);
                     throw new Error('Failed to get bank names');
                 }
             })
@@ -110,6 +120,9 @@ const Bank: React.FC<BankProps> = () => {
                 }
             })
             .catch((error) => {
+                setPopupContent('Failed to get bank names');
+                setPopupVisible(true);
+                showLoader(false);
                 console.error('API Error:', error);
             });
     }, []);
@@ -186,7 +199,7 @@ const Bank: React.FC<BankProps> = () => {
 
     const triggerApiWithImage = async (fileData: FormData) => {
         const formData = new FormData();
-        formData.append('USER_ROLE', userRole);
+        formData.append('userRole', userRole);
         formData.append('imageRelated', 'Cheque');
         formData.append('file', fileData);
 
@@ -199,6 +212,7 @@ const Bank: React.FC<BankProps> = () => {
     };
 
     const handleProceed = () => {
+        showLoader(true);
         const postData = {
             bankAccNo: accNo,
             bankAccHolderName: accHolder,
@@ -217,7 +231,7 @@ const Bank: React.FC<BankProps> = () => {
             postData.checkPhoto != "" &&
             postData.points != ""
         ) {
-            bankTranfer(postData)
+            bankTransfer(postData)
                 .then((response) => {
                     console.log(postData, '---------------postdata');
                     if (response.status === 200) {
@@ -227,12 +241,16 @@ const Bank: React.FC<BankProps> = () => {
                         setPopupContent("Failed to update Bank Details");
                         setPopupVisible(true);
                     }
+                    showLoader(false);
                 })
                 .then((data) => {
                     setPopupVisible(true);
                     setPopupContent(data.message)
                 })
                 .catch((error) => {
+                    setPopupContent('Failed to update Bank Details');
+                    setPopupVisible(true);
+                    showLoader(false);
                     console.error('API Error:', error);
                 });
         }
@@ -244,6 +262,7 @@ const Bank: React.FC<BankProps> = () => {
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <Loader isLoading={loader} />
             <View style={styles.mainWrapper}>
                 <View style={styles.header}>
                     <Text style={styles.textHeader}>
@@ -328,12 +347,12 @@ const Bank: React.FC<BankProps> = () => {
                         <TouchableOpacity
                             style={styles.inputContainer}
                             onPress={handleImagePickerPress}>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder={t('strings:cancelled_cheque_copy')}
-                                    placeholderTextColor={colors.grey}
-                                    editable={false}
-                                />
+                            <TextInput
+                                style={styles.input}
+                                placeholder={t('strings:cancelled_cheque_copy')}
+                                placeholderTextColor={colors.grey}
+                                editable={false}
+                            />
                             <TouchableOpacity
                                 onPress={handleImageClick}>
                                 <View style={styles.inputImage}>

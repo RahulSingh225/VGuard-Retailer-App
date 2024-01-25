@@ -263,8 +263,8 @@ const styles = StyleSheet.create({
     image: {
         width: 25,
         height: 20,
-        marginRight: 10,
-        backgroundColor: colors.lightGrey
+        marginRight: 0,
+        // backgroundColor: colors.lightGrey
     },
     modalContent: {
         width: width / 1.8,

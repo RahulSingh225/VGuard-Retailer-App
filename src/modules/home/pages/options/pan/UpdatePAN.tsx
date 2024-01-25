@@ -78,12 +78,14 @@ const UpdatePAN: React.FC<BankProps> = () => {
         setPopupVisible(true);
         // showSnackbar(responseData.message);
       } else {
-        setPopupContent(response.message);
+        setPopupContent(response.data.message);
         setPopupVisible(true);
       }
       showLoader(false);
     } catch (error) {
       console.error('API Error:', error);
+      setPopupContent('Something Went Wrong');
+      setPopupVisible(true);
       showLoader(false);
     }
   };
@@ -108,7 +110,7 @@ const UpdatePAN: React.FC<BankProps> = () => {
         type: type,
       });
     } catch (error) {
-      console.error('Error handling image change in Raise Ticket:', error);
+      console.error('Error handling image change in Update Pan:', error);
     }
   };
 
@@ -118,7 +120,7 @@ const UpdatePAN: React.FC<BankProps> = () => {
     name: string;
   }) => {
     const formData = new FormData();
-    formData.append('USER_ROLE', '2');
+    formData.append('userRole', '2');
     formData.append('imageRelated', 'PanCard');
     formData.append('file', {
       uri: fileData.uri,

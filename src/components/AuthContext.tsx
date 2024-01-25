@@ -25,17 +25,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (user: UserData) => {
     console.log("LOGGING IN")
-    const userRole = user.roleId;
     const diffAcc = user.diffAcc;
-    if(userRole == "2"){  
-      console.log("><><><<, userrole is 2")
-      setIsUserAuthenticated(true);
-      await AsyncStorage.setItem('USER', JSON.stringify(user));
-      await AsyncStorage.setItem('diffAcc', diffAcc);
-    }
-    else{
-      setShowPopup(true);
-    }
+    setIsUserAuthenticated(true);
+    await AsyncStorage.setItem('USER', JSON.stringify(user));
+    await AsyncStorage.setItem('diffAcc', diffAcc);
   };
 
   const logout = async () => {

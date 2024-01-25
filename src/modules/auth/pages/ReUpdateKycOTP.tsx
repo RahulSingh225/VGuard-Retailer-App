@@ -154,9 +154,9 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
       };
 
       let response = await generateOtpForLogin(userCredentials);
-      let message = response.message;
+      let message = response.data.message;
       
-      if (response.code === 200) {
+      if (response.status === 200) {
         setCounter(60);
         setotpsentflag(true);
         setIsPopupVisible(true);

@@ -81,6 +81,7 @@ async function createGetRequest(relativeUrl: string): Promise<AxiosResponse> {
   try {
     const accessToken = await AsyncStorage.getItem('accessToken');
     api.defaults.headers.common['Authorization'] = accessToken;
+    console.log("ACCESSTOKEN", accessToken)
     const response = await api.get(relativeUrl);
     console.log("RESPONSE", response.data);
     return response;
@@ -845,7 +846,7 @@ export function getAy() {
 
 export function getTdsList(accementYear: string) {
   const path = `user/tdsCertificate/${accementYear}`;
-
+  console.log("<><><,", accementYear)
   return createGetRequest(path);
 }
 

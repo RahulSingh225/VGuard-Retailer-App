@@ -53,19 +53,10 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         const fetchDataAndUpdatePostData = async () => {
           try {
             const response = await getUser();
-            
-            if (!response.ok) {
-              showLoader(false);
-              setPopupContent("Something went wrong!");
-              setPopupVisible(true);
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-      
+            showLoader(false);
             const res = await response.data;
-            console.log(res);
-      
+            console.log("RESPONE-------", res);
             setPostData(res);
-      
             if (
               res.currLandmark == res.landmark &&
               res.currentAddress == res.permanentAddress &&
@@ -89,6 +80,9 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 }));
               }
           } catch (error) {
+            showLoader(false);
+            setPopupContent("Something went wrong!");
+            setPopupVisible(true);
             console.error('Error fetching user profile:', error);
           }
         };
@@ -101,6 +95,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     }, [postData?.stateId, postData?.distId, postData?.currDistId, postData?.currStateId]);
 
     const fetchData = async () => {
+        console.log(postData.stateId, "<><><><><")
         if(postData.stateId && postData.distId && postData.currStateId && postData.currDistId){
             try {
                 const statesResponse = await getStates();
@@ -207,7 +202,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }, imageRelated: string) => {
         try {
             const formData = new FormData();
-            formData.append('USER_ROLE', '2');
+            formData.append('userRole', '2');
             formData.append('imageRelated', imageRelated);
             formData.append('file', {
                 uri: fileData.uri,
@@ -394,6 +389,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     }
 
     const handleStateSelect = async (text: string, type: string) => {
+        console.log(text, "<><><><", type)
         let selectedCategory: any;
         if (type == "permanent") {
             selectedCategory = states.find(category => category.stateName === text);

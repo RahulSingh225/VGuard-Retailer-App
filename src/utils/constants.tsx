@@ -59,7 +59,7 @@ const Constants = {
   SELECTED_SEGMENT: 'selected_segment',
   PRODUCT: 'product',
   USER_TYPE: 'UserType',
-  USER_ROLE: 'USER_ROLE',
+  userRole: 'userRole',
   ORDER: 'ORDER',
   Cheque: 'Cheque',
   IdCard: 'IdCard',

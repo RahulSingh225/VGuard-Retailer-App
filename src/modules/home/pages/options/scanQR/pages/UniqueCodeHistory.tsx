@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import colors from '../../../../../../../colors';
 import { getScanCodeHistory } from '../../../../../../utils/apiservice';
+import Loader from '../../../../../../components/Loader';
 interface RedemptionHistoryItem {
   scanDate: string;
   copuonCode: string;
@@ -12,6 +13,7 @@ interface RedemptionHistoryItem {
 
 const UniqueCodeHistory: React.FC = () => {
   const { t } = useTranslation();
+  const [loader, showLoader] = useState(true);
   const [redemptionHistoryData, setRedemptionHistoryData] = useState<RedemptionHistoryItem[]>([]);
 
   useEffect(() => {
@@ -22,8 +24,8 @@ const UniqueCodeHistory: React.FC = () => {
     try {
       const response = await getScanCodeHistory();
       const responseData: RedemptionHistoryItem[] = await response.data;
-
       setRedemptionHistoryData(responseData);
+      showLoader(false);
     } catch (error) {
       console.error('Error fetching redemption history data:', error);
     }
@@ -39,6 +41,7 @@ const UniqueCodeHistory: React.FC = () => {
 
   return (
     <View style={styles.mainWrapper}>
+      <Loader isLoading={loader} />
       <FlatList
         data={redemptionHistoryData}
         renderItem={renderItem}

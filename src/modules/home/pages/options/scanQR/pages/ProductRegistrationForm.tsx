@@ -75,6 +75,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
     if (pincode.length > 3) {
       let suggestionData = await getPincodeList(pincode);
       suggestionData = suggestionData.data;
+      console.log("suggestionData", suggestionData)
 
       if (Array.isArray(suggestionData) && suggestionData.length > 0) {
         const filteredSuggestions = suggestionData.filter(
@@ -92,6 +93,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
   }
   function updateDistrictState(pincode: string) {
     showLoader(true);
+    console.log(pincode, "PINCODE")
 
     getPincodeList(pincode)
       .then(data => {
@@ -99,16 +101,19 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
         return getDetailsByPinCode(pincodeid);
       })
       .then(secondData => {
+        
         secondData = secondData.data;
+        console.log("DATA", secondData)
 
         setCustomerFormData(prevData => ({
           ...prevData,
-          district: secondData.distName,
-          state: secondData.stateName,
-
-          city: secondData.cityName,
+          district: secondData?.distName,
+          state: secondData?.stateName,
+          city: secondData?.cityName,
           pinCode: pincode,
         }));
+
+        console.log(customerFormData);
 
         showLoader(false);
       })
@@ -286,6 +291,21 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
 
   useEffect(() => {
     getLocation().then(r => (location = r));
+    AsyncStorage.getItem('USER').then(r => {
+      const user = JSON.parse(r || '');
+
+      setAddedBy(user.contactNo);
+      setCustomerFormData({
+        ...customerFormData,
+        dealerName: user.name,
+        dealerAddress: user.currentAddress,
+        dealerCity: user.currCity,
+        dealerContactNo: user.contactNo,
+        dealerDistrict: user.currDist,
+        dealerPincode: user.currPinCode,
+        dealerState: user.currState,
+      });
+    });
   }, []);
 
   return (
