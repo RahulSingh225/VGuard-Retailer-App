@@ -33,6 +33,7 @@ import Popup from '../../../../../components/Popup';
 import ImagePickerField from '../../../../../components/ImagePickerField';
 import { getImageUrl } from '../../../../../utils/FileUtils';
 import Loader from '../../../../../components/Loader';
+import Constants from '../../../../../utils/constants';
 
 const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
   const baseURL =
@@ -212,8 +213,8 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
   const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }) => {
     if (fileData.uri != "") {
       const formData = new FormData();
-      formData.append('userRole', '2');
-      formData.append('imageRelated', 'Ticket');
+      formData.append('userRole', Constants.RET_USER_TYPE);
+      formData.append('imageRelated', 'TICKET');
       formData.append('file', {
         uri: fileData.uri,
         name: fileData.name,

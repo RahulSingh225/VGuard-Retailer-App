@@ -32,6 +32,7 @@ import arrowIcon from '../../../../../assets/images/arrow.png';
 import Popup from '../../../../../components/Popup';
 import ImagePickerField from '../../../../../components/ImagePickerField';
 import Loader from '../../../../../components/Loader';
+import Constants from '../../../../../utils/constants';
 
 type BankProps = {};
 
@@ -62,7 +63,6 @@ const Bank: React.FC<BankProps> = () => {
         const response = await getany();
         if (response.status === 200) {
           const data = response.data;
-          console.log(data, '<><<error message<><>');
           setAccHolder(data.bankAccHolderName);
           setAccType(data.bankAccType);
           setBankName(data.bankNameAndBranch);
@@ -123,8 +123,6 @@ const Bank: React.FC<BankProps> = () => {
           checkPhoto: imageUid,
         };
 
-        console.log("POSTDATA", postData);
-
         if (
           postData.bankAccNo !== "" &&
           postData.bankAccHolderName !== "" &&
@@ -183,15 +181,13 @@ const Bank: React.FC<BankProps> = () => {
 
   const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }) => {
     const formData = new FormData();
-    formData.append('userRole', '2');
-    formData.append('imageRelated', 'Cheque');
+    formData.append('userRole', Constants.RET_USER_TYPE);
+    formData.append('imageRelated', 'CHEQUE');
     formData.append('file', {
       uri: fileData.uri,
       name: fileData.name,
       type: fileData.type,
     });
-
-    console.log("formData=====", formData);
 
     try {
       const response = await sendFile(formData);

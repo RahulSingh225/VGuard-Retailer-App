@@ -155,7 +155,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     const getImage = async () => {
       try {
         // const profileImageUrl = await getFile(userData.kycDetails.selfie, 'Profile', 2);
-        const profileImageUrl = await getImageUrl(userData.kycDetails.selfie, 'Profile');
+        const profileImageUrl = getImageUrl(userData.kycDetails.selfie, 'Profile');
         setProfileImage(profileImageUrl);
       } catch (error) {
         console.log('Error while fetching profile image:', error);
@@ -171,9 +171,9 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const handleSendImage = async () => {
     try {
-      const selfiePromise = selfieFileData.uri !== "" ? triggerApiWithImage(selfieFileData, 'Profile') : Promise.resolve(null);
-      const idFrontPromise = idFrontFileData.uri !== "" ? triggerApiWithImage(idFrontFileData, 'IdCard') : Promise.resolve(null);
-      const idBackPromise = idBackFileData.uri !== "" ? triggerApiWithImage(idBackFileData, 'IdCard') : Promise.resolve(null);
+      const selfiePromise = selfieFileData.uri !== "" ? triggerApiWithImage(selfieFileData, 'PROFILE') : Promise.resolve(null);
+      const idFrontPromise = idFrontFileData.uri !== "" ? triggerApiWithImage(idFrontFileData, 'ID_CARD_FRONT') : Promise.resolve(null);
+      const idBackPromise = idBackFileData.uri !== "" ? triggerApiWithImage(idBackFileData, 'ID_CARD_BACK') : Promise.resolve(null);
       const gstPromise = GstFileData.uri !== "" ? triggerApiWithImage(GstFileData, 'GST') : Promise.resolve(null);
 
       const [selfieUid, idFrontUid, idBackUid, gstUid] = await Promise.all([selfiePromise, idFrontPromise, idBackPromise, gstPromise]);

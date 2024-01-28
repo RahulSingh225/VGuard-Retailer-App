@@ -54,7 +54,12 @@ interface WelcomeBanner {
     vdoText: string | "";
 }
 
-export interface UserData {
+interface Tokens {
+    accessToken: string
+    refreshToken: string
+}
+
+export interface VguardRishtaUser {
     appVersionCode: string | "";
     retailerAppVersionCode: string | "";
     egvEnabled: string | "";
@@ -145,6 +150,11 @@ export interface UserData {
     diffAcc: string | "";
 }
 
+export interface User {
+    vguardRishtaUser: VguardRishtaUser;
+    tokens: Tokens;
+}
+
 export interface State {
     stateId: number | 0;
     stateName: string | "";
@@ -157,4 +167,4 @@ export interface District {
     distId: number | 0;
     districtName: string | "";
 }
-  
+

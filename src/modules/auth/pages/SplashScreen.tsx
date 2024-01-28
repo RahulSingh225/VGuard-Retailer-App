@@ -29,7 +29,7 @@ const SplashScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           style={styles.imageVguard}
         />
         <Image
-          source={require('../../../assets/images/group_907.png')}
+          source={require('../../../assets/images/rishta_retailer_logo.webp')}
           style={styles.imageSaathi}
         />
       </View>

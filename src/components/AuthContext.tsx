@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, Dispatch, SetStateAction } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { UserData } from '../utils/modules/UserData';
+import { User } from '../utils/modules/UserData';
 import { logoutUser } from '../utils/apiservice';
 
 interface AuthContextProps {
+  setIsUserAuthenticated: Dispatch<SetStateAction<boolean>>;
   isUserAuthenticated: boolean;
-  login: (user: UserData) => Promise<void>;
+  login: (user: User) => Promise<void>;
   logout: () => Promise<void>;
   popupAuthContent: string;
   showPopup: boolean;
@@ -23,19 +24,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupAuthContent, setPopupContent] = useState('Please Enter Credentials of a Retailer');
 
-  const login = async (user: UserData) => {
-    console.log("LOGGING IN")
-    const diffAcc = user.diffAcc;
+  const login = async (user: User) => {
+    const diffAcc = user.vguardRishtaUser.diffAcc;
     setIsUserAuthenticated(true);
-    await AsyncStorage.setItem('USER', JSON.stringify(user));
+    await AsyncStorage.setItem('USER', JSON.stringify(user.vguardRishtaUser));
+    await AsyncStorage.setItem('refreshToken', JSON.stringify(user.tokens.refreshToken));
     await AsyncStorage.setItem('diffAcc', diffAcc);
   };
 
   const logout = async () => {
     try {
       const response = await logoutUser();
+      console.log(response)
       await AsyncStorage.removeItem('USER');
       await AsyncStorage.removeItem('diffAcc');
+      await AsyncStorage.removeItem('refreshToken');
       setIsUserAuthenticated(false);
     } catch (error) {
       console.error('Error while logging out:', error);
@@ -47,8 +50,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       .then((value) => {
         if (value) {
           login(JSON.parse(value));
-        } else {
-          logout();
         }
       })
       .catch((error) => {
@@ -57,7 +58,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isUserAuthenticated, login, logout, showPopup, popupAuthContent, setShowPopup }}>
+    <AuthContext.Provider value={{ isUserAuthenticated, setIsUserAuthenticated,  login, logout, showPopup, popupAuthContent, setShowPopup }}>
       {children}
     </AuthContext.Provider>
   );

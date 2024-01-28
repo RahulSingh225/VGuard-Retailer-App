@@ -7,7 +7,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import Snackbar from 'react-native-snackbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { sendFile, updateKycReatiler } from '../../../../../utils/apiservice';
+import { sendFile, updateKycRetailer } from '../../../../../utils/apiservice';
 import colors from '../../../../../../colors';
 import Buttons from '../../../../../components/Buttons';
 import arrowIcon from '../../../../../assets/images/arrow.png';
@@ -16,6 +16,7 @@ import NeedHelp from '../../../../../components/NeedHelp';
 import ImagePickerField from '../../../../../components/ImagePickerField';
 import InputField from '../../../../../components/InputField';
 import Loader from '../../../../../components/Loader';
+import Constants from '../../../../../utils/constants';
 
 type BankProps = {};
 
@@ -68,20 +69,21 @@ const UpdatePAN: React.FC<BankProps> = () => {
     };
 
     try {
-      const response = await updateKycReatiler(postData);
-      console.log(postData, '---------------postdata');
-      console.log("<>><<<<", response)
+      const response = await updateKycRetailer(postData);
       if (response.status === 200) {
-        const responseData = await response.data;
-        console.log('RESPONSE', responseData);
-        setPopupContent(responseData.message);
-        setPopupVisible(true);
+        showLoader(false);
+        const responseData = response.data;
+        if (responseData.code === 200) {
+          setPopupVisible(true);
+          setPopupContent(responseData.message);
+        } else {
+          setPopupVisible(true);
+          setPopupContent(responseData.message);
+        }
         // showSnackbar(responseData.message);
       } else {
-        setPopupContent(response.data.message);
-        setPopupVisible(true);
+        throw new Error("Something Went Wrong");
       }
-      showLoader(false);
     } catch (error) {
       console.error('API Error:', error);
       setPopupContent('Something Went Wrong');
@@ -120,19 +122,16 @@ const UpdatePAN: React.FC<BankProps> = () => {
     name: string;
   }) => {
     const formData = new FormData();
-    formData.append('userRole', '2');
-    formData.append('imageRelated', 'PanCard');
+    formData.append('userRole', Constants.RET_USER_TYPE);
+    formData.append('imageRelated', 'PAN_CARD_FRONT');
     formData.append('file', {
       uri: fileData.uri,
       name: fileData.name,
       type: fileData.type,
     });
 
-    console.log('formData=====', formData);
-
     try {
       const response = await sendFile(formData);
-      console.log('response-----------', response.data.entityUid);
       const image = response.data.entityUid;
       setEntityUid(image);
       return response.data.entityUid;
@@ -152,7 +151,7 @@ const UpdatePAN: React.FC<BankProps> = () => {
             onImageChange={handleImageChange}
             imageRelated='PanCard'
             initialImage={entityUid}
-            getImageRelated = 'PanCard'
+            getImageRelated='PanCard'
           />
           <InputField
             label={t('strings:update_pan_number_manually')}

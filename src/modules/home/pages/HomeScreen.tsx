@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { getFile } from '../../../utils/apiservice';
 import { getImageUrl } from '../../../utils/FileUtils';
 import CustomTouchableOption from '../../../components/CustomTouchableOption';
+import Constants from '../../../utils/constants';
 interface User {
   userCode: string;
   name: string;
@@ -56,11 +57,10 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     loadUserDetails();
   }, []);
   useEffect(() => {
-    console.log(userData, "userData=================")
     if (userData?.userRole && userData.selfieImage) {
       const getImage = async () => {
         try {
-          const profileImageUrl = await getFile(userData.selfieImage, 'Profile', "2");
+          const profileImageUrl = await getFile(userData.selfieImage, 'Profile', Constants.RET_USER_TYPE);
           // const profileImageUrl = await getImageUrl(userData.selfieImage, 'Profile');
           console.log(profileImageUrl);
           setProfileImage(profileImageUrl.data);

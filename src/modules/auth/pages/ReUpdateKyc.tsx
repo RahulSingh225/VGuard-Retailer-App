@@ -5,7 +5,7 @@ import colors from '../../../../colors';
 import { getCities, getDetailsByPinCode, getDistricts, getPincodeList, getRishtaUserProfile, getStates, getUser, sendFile } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
-import { Cities, District, State, UserData } from '../../../utils/modules/UserData';
+import { Cities, District, State, VguardRishtaUser } from '../../../utils/modules/UserData';
 import InputField from '../../../components/InputField';
 import Buttons from '../../../components/Buttons';
 import PickerField from '../../../components/PickerField';
@@ -26,7 +26,7 @@ interface ReUpdateKycProps {
 const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     const { t } = useTranslation();
     const { usernumber } = route.params;
-    const [postData, setPostData] = useState<UserData | any>();
+    const [postData, setPostData] = useState<VguardRishtaUser | any>();
     const [isShopAddressDifferent, setIsShopAddressDifferent] = useState('');
     const [isPopupVisible, setPopupVisible] = useState(false);
     const [popupContent, setPopupContent] = useState('');
@@ -42,7 +42,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
 
 
     useEffect(() => {
-        setPostData((prevData: UserData) => ({
+        setPostData((prevData: VguardRishtaUser) => ({
             ...prevData,
             contactNo: usernumber
         }));
@@ -72,7 +72,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
               setIsShopAddressDifferent('No');
             }
             if (res.gstYesNo == 'yess') {
-                setPostData((prevData: UserData) => ({
+                setPostData((prevData: VguardRishtaUser) => ({
                   ...prevData,
                   gstYesNo: 'Yes',
                   gstNo: res.gstNo,
@@ -145,7 +145,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         }
     };
 
-    const validateField = (label: string, value: string, postData: UserData | any) => {
+    const validateField = (label: string, value: string, postData: VguardRishtaUser | any) => {
         const errors: string[] = [];
 
         switch (label) {
@@ -285,7 +285,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         if (label === 'isShopDifferent') {
             setIsShopAddressDifferent(value);
             if (value == "Yes") {
-                setPostData((prevData: UserData) => ({
+                setPostData((prevData: VguardRishtaUser) => ({
                     ...prevData,
                     currentAddress: postData.permanentAddress,
                     currStreetAndLocality: postData.streetAndLocality,
@@ -300,7 +300,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 }))
             }
         } else if (label === 'gstYesNo') {
-            setPostData((prevData: UserData) => ({
+            setPostData((prevData: VguardRishtaUser) => ({
                 ...prevData,
                 gstYesNo: value,
             }));
@@ -308,7 +308,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     };
 
     const handleInputChange = (value: string, label: string) => {
-        const updatedData: UserData | any = { ...postData };
+        const updatedData: VguardRishtaUser | any = { ...postData };
 
         if (label.startsWith('kycDetails.')) {
             const kycLabel = label.replace('kycDetails.', '');
@@ -379,7 +379,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     };
 
     const setPostDataOfImage = (label: string, value: string) => {
-        setPostData((prevData: UserData) => ({
+        setPostData((prevData: VguardRishtaUser) => ({
             ...prevData,
             kycDetails: {
                 ...prevData.kycDetails,
@@ -393,7 +393,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         let selectedCategory: any;
         if (type == "permanent") {
             selectedCategory = states.find(category => category.stateName === text);
-            setPostData((prevData: UserData) => ({
+            setPostData((prevData: VguardRishtaUser) => ({
                 ...prevData,
                 state: text,
                 stateId: selectedCategory?.id || null,
@@ -401,7 +401,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         }
         else if (type == "current") {
             selectedCategory = currStates.find(category => category.stateName === text);
-            setPostData((prevData: UserData) => ({
+            setPostData((prevData: VguardRishtaUser) => ({
                 ...prevData,
                 currState: text,
                 currStateId: selectedCategory?.id || null,
@@ -422,7 +422,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         let selectedCategory: any;
         if (type == "permanent") {
             selectedCategory = districts.find(category => category.districtName === text);
-            setPostData((prevData: UserData) => ({
+            setPostData((prevData: VguardRishtaUser) => ({
                 ...prevData,
                 dist: text,
                 distId: selectedCategory?.id || null,
@@ -430,7 +430,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         }
         else if (type == "current") {
             selectedCategory = currDistricts.find(category => category.districtName === text);
-            setPostData((prevData: UserData) => ({
+            setPostData((prevData: VguardRishtaUser) => ({
                 ...prevData,
                 currDist: text,
                 currDistId: selectedCategory?.id || null,
@@ -450,7 +450,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     const handleCitySelect = async (text: string, type: string) => {
         if (type == "permanent") {
             const selectedCategory = cities.find(category => category.cityName === text);
-            setPostData((prevData: UserData) => ({
+            setPostData((prevData: VguardRishtaUser) => ({
                 ...prevData,
                 city: text,
                 cityId: selectedCategory?.id || null,
@@ -458,7 +458,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         }
         else if (type == "current") {
             const selectedCategory = currCities.find(category => category.cityName === text);
-            setPostData((prevData: UserData) => ({
+            setPostData((prevData: VguardRishtaUser) => ({
                 ...prevData,
                 currCity: text,
                 currCityId: selectedCategory?.id || null,
@@ -497,7 +497,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 }
 
                 type === 'permanent' ?
-                    setPostData((prevData: UserData) => ({
+                    setPostData((prevData: VguardRishtaUser) => ({
                         ...prevData,
                         dist: secondData.distName,
                         distId: secondData.distId,
@@ -507,7 +507,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                         city: secondData.cityName,
                         pinCode: pincode
                     }))
-                    : setPostData((prevData: UserData) => ({
+                    : setPostData((prevData: VguardRishtaUser) => ({
                         ...prevData,
                         currDist: secondData.distName,
                         currDistId: secondData.distId,
@@ -554,10 +554,10 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         }
         // console.log(pincode);
 
-        type === 'permanent' ? setPostData((prevData: UserData) => ({
+        type === 'permanent' ? setPostData((prevData: VguardRishtaUser) => ({
             ...prevData,
             pinCode: pincode
-        })) : setPostData((prevData: UserData) => ({
+        })) : setPostData((prevData: VguardRishtaUser) => ({
             ...prevData,
             currPinCode: pincode
         }))

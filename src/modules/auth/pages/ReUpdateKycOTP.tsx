@@ -52,20 +52,16 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
   }, [countdown]);
 
   useEffect(() => {
-    console.log("><><><<<><><<><><")
     const clearAsyncStorage = async () => {
       try {
-        console.log("REMOVING");
         await AsyncStorage.removeItem('USER');
-        await AsyncStorage.removeItem('username');
-        await AsyncStorage.removeItem('password');
         await AsyncStorage.removeItem('diffAcc');
-        console.log("REMOVED");
+        await AsyncStorage.removeItem('refreshToken');
       } catch (error) {
         console.error('Error clearing AsyncStorage:', error);
       }
     };
-  
+
     clearAsyncStorage();
   }, []);
 
@@ -174,6 +170,43 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
     }
   };
 
+  async function getOTP(otpType: string) {
+    showLoader(true);
+    if (number.trim().length) {
+      try {
+        const body = {
+          loginOtpUserName: number,
+          otpType
+        };
+        const validationResponse = await generateOtpForReverify(body);
+        if (validationResponse.status === 200) {
+          showLoader(false);
+          const validationResponseData = validationResponse.data;
+          if (validationResponseData.code === 200) {
+            const successMessage = validationResponseData.message;
+            setIsPopupVisible(true);
+            setPopupMessage(successMessage);
+          } else {
+            const errorMessage = validationResponseData.message;
+            setIsPopupVisible(true);
+            setPopupMessage(errorMessage);
+          }
+        } else {
+          throw new Error("Something went wrong!")
+        }
+      } catch (error: any) {
+        showLoader(false);
+        setIsPopupVisible(true);
+        setPopupMessage(error.message);
+        console.error('Error during validation:', error);
+      }
+    } else {
+      showLoader(false);
+      setIsPopupVisible(true);
+      setPopupMessage("'Please enter your mobile number'");
+    }
+  }
+
   const placeholderColor = colors.grey;
 
   const { t } = useTranslation();
@@ -192,7 +225,7 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
       <View style={styles.registerUser}>
         <View style={styles.mainWrapper}>
           <Image
-            source={require('../../../assets/images/group_907.png')}
+            source={require('../../../assets/images/rishta_retailer_logo.webp')}
             style={styles.imageSaathi}
           />
           <Text style={styles.mainHeader}>{t('strings:lbl_welcome')}</Text>
@@ -277,7 +310,7 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
                 </Text>
               </View>
             </TouchableOpacity>
-            <View
+            {/* <View
               style={{
                 backgroundColor: 'transparent',
                 height: height / 25,
@@ -356,7 +389,7 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
                   </Text>
                 </View>
               ) : null}
-            </View>
+            </View> */}
           </View>
         </View>
         <View>

@@ -5,7 +5,7 @@ import colors from '../../../../colors';
 import { reUpdateUserForKyc, updateKycReatiler } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
-import { UserData } from '../../../utils/modules/UserData';
+import { VguardRishtaUser } from '../../../utils/modules/UserData';
 import InputField from '../../../components/InputField';
 import Buttons from '../../../components/Buttons';
 import Popup from '../../../components/Popup';
@@ -16,17 +16,17 @@ interface ReUpdateKycPreviewProps {
 }
 const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) => {
     const { t } = useTranslation();
-    const [userData, setUserData] = useState<UserData | any>();
-    const [postData, setPostData] = useState<UserData | any>();
+    const [userData, setUserData] = useState<VguardRishtaUser | any>();
+    const [postData, setPostData] = useState<VguardRishtaUser | any>();
     const [isPopupVisible, setPopupVisible] = useState(false);
     const [popupContent, setPopupContent] = useState('');
     const [loader, showLoader] = useState(true);
 
     useEffect(() => {
-        AsyncStorage.getItem('VGUSER').then(result => {
-            setUserData(JSON.parse(result))
+        AsyncStorage.getItem('USER').then(result => {
+            setUserData(JSON.parse(result as string))
             console.log("<><><><", result);
-            setPostData(JSON.parse(result));
+            setPostData(JSON.parse(result as string));
             showLoader(false);
         })
     }, []);

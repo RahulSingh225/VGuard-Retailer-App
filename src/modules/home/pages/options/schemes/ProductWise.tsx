@@ -38,7 +38,6 @@ const ProductWise: React.FC<ProductWiseProps> = ({ navigation }) => {
         }));
         setData(updatedData);
         setLoading(false);
-        console.log("RESPONSE DATA-------", updatedData);
       })
       .catch(error => {
         console.error('Error fetching data:', error);
@@ -48,7 +47,6 @@ const ProductWise: React.FC<ProductWiseProps> = ({ navigation }) => {
 
   const handleCategoryPress = (categoryId: number) => {
     const category = data.find(item => item.categoryId === categoryId);
-    console.log('category id:', categoryId);
     navigation.navigate('Product Wise Offers Table', { categoryId });
   };
 

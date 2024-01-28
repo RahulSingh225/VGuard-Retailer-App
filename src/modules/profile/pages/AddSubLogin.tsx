@@ -39,7 +39,6 @@ const AddSubLogin: React.FC<{ navigation: any }> = ({ navigation }) => {
                     setPopupContent(responseData.message);
                     setContactNo("");
                     setInputName("");
-                    console.log("<><<><<><>><", responseData, "<><<<><><><><><><<><");
                 })
                 .catch(error => {
                     console.error('Error fetching data:', error);

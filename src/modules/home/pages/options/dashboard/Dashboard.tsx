@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     AsyncStorage.getItem('USER').then((r) => {
-      const user = JSON.parse(r);
+      const user = JSON.parse(r as string);
       const data: UserData = {
         userName: user.name,
         userCode: user.userCode,
@@ -101,9 +101,8 @@ const Dashboard: React.FC = () => {
     if (userData.userRole && userData.userImage) {
       const getImage = async () => {
         try {
-          const profileImageUrl = await getImageUrl(userData.userImage, 'Profile');
+          const profileImageUrl = getImageUrl(userData.userImage, 'Profile');
           setProfileImage(profileImageUrl);
-          console.log(profileImageUrl, "<><><<><")
         } catch (error) {
           console.log('Error while fetching profile image:', error);
         }

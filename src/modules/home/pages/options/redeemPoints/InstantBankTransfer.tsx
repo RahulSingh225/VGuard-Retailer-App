@@ -33,6 +33,8 @@ import arrowIcon from '../../../../../assets/images/arrow.png';
 import Popup from '../../../../../components/Popup';
 import { getImageUrl } from '../../../../../utils/FileUtils';
 import Loader from '../../../../../components/Loader';
+import Constants from '../../../../../utils/constants';
+import ImagePickerField from '../../../../../components/ImagePickerField';
 
 type BankProps = {};
 
@@ -49,29 +51,27 @@ const Bank: React.FC<BankProps> = () => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [selectedImageName, setSelectedImageName] = useState<string>('');
     const [entityUid, setEntityUid] = useState<string>('');
-    const [userRole, setUserRole] = useState<string>('');
     const [availableBanks, setAvailableBanks] = useState<string[]>([]);
     const [popupContent, setPopupContent] = useState('');
     const [isPopupVisible, setPopupVisible] = useState(false);
     const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
     const [loader, showLoader] = useState(true);
+    const [fileData, setFileData] = useState({
+        uri: "",
+        name: "",
+        type: ""
+    });
     const handleImageClick = () => {
         setShowImagePreviewModal(true);
     };
     useEffect(() => {
-        const getUserRoleFromAsyncStorage = async () => {
-            const userRole = await AsyncStorage.getItem('userRole');
-            setUserRole(userRole || '');
-        };
 
         const getBankDetailsAndCallFileUri = async () => {
             try {
-                await getUserRoleFromAsyncStorage();
                 const response = await getany();
                 showLoader(false);
                 if (response.status === 200) {
-                    const data = await response.data;
-                    console.log(data, '<><<error message<><>');
+                    const data = response.data;
                     setAccHolder(data.bankAccHolderName);
                     setAccType(data.bankAccType);
                     setBankName(data.bankNameAndBranch);
@@ -130,7 +130,7 @@ const Bank: React.FC<BankProps> = () => {
     const getFileUri = async (selectedImageName: string) => {
         try {
             if (selectedImageName != '') {
-                const response = await getImageUrl(selectedImageName, 'Cheque');
+                const response = getImageUrl(selectedImageName, 'Cheque');
                 console.log(response, 'file');
                 setSelectedImage(response);
                 return response;
@@ -145,119 +145,144 @@ const Bank: React.FC<BankProps> = () => {
         setShowImagePickerModal(true);
     };
 
-    const handleCameraUpload = () => {
-        setShowImagePickerModal(false);
-        launchCamera(
-            {
-                mediaType: 'photo',
-                includeBase64: false,
-            },
-            (response: ImagePickerResponse) => {
-                if (response.didCancel) {
-                    console.log('Camera was canceled');
-                } else if (response.error) {
-                    console.error('Camera error: ', response.error);
-                } else {
-                    const fileData = {
-                        uri: response.assets[0].uri,
-                        type: response.assets[0].type,
-                        name: response.assets[0].fileName,
-                    };
-                    setSelectedImage(response.assets[0].uri);
-                    setSelectedImageName(response.assets[0].fileName);
-                    triggerApiWithImage(fileData);
-                }
-            },
-        );
+    const handleImageChange = async (image: string, type: string, imageName: string, label: string) => {
+        try {
+            setFileData({
+                uri: image,
+                name: imageName,
+                type: type
+            })
+        } catch (error) {
+            console.error('Error handling image change in Raise Ticket:', error);
+        }
     };
 
-    const handleGalleryUpload = () => {
-        setShowImagePickerModal(false);
-        launchImageLibrary(
-            {
-                mediaType: 'photo',
-                includeBase64: false,
-            },
-            (response: ImagePickerResponse) => {
-                if (response.didCancel) {
-                    console.log('Image picker was canceled');
-                } else if (response.error) {
-                    console.error('Image picker error: ', response.error);
-                } else {
-                    const fileData = {
-                        uri: response.assets[0].uri,
-                        type: response.assets[0].type,
-                        name: response.assets[0].fileName,
-                    };
-                    setSelectedImage(response.assets[0].uri);
-                    setSelectedImageName(response.assets[0].fileName);
-                    triggerApiWithImage(fileData);
-                }
-            },
-        );
-    };
+    // const handleCameraUpload = () => {
+    //     setShowImagePickerModal(false);
+    //     launchCamera(
+    //         {
+    //             mediaType: 'photo',
+    //             includeBase64: false,
+    //         },
+    //         (response: ImagePickerResponse) => {
+    //             if (response.didCancel) {
+    //                 console.log('Camera was canceled');
+    //             } else if (response.errorMessage) {
+    //                 console.error('Camera error: ', response.errorMessage);
+    //             } else {
+    //                 const fileData = {
+    //                     uri: response.assets[0]?.uri,
+    //                     type: response.assets[0].type,
+    //                     name: response.assets[0].fileName,
+    //                 };
+    //                 setSelectedImage(response.assets[0].uri);
+    //                 setSelectedImageName(response.assets[0].fileName);
+    //                 triggerApiWithImage(fileData);
+    //             }
+    //         },
+    //     );
+    // };
 
-    const triggerApiWithImage = async (fileData: FormData) => {
+    // const handleGalleryUpload = () => {
+    //     setShowImagePickerModal(false);
+    //     launchImageLibrary(
+    //         {
+    //             mediaType: 'photo',
+    //             includeBase64: false,
+    //         },
+    //         (response: ImagePickerResponse) => {
+    //             if (response.didCancel) {
+    //                 console.log('Image picker was canceled');
+    //             } else if (response.error) {
+    //                 console.error('Image picker error: ', response.error);
+    //             } else {
+    //                 const fileData = {
+    //                     uri: response.assets[0].uri,
+    //                     type: response.assets[0].type,
+    //                     name: response.assets[0].fileName,
+    //                 };
+    //                 setSelectedImage(response.assets[0].uri);
+    //                 setSelectedImageName(response.assets[0].fileName);
+    //                 triggerApiWithImage(fileData);
+    //             }
+    //         },
+    //     );
+    // };
+
+    const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }) => {
         const formData = new FormData();
-        formData.append('userRole', userRole);
-        formData.append('imageRelated', 'Cheque');
-        formData.append('file', fileData);
+        formData.append('userRole', Constants.RET_USER_TYPE);
+        formData.append('imageRelated', 'CHEQUE');
+        formData.append('file', {
+            uri: fileData.uri,
+            name: fileData.name,
+            type: fileData.type,
+        });
 
         try {
             const response = await sendFile(formData);
-            setEntityUid(response.data.entityUid);
+            const image = response.data.entityUid
+            setEntityUid(image);
+            return response.data.entityUid;
         } catch (error) {
+            setPopupContent("Error uploading image");
+            setPopupVisible(true)
             console.error('API Error:', error);
         }
     };
 
     const handleProceed = () => {
         showLoader(true);
-        const postData = {
-            bankAccNo: accNo,
-            bankAccHolderName: accHolder,
-            bankAccType: accType,
-            bankNameAndBranch: bankName,
-            bankIfsc: ifscCode,
-            checkPhoto: entityUid,
-            points: points
-        };
-        if (postData.bankAccNo != "" &&
-            postData.bankAccHolderName != "" &&
-            postData.bankAccType != "" &&
-            postData.bankAccType != "" &&
-            postData.bankNameAndBranch != "" &&
-            postData.bankIfsc != "" &&
-            postData.checkPhoto != "" &&
-            postData.points != ""
-        ) {
-            bankTransfer(postData)
-                .then((response) => {
-                    console.log(postData, '---------------postdata');
-                    if (response.status === 200) {
-                        const responses = response.data;
-                        return responses;
-                    } else {
-                        setPopupContent("Failed to update Bank Details");
-                        setPopupVisible(true);
-                    }
+        triggerApiWithImage(fileData)
+            .then((uuid) => {
+                const postData = {
+                    bankAccNo: accNo,
+                    bankAccHolderName: accHolder,
+                    bankAccType: accType,
+                    bankNameAndBranch: bankName,
+                    bankIfsc: ifscCode,
+                    checkPhoto: entityUid,
+                    points: points
+                };
+                if (postData.bankAccNo != "" &&
+                    postData.bankAccHolderName != "" &&
+                    postData.bankAccType != "" &&
+                    postData.bankAccType != "" &&
+                    postData.bankNameAndBranch != "" &&
+                    postData.bankIfsc != "" &&
+                    postData.checkPhoto != "" &&
+                    postData.points != ""
+                ) {
+                    bankTransfer(postData)
+                        .then((response) => {
+                            showLoader(false);
+                            const responses = response.data;
+                            return responses;
+                        })
+                        .then((data) => {
+                            setPopupVisible(true);
+                            setPopupContent(data.message)
+                        })
+                        .catch((error) => {
+                            setPopupContent('Failed to update Bank Details');
+                            setPopupVisible(true);
+                            showLoader(false);
+                            console.error('API Error:', error);
+                        });
+                }
+                else {
                     showLoader(false);
-                })
-                .then((data) => {
+                    setPopupContent("Enter all the details");
                     setPopupVisible(true);
-                    setPopupContent(data.message)
-                })
-                .catch((error) => {
-                    setPopupContent('Failed to update Bank Details');
-                    setPopupVisible(true);
-                    showLoader(false);
-                    console.error('API Error:', error);
-                });
-        }
-        else {
-            setPopupContent("Enter all the details");
-            setPopupVisible(true);
-        }
+                }
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                setPopupContent("An error occurred");
+                setPopupVisible(true);
+            });
+
     };
 
     return (
@@ -344,34 +369,34 @@ const Bank: React.FC<BankProps> = () => {
                         />
                     </View>
                     <View>
-                        <TouchableOpacity
+                        {/* <TouchableOpacity
                             style={styles.inputContainer}
-                            onPress={handleImagePickerPress}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder={t('strings:cancelled_cheque_copy')}
-                                placeholderTextColor={colors.grey}
-                                editable={false}
-                            />
-                            <TouchableOpacity
-                                onPress={handleImageClick}>
-                                <View style={styles.inputImage}>
-                                    {selectedImage ? (
-                                        <Image
-                                            source={{ uri: selectedImage }}
-                                            style={{ width: '100%', height: '100%' }}
-                                            resizeMode="cover"
-                                        />
-                                    ) : (
-                                        <Image
-                                            source={require('../../../../../assets/images/photo_camera.png')}
-                                            style={{ width: '100%', height: '100%' }}
-                                            resizeMode="contain"
-                                        />
-                                    )}
-                                </View>
-                            </TouchableOpacity>
+                            onPress={handleImagePickerPress}> */}
+                        <ImagePickerField label={t('strings:cancelled_cheque_copy')}
+                            onImageChange={handleImageChange}
+                            imageRelated='Cheque'
+                            initialImage={entityUid}
+                            getImageRelated='Cheque'
+                        />
+                        <TouchableOpacity
+                            onPress={handleImageClick}>
+                            <View style={styles.inputImage}>
+                                {selectedImage ? (
+                                    <Image
+                                        source={{ uri: selectedImage }}
+                                        style={{ width: '100%', height: '100%' }}
+                                        resizeMode="cover"
+                                    />
+                                ) : (
+                                    <Image
+                                        source={require('../../../../../assets/images/photo_camera.png')}
+                                        style={{ width: '100%', height: '100%' }}
+                                        resizeMode="contain"
+                                    />
+                                )}
+                            </View>
                         </TouchableOpacity>
+                        {/* </TouchableOpacity> */}
                         <Modal
                             animationType="slide"
                             transparent={true}

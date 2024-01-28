@@ -26,10 +26,20 @@ import language from '../../../assets/images/language.png';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import DeviceInfo from 'react-native-device-info';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from '../../../utils/constants';
 
 const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t, i18n } = useTranslation();
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
+  const [loader, showLoader] = useState(false);
+  const yellow = colors.yellow;
+  const placeholderColor = colors.lightGrey;
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const { login, showPopup, popupAuthContent, setShowPopup } = useAuth();
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [popupContent, setPopupContent] = useState("");
+  const [selectedOption, setSelectedOption] = useState(true);
 
   const handleLanguageButtonPress = () => {
     setShowLanguagePicker(true);
@@ -52,10 +62,9 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         console.error('Error clearing AsyncStorage:', error);
       }
     };
-
     clearAsyncStorage();
   }, [i18n.language]);
-  
+
 
   const showSnackbar = (message: string) => {
     Snackbar.show({
@@ -64,15 +73,6 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     });
   };
 
-  const [loader, showLoader] = useState(false);
-  const yellow = colors.yellow;
-  const placeholderColor = colors.lightGrey;
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const { login, showPopup, popupAuthContent, setShowPopup } = useAuth();
-  const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [popupContent, setPopupContent] = useState("");
-  const [selectedOption, setSelectedOption] = useState(true);
 
   const handleTermsPress = () => {
     setSelectedOption(!selectedOption);
@@ -90,7 +90,7 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   // };
 
   const handleLogin = async () => {
-    if (username === '' || password === '') {
+    if (!username.trim().length || !password.trim().length) {
       showSnackbar('Please enter a username and password.');
       return;
     }
@@ -103,24 +103,24 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     showLoader(true);
 
     try {
-      const response = await loginWithPassword(username, password, "2");
+      const response = await loginWithPassword(username, password, Constants.RET_USER_TYPE);
       showLoader(false);
       if (response.status === 200) {
-        var r = response.data;
-        login(r.vguardRishtaUser);
+        const responseData = response.data;
+        if (responseData.name === "Fail") {
+          throw new Error("Wrong Username or Password!");
+        }
+        login(responseData);
       }
-      else if (response.status === 500) {
+      else {
         setIsPopupVisible(!isPopupVisible);
         setPopupContent("Something went wrong!")
-      } else {
-        setIsPopupVisible(!isPopupVisible);
-        setPopupContent("Wrong Username or Password!")
       }
-    } catch (error) {
-      setIsPopupVisible(!isPopupVisible);
-      setPopupContent("Wrong Username or Password!");
+    } catch (error: any) {
       showLoader(false);
-      console.error('Login error:', error);
+      setIsPopupVisible(!isPopupVisible);
+      setPopupContent(error.response.data);
+      console.error('Login error:', error.response.data);
     }
   };
 
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     color: colors.black,
     height: 40,
     padding: 10,
-    flex:1
+    flex: 1
   },
   inputContainer: {
     backgroundColor: colors.white,
