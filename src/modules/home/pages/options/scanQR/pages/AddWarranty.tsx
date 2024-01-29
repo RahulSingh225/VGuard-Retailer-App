@@ -110,7 +110,6 @@ const AddWarranty = ({navigation}) => {
           setLongitude(position.longitude.toString());
           showLoader(false);
         } else {
-          console.log('Position is undefined or null');
         }
       })
       .catch(error => {
@@ -132,7 +131,7 @@ const AddWarranty = ({navigation}) => {
       },
       response => {
         if (response.didCancel) {
-          console.log('Camera was canceled');
+          console.error('Camera was canceled');
         } else if (response.error) {
           console.error('Camera error: ', response.error);
         } else {
@@ -154,7 +153,6 @@ const AddWarranty = ({navigation}) => {
     );
   };
   const handleGalleryUpload = () => {
-    console.log('Image type==============', imageType);
 
     setShowImagePickerModal(false);
     launchImageLibrary(
@@ -164,7 +162,7 @@ const AddWarranty = ({navigation}) => {
       },
       response => {
         if (response.didCancel) {
-          console.log('Image picker was canceled');
+          console.error('Image picker was canceled');
         } else if (response.error) {
           console.error('Image picker error: ', response.error);
         } else {
@@ -208,12 +206,10 @@ const AddWarranty = ({navigation}) => {
       const response = await sendFile(formData);
       if (imageType == 'bill') {
         setSelectedBillImageName(response.data.entityUid);
-        console.log(response.data.entityUid)
         return response.data.entityUid;
       }
       if (imageType == 'warranty') {
         setSelectedWarrantyImageName(response.data.entityUid);
-        console.log(response.data.entityUid)
         return response.data.entityUid;
       }
     } catch (error) {
@@ -245,7 +241,6 @@ const AddWarranty = ({navigation}) => {
       selectedWarrantyImage,
       'warranty',
     );
-    console.log("<><<<><><<>")
     const postData = {
       contactNo: customerDetails.contactNo,
       name: customerDetails.name,
@@ -317,19 +312,14 @@ const AddWarranty = ({navigation}) => {
       longitude: longitude,
       geolocation: '',
     };
-    console.log("POST DATA")
     const response = await sendCustomerData(postData);
     const result = await response.data;
-    console.log("RESPONSE<><><><", result);
     if (result.errorCode == 1) {
       var couponPoints = result.couponPoints;
       var basePoints = result.basePoints;
       // var couponPoints = "100";
       // var basePoints = "200";
       basePoints ? (basePoints = `Base Points: ${basePoints}`) : null;
-
-      console.log('COUPON POINTS:===', couponPoints);
-      console.log('BASE POINTS:========', basePoints);
       setScratchCardProps({
         rewardImage: {
           width: 100,

@@ -30,15 +30,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await AsyncStorage.setItem('USER', JSON.stringify(user.vguardRishtaUser));
     await AsyncStorage.setItem('refreshToken', JSON.stringify(user.tokens.refreshToken));
     await AsyncStorage.setItem('diffAcc', diffAcc);
+    await AsyncStorage.setItem('isUserAuthenticated', "true");
   };
 
   const logout = async () => {
     try {
       const response = await logoutUser();
-      console.log(response)
       await AsyncStorage.removeItem('USER');
       await AsyncStorage.removeItem('diffAcc');
       await AsyncStorage.removeItem('refreshToken');
+      await AsyncStorage.removeItem('isUserAuthenticated');
       setIsUserAuthenticated(false);
     } catch (error) {
       console.error('Error while logging out:', error);
@@ -50,6 +51,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       .then((value) => {
         if (value) {
           login(JSON.parse(value));
+        }
+      })
+      .catch((error) => {
+        console.error('AsyncStorage error:', error);
+      });
+  }, []);
+  useEffect(() => {
+    AsyncStorage.getItem('isUserAuthenticated')
+      .then((value) => {
+        if (value == "true") {
+          setIsUserAuthenticated(true);
         }
       })
       .catch((error) => {

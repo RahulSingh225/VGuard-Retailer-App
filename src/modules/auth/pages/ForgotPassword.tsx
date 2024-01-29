@@ -30,7 +30,6 @@ const ForgotPassword: React.FC<{ navigation: any }> = ({ navigation }) => {
     showLoader(true);
     forgotPassword(number)
       .then(responsedata => {
-        console.log("responsedata:", responsedata)
         const message = responsedata.data.message;
         setPopupVisible(true);
         setPopupContent(message);

@@ -1,5 +1,5 @@
 // AppNavigator.tsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import BottomTab from '../modules/common/services/BottomTab';
 import AuthNavigator from '../modules/auth/stack/AuthNavigator';

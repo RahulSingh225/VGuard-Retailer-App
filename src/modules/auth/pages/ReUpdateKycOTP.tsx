@@ -69,9 +69,7 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
     try {
       showLoader(true);
       let data = { loginOtpUserName: number, otpType: "SMS" };
-      console.log(data);
       let validationResponse = await generateOtpForReverify(data);
-      console.log(validationResponse);
       showLoader(false);
       // Assuming validationResponse is an object with a 'data' property containing the message
       if (validationResponse.status === 200) {
@@ -113,11 +111,9 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
       };
 
       let response = await validateReverifyOtp(userCredentials);
-      console.log("RESPONSE", response)
       showLoader(false);
       let message = response.data.message;
       if (response.status === 200 && response.data.message == "OTP verified successfully, please proceed with the registration.") {
-        console.log("<><><", number, otp)
         AsyncStorage.setItem('username', number.toString()).then(() => {
           AsyncStorage.setItem('password', otp.toString()).then(() => {
             AsyncStorage.setItem('authtype', 'otp').then(() => {
@@ -132,9 +128,8 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
         showLoader(false);
 
       }
-      console.log(response);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       showLoader(false);
 
     }
@@ -161,10 +156,9 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
         setIsPopupVisible(true);
         setPopupMessage(message);
       }
-      console.log(response);
       showLoader(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       showLoader(false);
 
     }

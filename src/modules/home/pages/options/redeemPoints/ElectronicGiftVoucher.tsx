@@ -111,7 +111,6 @@ const ElectronicGiftVoucher = ({ navigation }) => {
                     key={category.id}
                     title={category.name}
                     onPress={() => {
-                      console.log(category.id);
                       hideCategoryDialog();
                     }}
                   />
@@ -133,7 +132,6 @@ const ElectronicGiftVoucher = ({ navigation }) => {
                     key={points.id}
                     title={points.name}
                     onPress={() => {
-                      console.log(points.id);
                       hidePointsDialog();
                     }}
                   />

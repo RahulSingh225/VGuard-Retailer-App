@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableHighlight,
   Modal,
   Image,
   TextInput,
@@ -98,7 +97,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
         const profileImageUrl = await getImageUrl(userData.userImage, 'Profile');
         setProfileImage(profileImageUrl);
       } catch (error) {
-        console.log('Error while fetching profile image:', error);
+        console.error('Error while fetching profile image:', error);
       }
     };
 
@@ -127,7 +126,6 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
   //     description: descriptionInput,
   //   };
 
-  //   console.log("Post Data========", postData)
 
   //   if (postData.userId != '' && postData.issueTypeId != '' && postData.description != '') {
   //     sendTicket(postData)
@@ -166,13 +164,10 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
       imagePath: imageUrl,
       description: descriptionInput,
     };
-    console.log("Post Data========", postData)
     if (postData.userId != '' && postData.issueTypeId != '') {
       sendTicket(postData)
         .then((response) => {
-          console.log("RESPONSE", response)
           if (response.status === 200) {
-            console.log(response.data, " :<<>><<");
             setSelectedOption('');
             setEntityUid('');
             setDescriptionInput('');
@@ -257,14 +252,14 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
             <Text style={styles.textDetail}>{userData.userCode}</Text>
           </View>
         </View>
-        <TouchableHighlight
+        <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('Ticket History')}
         >
           <Text style={styles.buttonText}>
             {t('strings:ticket_history')}
           </Text>
-        </TouchableHighlight>
+        </TouchableOpacity>
       </View>
       <Text style={[styles.blackText, { marginTop: responsiveFontSize(2) }]}>{t('strings:issue_type')}</Text>
       {isOptionsLoading ? (

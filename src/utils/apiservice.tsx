@@ -35,8 +35,8 @@ api.interceptors.response.use(
       const refreshToken = JSON.parse(
         (await AsyncStorage.getItem('refreshToken')) as string,
       );
-      if(!refreshToken) {
-      // logout
+      if (!refreshToken) {
+        // logout
       }
 
       try {
@@ -54,6 +54,7 @@ api.interceptors.response.use(
         await AsyncStorage.removeItem('USER');
         await AsyncStorage.removeItem('diffAcc');
         await AsyncStorage.removeItem('refreshToken');
+        await AsyncStorage.removeItem('isUserAuthenticated');
       }
     }
     return Promise.reject(error);
@@ -153,7 +154,6 @@ export const Newuserotpvalidation = async (
       mobileNo: mobileNo,
       otp: otp,
     };
-    console.log({ mobileNo, otp });
     const response = await api.post('user/validateNewUserOtp', {
       mobileNo: mobileNo,
       otp: otp,
@@ -173,12 +173,10 @@ export function getUsers(filter: string) {
 
 export function getFile(uuid: String, imageRelated: String, userRole: String) {
   const path = `file/${uuid}/${imageRelated}/${userRole}`;
-  console.log(path);
   return createGetRequest(path);
 }
 
 export const sendFile = async (formData: FormData): Promise<any> => {
-  console.log(formData);
   const config = {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -188,15 +186,7 @@ export const sendFile = async (formData: FormData): Promise<any> => {
     const response = await api.post('file', formData, config);
     return response;
   } catch (error: any) {
-    if (error.response) {
-      console.log(error.response.data);
-      console.log(error.response.status);
-      console.log(error.response.headers);
-    } else if (error.request) {
-      console.log(error.request);
-    } else {
-      console.log('Error', error.message);
-    }
+    console.error('Error', error);
     throw error;
   }
 };
@@ -440,7 +430,6 @@ export function updateKyc(kycDetails: any) {
 }
 
 export function updateKycRetailer(kycDetails: any) {
-  console.log('KYC Details', kycDetails);
   const path = 'user/updateKycRetailer';
   return createPostRequest(path, kycDetails);
 }
@@ -844,7 +833,6 @@ export function getAy() {
 
 export function getTdsList(accementYear: string) {
   const path = `user/tdsCertificate/${accementYear}`;
-  console.log("<><><,", accementYear)
   return createGetRequest(path);
 }
 

@@ -31,8 +31,6 @@ const RedeemPoints: React.FC<{ navigation: any }> = ({ navigation }) => {
     { imageUrl: require('../../../../../assets/images/banner_redeem_ppoints.webp') },
   ];
 
-  console.log(carouselData)
-
   const [pointData, setPointData] = useState<PointData>({
     pointsBalance: '',
     redeemedPoints: '',

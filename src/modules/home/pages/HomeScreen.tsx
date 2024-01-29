@@ -18,6 +18,7 @@ interface User {
   pointsBalance: string;
   redeemedPoints: string;
   numberOfScan: string;
+  inAllow: number
 }
 
 const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -39,9 +40,10 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           userRole: user?.roleId || 0,
           pointsBalance: user?.pointsSummary?.pointsBalance || 0,
           redeemedPoints: user?.pointsSummary.redeemedPoints || 0,
-          numberOfScan: user?.pointsSummary.numberOfScan || 0
+          numberOfScan: user?.pointsSummary.numberOfScan || 0,
+          inAllow: user?.inAllow
         };
-        if(diffAcc == "1"){
+        if (diffAcc == "1") {
           setDisableOptions(true);
         }
         setUserData(shapedUser);
@@ -61,12 +63,9 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       const getImage = async () => {
         try {
           const profileImageUrl = await getFile(userData.selfieImage, 'Profile', Constants.RET_USER_TYPE);
-          // const profileImageUrl = await getImageUrl(userData.selfieImage, 'Profile');
-          console.log(profileImageUrl);
           setProfileImage(profileImageUrl.data);
-          // console.log(profileImage)
         } catch (error) {
-          console.log('Error while fetching profile image:', error);
+          console.error('Error while fetching profile image:', error);
         }
       };
       getImage();
@@ -117,16 +116,25 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         </View>
         <View style={styles.dashboard}>
           <View style={styles.row}>
-            <CustomTouchableOption
-              text="strings:scan_code"
-              iconSource={require('../../../assets/images/ic_scan_code.png')}
-              screenName="Scan QR"
-            />
+            {userData?.inAllow == 1 ? (
+              <CustomTouchableOption
+                text="strings:scan_code"
+                iconSource={require('../../../assets/images/ic_scan_code.png')}
+                screenName="Scan QR"
+              />
+            )
+              : (
+                <CustomTouchableOption
+                  text="strings:scan_code"
+                  iconSource={require('../../../assets/images/ic_scan_code.png')}
+                  screenName="Product Registration Form"
+                />
+              )}
             <CustomTouchableOption
               text="strings:redeem_points"
               iconSource={require('../../../assets/images/ic_redeem_points.webp')}
               screenName="Redeem Products"
-              diffAcc = {disableOptions}
+              diffAcc={disableOptions}
             />
             <CustomTouchableOption
               text="strings:dashboard"
@@ -139,7 +147,7 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               text="strings:update_pan"
               iconSource={require('../../../assets/images/ic_update_kyc.webp')}
               screenName="Update PAN"
-              diffAcc = {disableOptions}
+              diffAcc={disableOptions}
             />
             <CustomTouchableOption
               text="strings:scheem_offers"
@@ -174,7 +182,7 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               text="strings:update_bank"
               iconSource={require('../../../assets/images/ic_raise_ticket.webp')}
               screenName="Update Bank"
-              diffAcc = {disableOptions}
+              diffAcc={disableOptions}
             />
             <CustomTouchableOption
               text="strings:tds_certificate"

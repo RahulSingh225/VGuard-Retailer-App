@@ -75,7 +75,6 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
     if (pincode.length > 3) {
       let suggestionData = await getPincodeList(pincode);
       suggestionData = suggestionData.data;
-      console.log("suggestionData", suggestionData)
 
       if (Array.isArray(suggestionData) && suggestionData.length > 0) {
         const filteredSuggestions = suggestionData.filter(
@@ -89,11 +88,9 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
     }
     setCustomerFormData(prevData => ({ ...prevData, pincode: pincode }));
 
-    // console.log(pincode);
   }
   function updateDistrictState(pincode: string) {
     showLoader(true);
-    console.log(pincode, "PINCODE")
 
     getPincodeList(pincode)
       .then(data => {
@@ -103,7 +100,6 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
       .then(secondData => {
         
         secondData = secondData.data;
-        console.log("DATA", secondData)
 
         setCustomerFormData(prevData => ({
           ...prevData,
@@ -113,7 +109,6 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
           pinCode: pincode,
         }));
 
-        console.log(customerFormData);
 
         showLoader(false);
       })
@@ -210,7 +205,6 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
           contactNo,
           customerFormData.category,
         );
-        console.log('Dealer Pincode===========', postData.addedBy);
         const result = await response.data;
         if (result.code == 1) {
           setPopupVisible(true);
@@ -272,7 +266,6 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
           dealerState: customerDetails.dealerState || '',
         }));
 
-        console.log('Customer details set:', customerDetails);
       } else {
         ToastAndroid.show(
           t('strings:cust_detail_not_found'),
@@ -415,7 +408,6 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
             setOpen={() => setUIswitch({ pincode: !uiSwitch.pincode })}
             value={customerFormData?.pincode}
             onSelectItem={item => {
-              // console.log(item)
               processPincode(`${item.value}`);
             }}
             onChangeSearchText={text => processPincode(text)}

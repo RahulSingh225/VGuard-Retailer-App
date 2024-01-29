@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   TouchableOpacity,
   View,
@@ -8,14 +8,14 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import colors from '../../../../../../../colors';
 import {
   responsiveFontSize,
   responsiveHeight,
 } from 'react-native-responsive-dimensions';
 import Buttons from '../../../../../../components/Buttons';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import cameraIcon from '../../../../../../assets/images/ic_scan_code_camera.webp';
 import arrowIcon from '../../../../../../assets/images/arrow.png';
 import NeedHelp from '../../../../../../components/NeedHelp';
@@ -29,7 +29,7 @@ import {
   validateRetailerCoupon,
 } from '../../../../../../utils/apiservice';
 import ScratchCard from '../../../../../../components/ScratchCard';
-import {scanQR} from 'react-native-simple-qr-reader';
+import { scanQR } from 'react-native-simple-qr-reader';
 import Popup from '../../../../../../components/Popup';
 import PopupWithOkAndCancel from '../../../../../../components/PopupWithOkAndCancel';
 import PopupWithPin from '../../../../../../components/PopupWithPin';
@@ -45,9 +45,9 @@ interface OkPopupContent {
   okAction: (() => void) | null;
 }
 
-const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
+const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
   const type = route?.params?.type;
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [qrCode, setQrcode] = useState<string>('');
   const [scratchCard, showScratchCard] = useState<boolean>(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
@@ -72,7 +72,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
       textContent: 'YOU WON',
       fontWeight: '700',
     },
-    text1: {color: 'black', fontSize: 16, textContent: '', fontWeight: '700'},
+    text1: { color: 'black', fontSize: 16, textContent: '', fontWeight: '700' },
     text2: {
       color: 'black',
       fontSize: 16,
@@ -89,7 +89,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
       buttonColor: '#F0C300',
       buttonTextColor: 'black',
       buttonText: 'Register Warranty',
-      buttonAction: () => {},
+      buttonAction: () => { },
       fontWeight: '400',
     },
     textInput: false,
@@ -134,7 +134,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
   }, []);
 
   const getUserLocation = () => {
-    
+
     getLocation()
       .then(position => {
         if (position != null) {
@@ -145,7 +145,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
           }));
           showLoader(false);
         } else {
-          console.log('Position is undefined or null');
+          console.error('Position is undefined or null');
         }
       })
       .catch(error => {
@@ -155,7 +155,6 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
 
   const handleQrText = (coupon: string) => {
     setQrcode(coupon);
-    console.log(coupon,"<><><<>")
     setCouponData(prevCouponData => ({
       ...prevCouponData,
       couponCode: coupon,
@@ -164,8 +163,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
 
   async function sendBarcode() {
     if (qrCode && qrCode != '') {
-      console.log(qrCode, "<><><<<>");
-      if(qrCode.length < 16){
+      if (qrCode.length < 16) {
         setPopupContent("Please enter valid 16 character barcode");
         setPopupVisible(true);
         return;
@@ -174,9 +172,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
       if (type == 'airCooler') {
         apiResponse = await isValidBarcode(CouponData, 1, '', 0, null);
         const r = await apiResponse.data;
-        console.log('Response:', r);
       } else if (type == 'SCAN_IN') {
-        console.log("<><><", CouponData)
         apiResponse = await sendScanInCoupon(CouponData);
         const r = await apiResponse.data;
         if (r.errorCode == 3) {
@@ -191,7 +187,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
           setPopupVisible(true);
           setPopupContent(r.errorMsg);
         }
-        
+
       } else {
         apiResponse = await isValidBarcode(CouponData, 0, '', 0, null);
         const r = await apiResponse.data;
@@ -200,7 +196,6 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
           JSON.stringify(r),
         );
         CouponResponse = r;
-        console.log("RESPONSE", r);
         if (r.errorCode == 1) {
           showLoader(false);
           setQrcode('');
@@ -256,8 +251,6 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
     sendCouponPin(CouponData)
       .then(result => result.data)
       .then(jsonResult => {
-        console.log('CouponData:', CouponData);
-
         setPinPopupVisible(false);
         setPopupVisible(true);
         setPopupContent(jsonResult.errorMsg);
@@ -336,11 +329,11 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
         <TouchableOpacity style={styles.imageContainer} onPress={() => scan()}>
           <Image
             source={require('../../../../../../assets/images/ic_scan_code_2.png')}
-            style={{width: '100%', height: '100%'}}
+            style={{ width: '100%', height: '100%' }}
             resizeMode="contain"
           />
         </TouchableOpacity>
-        <View style={[{height: responsiveHeight(5), width: '100%'}]}>
+        <View style={[{ height: responsiveHeight(5), width: '100%' }]}>
           <Buttons
             label={t('strings:click_here_to_scan_a_unique_code')}
             variant="blackButton"
@@ -381,14 +374,14 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
           icon={arrowIcon}
         />
         <View style={styles.rightText}>
-        <TouchableOpacity
+          <TouchableOpacity
             onPress={() => navigation.navigate('Unique Code History')}
-            style = {{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-          <Text style={styles.smallText}>
-            {t('strings:go_to_unique_code_history')}
-          </Text>
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <Text style={styles.smallText}>
+              {t('strings:go_to_unique_code_history')}
+            </Text>
             <Image
-              style={{width: 30, height: 30}}
+              style={{ width: 30, height: 30 }}
               source={require('../../../../../../assets/images/ic_circle_right_arrow_yellow.webp')}
             />
           </TouchableOpacity>
@@ -404,16 +397,16 @@ const ScanCode: React.FC<ScanCodeProps> = ({navigation, route}) => {
       )}
       {isOkPopupVisible && (
         <PopupWithOkAndCancel
-        isVisible={isOkPopupVisible}
-        onClose={() => {
-          setOkPopupVisible(false);
-        }}
-        onOk={() => {
-          okPopupContent.okAction();
-        }}
-      >
-        {okPopupContent.text}
-      </PopupWithOkAndCancel>
+          isVisible={isOkPopupVisible}
+          onClose={() => {
+            setOkPopupVisible(false);
+          }}
+          onOk={() => {
+            okPopupContent.okAction();
+          }}
+        >
+          {okPopupContent.text}
+        </PopupWithOkAndCancel>
       )}
       {isPinPopupVisible && (
         <PopupWithPin
@@ -513,8 +506,6 @@ async function isValidBarcode(
   if (pinFourDigit == '') {
     // result = await captureSale(CouponData);
     result = await validateRetailerCoupon(CouponData);
-    
-    console.log(CouponData);
     return result;
   } else {
     CouponData.pin = pinFourDigit;
@@ -531,9 +522,6 @@ export default ScanCode;
 //           // var couponPoints = "100";
 //           // var basePoints = "200";
 //           basePoints ? (basePoints = `Base Points: ${basePoints}`) : null;
-
-//           console.log('COUPON POINTS:===', couponPoints);
-//           console.log('BASE POINTS:========', basePoints);
 
 //           setScratchCardProps({
 //             rewardImage: {

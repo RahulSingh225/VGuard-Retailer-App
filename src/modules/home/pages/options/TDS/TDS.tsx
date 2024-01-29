@@ -64,7 +64,6 @@ const TDS: React.FC<TDSProps> = () => {
   };
 
   const handleCardPress = (item: string) => {
-    console.log('URL', `${BASEURL}${item}`);
     Linking.openURL(`${BASEURL}/${item}`);
   };
 
@@ -90,7 +89,6 @@ const TDS: React.FC<TDSProps> = () => {
   }, []);
 
   useEffect(() => {
-    console.log(assessmentYearValue)
     getTdsList(assessmentYearValue)
       .then(response => response.data)
       .then(responseData => {

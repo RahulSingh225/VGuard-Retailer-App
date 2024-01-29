@@ -47,8 +47,6 @@ const MultiSelectField: React.FC<MultiSelectFieldProps> = ({
     };
 
     useEffect(() => {
-        console.log("selectedValues", selectedValues);
-
         if (Array.isArray(selectedValues) && selectedValues.length > 0) {
             setSelectedValuesText(selectedValues.join(', '));
         } else {

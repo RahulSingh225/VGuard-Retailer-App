@@ -29,6 +29,7 @@ import UpdatePAN from '../pages/options/pan/UpdatePAN';
 import AirCoolerStack from '../pages/options/airCooler/stack/AirCoolerStack';
 import RedemptionHistory from '../pages/options/redeemPoints/RedemptionHistory';
 import UniqueCodeHistory from '../pages/options/scanQR/pages/UniqueCodeHistory';
+import ProductRegistrationForm from '../pages/options/scanQR/pages/ProductRegistrationForm';
 
 const HomeStack: React.FC = () => {
   type HomeStackParams = {
@@ -50,12 +51,12 @@ const HomeStack: React.FC = () => {
     Profile: undefined;
     'Unique Code History': undefined;
     'Redemption History': undefined;
+    'Product Registration Form': undefined;
   };
 
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
 
   const handleLanguageButtonPress = () => {
-    console.log('handleLanguageButtonPress...........');
     setShowLanguagePicker(true);
   };
 
@@ -95,6 +96,13 @@ const HomeStack: React.FC = () => {
         <Stack.Screen name="new" component={NewStack} />
         <Stack.Screen name="ticket" component={TicketStack} />
         <Stack.Screen name="Air Cooler" component={AirCoolerStack} />
+        <Stack.Screen
+          name="Product Registration Form"
+          component={ProductRegistrationForm}
+          options={{
+            headerShown: true,
+          }}
+        />
         <Stack.Screen
           name="Redemption History"
           component={RedemptionHistory}

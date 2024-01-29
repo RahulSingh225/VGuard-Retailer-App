@@ -12,8 +12,6 @@ const SplashScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
-    console.log('Language changed:', i18n.language);
-
     const timeoutId = setTimeout(() => {
       navigation.navigate('login');
     }, 1000);

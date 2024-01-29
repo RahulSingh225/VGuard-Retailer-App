@@ -79,7 +79,7 @@ const AirCooler: React.FC<{ navigation: any }> = ({ navigation }) => {
                     // const profileImageUrl = await getImageUrl(userData.selfieImage, 'Profile');
                     setProfileImage(profileImageUrl.data);
                 } catch (error) {
-                    console.log('Error while fetching profile image:', error);
+                    console.error('Error while fetching profile image:', error);
                 }
             };
             getImage();

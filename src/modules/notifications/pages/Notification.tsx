@@ -18,9 +18,7 @@ const Notification: React.FC = () => {
     showLoader(true);
     
     getNotifications().then(async (response) => {
-      console.log(response);
       const result = await response.data;
-      console.log(result);
       setNotifications(result);
       showLoader(false);
     });
@@ -45,7 +43,7 @@ const Notification: React.FC = () => {
           </View>
         </View>
           )}
-          keyExtractor={item => item.alertDesc}
+          // keyExtractor={item => item.alertDesc}
         />
     </ScrollView>
   );

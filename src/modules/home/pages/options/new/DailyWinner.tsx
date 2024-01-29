@@ -58,7 +58,6 @@ const DailyWinner: React.FC = () => {
             return item;
           });
           setProfiles(updatedProfiles);
-          console.log('POST request response:', updatedProfiles);
         } else {
           console.error(data);
         }
