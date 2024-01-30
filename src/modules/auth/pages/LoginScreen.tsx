@@ -121,8 +121,8 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     } catch (error: any) {
       showLoader(false);
       setIsPopupVisible(!isPopupVisible);
-      setPopupContent(error.response.data);
-      console.error('Login error:', error.response.data);
+      setPopupContent(error.message);
+      console.error('Login error:', error.message);
     }
   };
 
