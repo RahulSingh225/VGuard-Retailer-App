@@ -51,7 +51,6 @@ const BottomTab: React.FC = () => {
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
 
   const handleLanguageButtonPress = () => {
-    console.log("handleLanguageButtonPress...........")
     setShowLanguagePicker(true);
   };
 
@@ -65,7 +64,6 @@ const BottomTab: React.FC = () => {
         const storedLanguage = (await AsyncStorage.getItem('language')) || i18n.language;
         setSelectedLanguage(storedLanguage);
         i18n.changeLanguage(storedLanguage);
-        console.log('Language changed:', storedLanguage);
       } catch (error) {
         console.error('Error fetching language from AsyncStorage:', error);
       }

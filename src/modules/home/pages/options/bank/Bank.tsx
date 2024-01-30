@@ -191,7 +191,6 @@ const Bank: React.FC<BankProps> = () => {
 
     try {
       const response = await sendFile(formData);
-      console.log("response-----------", response.data.entityUid);
       const image = response.data.entityUid
       setEntityUid(image);
       return response.data.entityUid;

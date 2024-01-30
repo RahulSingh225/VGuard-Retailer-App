@@ -30,7 +30,6 @@ const New: React.FC<NewProps> = ({ navigation }) => {
           return item;
         });
         setData(updatedData);
-        console.log("<><<><<><>><", updatedData, "<><<<><><><><><><<><");
       })
       .catch(error => {
         console.error('Error fetching data:', error);

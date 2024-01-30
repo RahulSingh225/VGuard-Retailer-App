@@ -3,11 +3,7 @@ import { AuthProvider } from './src/components/AuthContext';
 import AppNavigator from './src/components/AppNavigator';
 import { Alert, Linking, PermissionsAndroid } from 'react-native';
 import notificationListener from './src/modules/notifications/pages/PushNotification';
-import ProductRegistrationForm from './src/modules/home/pages/options/scanQR/pages/ProductRegistrationForm';
-import Test from './src/modules/home/pages/options/scanQR/pages/AddWarranty';
-import AddWarranty from './src/modules/home/pages/options/scanQR/pages/AddWarranty';
 import { getAppVersion } from './src/utils/apiservice';
-// import { checkVersion } from "react-native-check-version";
 import DeviceInfo from 'react-native-device-info';
 const App: React.FC = () => {
   const [appVersion, setAppVersion] = useState('');

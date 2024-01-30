@@ -15,16 +15,13 @@ const Info: React.FC = () => {
   const [imageArray, setImageArray] = useState(null);
 
   useEffect(() => {
-    console.log("Image loading");
     getInfoDeskBanners()
       .then(response => {
         const result = response.data
-          console.log("Result:", result)
           var ar = [];
           result.map(r => ar.push({ imageUrl: imageUrl + r.imgPath }));
           setImageArray(ar)
           const image = imageArray;
-          console.log("Image Array", image)
       })
   }, [])
 

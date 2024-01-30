@@ -55,7 +55,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             const response = await getUser();
             showLoader(false);
             const res = await response.data;
-            console.log("RESPONE-------", res);
             setPostData(res);
             if (
               res.currLandmark == res.landmark &&
@@ -95,7 +94,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     }, [postData?.stateId, postData?.distId, postData?.currDistId, postData?.currStateId]);
 
     const fetchData = async () => {
-        console.log(postData.stateId, "<><><><><")
         if(postData.stateId && postData.distId && postData.currStateId && postData.currDistId){
             try {
                 const statesResponse = await getStates();
@@ -117,7 +115,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     if (Array.isArray(districtsData) && districtsData.length > 0) {
                         const citiesResponse = await getCities(postData.distId);
                         const citiesData = await citiesResponse.data;
-                        console.log("CITIES-----------", citiesData);
                         setCities(citiesData);
                     }
                 } else {
@@ -129,7 +126,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     if (Array.isArray(currDistrictsData) && currDistrictsData.length > 0) {
                         const citiesResponse = await getCities(postData.currDistId);
                         const citiesData = await citiesResponse.data;
-                        console.log("CITIES-----------", citiesData);
                         setCurrCities(citiesData);
                     }
                 } else {
@@ -210,9 +206,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 type: fileData.type,
             });
 
-            console.log("formData=====", formData);
             const response = await sendFile(formData);
-            console.log("response-----------", response.data.entityUid);
             return response.data.entityUid;
         } catch (error) {
             setPopupContent("Error uploading image");
@@ -234,7 +228,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             const updatedPostData = { ...postData };
 
             if (panFileData.uri !== "" && panUid !== null) {
-                console.log(panUid);
                 setPostDataOfImage('pan', panUid);
                 updatedPostData.kycDetails.panCardFront = panUid;
             }
@@ -265,7 +258,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         try {
             handleSendImage()
                 .then(updatedPostData => {
-                    console.log("POSTDATA", updatedPostData);
                     AsyncStorage.setItem('VGUSER', JSON.stringify(updatedPostData)).then(() => {
                         navigation.navigate('PreviewReUpdateKyc');
                     });
@@ -361,7 +353,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             name: imageName,
             type: type,
         };
-        console.log(fileData)
         try {
             if (label === "Aadhar Card* (Front)") {
                 setIdFrontFileData(fileData)
@@ -389,7 +380,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     }
 
     const handleStateSelect = async (text: string, type: string) => {
-        console.log(text, "<><><><", type)
         let selectedCategory: any;
         if (type == "permanent") {
             selectedCategory = states.find(category => category.stateName === text);
@@ -521,7 +511,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             })
             .then(cityData => {
                 cityData = cityData;
-                // console.log('Second API call:', cityData);
                 showLoader(false);
             })
             .catch(error => {
@@ -552,7 +541,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 }
             }
         }
-        // console.log(pincode);
 
         type === 'permanent' ? setPostData((prevData: VguardRishtaUser) => ({
             ...prevData,
@@ -663,7 +651,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     setOpen={() => setUIswitch({ pincode: !uiSwitch.pincode })}
                     value={postData?.pinCode}
                     onSelectItem={(item) => {
-                        // console.log(item)
                         processPincode(`${item.value}`, 'permanent')
                     }}
                     onChangeSearchText={(text) => processPincode(text, 'permanent')}
@@ -754,7 +741,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                             setOpen={() => setUIswitch({ currentpincode: !uiSwitch.currentpincode })}
                             value={postData?.currPinCode}
                             onSelectItem={(item) => {
-                                // console.log(item)
                                 processPincode(`${item.value}`, 'current')
                             }}
                             onChangeSearchText={(text) => processPincode(text, 'current')}

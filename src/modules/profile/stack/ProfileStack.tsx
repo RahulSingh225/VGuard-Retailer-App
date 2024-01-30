@@ -13,7 +13,6 @@ const ProfileStack: React.FC = () => {
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
 
   const handleLanguageButtonPress = () => {
-    console.log("handleLanguageButtonPress...........")
     setShowLanguagePicker(true);
   };
 

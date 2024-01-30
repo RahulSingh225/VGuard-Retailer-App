@@ -37,7 +37,6 @@ const PaytmTransfer = () => {
         return response.data;
       })
       .then(jsonData => {
-        console.log('API Response:', jsonData.message);
         setPopupContent(jsonData.message);
         setPopupVisible(true);
         setMobileNumber('');

@@ -63,10 +63,6 @@ const Dashboard: React.FC = () => {
     const selectedDate = newDate || date;
     const selectedMonthDate = moment(selectedDate).format('MM');
     const selectedYearDate = moment(selectedDate).format('YYYY');
-
-    console.log('Selected Month:', selectedMonthDate);
-    console.log('Selected Year:', selectedYearDate);
-
     getMonthWiseEarning(selectedMonthDate, selectedYearDate)
       .then((data) => data.data)
       .then((data) => {
@@ -89,7 +85,6 @@ const Dashboard: React.FC = () => {
     });
   }, []);
   useEffect(() => {
-    console.log(selectedMonth, ":", selectedYear)
     getMonthWiseEarning(selectedMonth, selectedYear)
       .then((data) => data.data)
       .then((data) => {
@@ -104,7 +99,7 @@ const Dashboard: React.FC = () => {
           const profileImageUrl = getImageUrl(userData.userImage, 'Profile');
           setProfileImage(profileImageUrl);
         } catch (error) {
-          console.log('Error while fetching profile image:', error);
+          console.error('Error while fetching profile image:', error);
         }
       };
       getImage();

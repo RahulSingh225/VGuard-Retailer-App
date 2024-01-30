@@ -40,7 +40,6 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
                     setIsImageSelected(true);
                     setSelectedImage(image);
                     setSelectedImageName(initialImage);
-                    console.log(image, "<><><URL<><><")
                 } catch (error) {
                     console.error('Error fetching image:', error);
                 }
@@ -92,7 +91,7 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
         };
 
         if (response.didCancel) {
-            console.log('Image picker was canceled');
+            console.error('Image picker was canceled');
         } else if (response.error) {
             console.error('Image picker error: ', response.error);
         } else {
@@ -104,7 +103,7 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
                 // const apiResponse = await triggerApiWithImage(fileData);
                 onImageChange(response?.assets[0]?.uri, response?.assets[0]?.type, response?.assets[0]?.fileName, label);
             } catch (error) {
-                console.log('Error triggering API with image in ImagePickerField:', error);
+                console.error('Error triggering API with image in ImagePickerField:', error);
                 throw error;
             }
         }
@@ -168,7 +167,18 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
                         onPress={handleImageModalToggle}>
                         <Image resizeMode='contain' style={{ width: 50, height: 50 }} source={require('../assets/images/ic_close.png')} />
                     </TouchableOpacity>
-                    <Image source={{ uri: selectedImage }} style={{ width: '70%', height: '70%' }} resizeMode="contain" />
+                    <ImageBackground
+                        source={require('../assets/images/no_image.webp')}
+                        style={{ width: '100%', height: '70%' }}
+                        resizeMode="contain"
+                    >
+                        <Image
+                            source={{ uri: selectedImage }}
+                            style={{ width: '100%', height: '70%' }}
+                            resizeMode="contain"
+                        />
+                    </ImageBackground>
+                    {/* <Image source={{ uri: selectedImage }} style={{ width: '70%', height: '70%' }} resizeMode="contain" /> */}
                 </View>
             </Modal>
 

@@ -131,7 +131,6 @@ const Bank: React.FC<BankProps> = () => {
         try {
             if (selectedImageName != '') {
                 const response = getImageUrl(selectedImageName, 'Cheque');
-                console.log(response, 'file');
                 setSelectedImage(response);
                 return response;
             }
@@ -166,7 +165,6 @@ const Bank: React.FC<BankProps> = () => {
     //         },
     //         (response: ImagePickerResponse) => {
     //             if (response.didCancel) {
-    //                 console.log('Camera was canceled');
     //             } else if (response.errorMessage) {
     //                 console.error('Camera error: ', response.errorMessage);
     //             } else {
@@ -192,7 +190,6 @@ const Bank: React.FC<BankProps> = () => {
     //         },
     //         (response: ImagePickerResponse) => {
     //             if (response.didCancel) {
-    //                 console.log('Image picker was canceled');
     //             } else if (response.error) {
     //                 console.error('Image picker error: ', response.error);
     //             } else {

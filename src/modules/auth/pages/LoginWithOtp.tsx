@@ -157,7 +157,6 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
     //           }
     //         })
     //         .then((r) => {
-    //           console.log("<><><<><>", r);
     //           login(r);
     //           showLoader(false);
     //         })
@@ -182,9 +181,6 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
 
   const handleClose = async () => {
     setIsPopupVisible(false);
-    if (isPopupVisible == false) {
-      console.log("<><><<><")
-    }
   }
 
   const { t } = useTranslation();

@@ -12,16 +12,12 @@ const Schemes: React.FC = () => {
   const imageUrl = "https://vguardrishta.com/";
 
   useEffect(() => {
-    console.log("Image loading");
     getSchemeImages()
       .then(response => {
         const result = response.data;
-          console.log("Result:", result)
           var ar = [];
           result.map(r => ar.push({ imageUrl: imageUrl + r.imgPath }));
           setImageArray(ar)
-          const image = imageArray;
-          console.log("Image Array", image)
         })
   }, [])
 
@@ -63,7 +59,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   carousel: {
-    backgroundColor: colors.black,
+    backgroundColor: colors.white,
   },
   options: {
     display: 'flex',

@@ -34,12 +34,10 @@ const UpiTransfer = () => {
             setPopupContent("No UPI-VPA linked. Please Contact Admin.");
         }
         else if (points == 0 || points < 250 || points > 5000) {
-            console.log("POINTS", points)
             setNormalPopupVisible(true);
             setPopupContent("Kindly enter points between 250-5000");
         }
         else if (upiId != "" && upiSelected && points != 0 && points >= 250 && points <= 5000) {
-            console.log("YOU CAN PROCEED");
         }
     }
     const [pointData, setPointData] = useState({

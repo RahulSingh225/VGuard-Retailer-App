@@ -33,7 +33,6 @@ const ActiveScheme: React.FC = () => {
 
   const openLink = async (link: string) => {
     try {
-      console.log('Opening URL:', baseURL + link);
       await Linking.openURL(baseURL + link);
     } catch (error) {
       console.error('Error opening URL:', error);

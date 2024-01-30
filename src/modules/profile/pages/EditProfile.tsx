@@ -4,7 +4,7 @@ import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-di
 import colors from '../../../../colors';
 import { getCities, getDetailsByPinCode, getDistricts, getPincodeList, getRetailerCategoryDealIn, getStates, getUser, sendFile, updateProfile } from '../../../utils/apiservice';
 import { useTranslation } from 'react-i18next';
-import { Cities, District, State, UserData } from '../../../utils/modules/UserData';
+import { Cities, District, State, VguardRishtaUser } from '../../../utils/modules/VguardRishtaUser';
 import InputField from '../../../components/InputField';
 import Buttons from '../../../components/Buttons';
 import PickerField from '../../../components/PickerField';
@@ -17,6 +17,7 @@ import moment from 'moment';
 import { getImageUrl } from '../../../utils/FileUtils';
 import { height, width } from '../../../utils/dimensions';
 import DropDownPicker from 'react-native-dropdown-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -24,8 +25,8 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const ecardURL = 'https://www.vguardrishta.com/img/appImages/eCard/';
 
-  const [userData, setUserData] = useState<UserData | any>();
-  const [postData, setPostData] = useState<UserData | any>();
+  const [userData, setUserData] = useState<VguardRishtaUser | any>();
+  const [postData, setPostData] = useState<VguardRishtaUser | any>();
   const [profileImage, setProfileImage] = useState("");
   const [isShopAddressDifferent, setIsShopAddressDifferent] = useState('');
   const [enrolledOtherSchemeYesNo, setEnrolledOtherSchemeYesNo] = useState('');
@@ -44,13 +45,16 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [currStateId, setCurrStateId] = useState("");
   const [loader, showLoader] = useState(true);
   const [uiSwitch, setUIswitch] = React.useState({ currentpincode: false, pincode: false })
-
+  const [userName, setUserName] = useState("")
 
   useEffect(() => {
+    AsyncStorage.getItem('USER').then((r) => {
+      const user = JSON.parse(r as string);
+      setUserName(user.name);
+    });
     getUser()
       .then(response => response.data)
       .then(res => {
-        console.log(res);
         const trimmedGender = res.gender.trim();
         res.gender = trimmedGender;
         setUserData(res);
@@ -59,7 +63,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         setCurrStateId(res.currStateId);
         setSelfie(res.kycDetails.selfie);
         setEnrolledOtherSchemeYesNo(res.enrolledOtherSchemeYesNo);
-        console.log("<><><><<<><<><<><><", res)
         if (res.currLandmark == res.landmark &&
           res.currentAddress == res.permanentAddress &&
           res.currStreetAndLocality == res.streetAndLocality &&
@@ -70,7 +73,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           setIsShopAddressDifferent('No');
         }
         const countNonEmptyStrings = (fields: any[]) => {
-          console.log("COUNT:::::::", fields.filter(field => typeof field === 'string' && field.trim() !== '').length)
           return fields.filter(field => typeof field === 'string' && field.trim() !== '').length;
         };
 
@@ -158,7 +160,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         const profileImageUrl = getImageUrl(userData.kycDetails.selfie, 'Profile');
         setProfileImage(profileImageUrl);
       } catch (error) {
-        console.log('Error while fetching profile image:', error);
+        console.error('Error while fetching profile image:', error);
       }
     };
 
@@ -181,7 +183,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       const updatedPostData = { ...postData };
 
       if (selfieFileData.uri !== "" && selfieUid !== null) {
-        // console.log(selfieUid);
         setPostDataOfImage('selfie', selfieUid);
         updatedPostData.kycDetails.selfie = selfieUid;
       }
@@ -219,12 +220,14 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       if (dobDate < minAllowedDate) {
         handleSendImage()
           .then(updatedPostData => {
-            console.log("POSTDATA", updatedPostData);
             updateProfile(updatedPostData)
               .then(response => response.data)
               .then((responseData) => {
                 setPopupVisible(true);
                 setPopupContent(responseData?.message);
+                if(responseData.code == 200){
+                  fetchAndSetData();
+                }
                 showLoader(false);
               })
               .catch(error => {
@@ -246,11 +249,24 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
   };
 
+  const fetchAndSetData = async () => {
+    getUser()
+    .then(response => {
+      const user = response.data;
+      if(user.userCode != "" && user.userCode != null){
+        AsyncStorage.setItem('USER', JSON.stringify(user));
+      }
+      else{
+        console.error("Error getting details");
+      }
+    })
+  }
+
   const handleChange = (label: string, value: string) => {
     if (label == "isShopDifferent") {
       setIsShopAddressDifferent(value)
       if (value == 'Yes') {
-        setPostData((prevData: UserData) => ({
+        setPostData((prevData: VguardRishtaUser) => ({
           ...prevData,
           currLandmark: postData.landmark,
           currCity: postData.city,
@@ -271,20 +287,20 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       if (value == "Yes") {
         enrolledOtherSchemeNum = 1;
       }
-      setPostData((prevData: UserData) => ({
+      setPostData((prevData: VguardRishtaUser) => ({
         ...prevData,
         [label]: value,
         enrolledOtherScheme: enrolledOtherSchemeNum
       }))
     }
     else if (label == "maritalStatus") {
-      setPostData((prevData: UserData) => ({
+      setPostData((prevData: VguardRishtaUser) => ({
         ...prevData,
         [label]: value,
       }));
     }
     else if (label == "gstYesNo") {
-      setPostData((prevData: UserData) => ({
+      setPostData((prevData: VguardRishtaUser) => ({
         ...prevData,
         [label]: value
       }))
@@ -293,7 +309,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
 
   const handleInputChange = async (value: string, label: string) => {
-    setPostData((prevData: UserData) => {
+    setPostData((prevData: VguardRishtaUser) => {
       let updatedValue: any = value;
       if (['annualBusinessPotential'].includes(label)) {
         updatedValue = parseFloat(value);
@@ -317,7 +333,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       else if (value == "Other") {
         genderNum = "3"
       }
-      setPostData((prevData: UserData) => {
+      setPostData((prevData: VguardRishtaUser) => {
         return {
           ...prevData,
           [label]: value,
@@ -333,7 +349,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       else if (value == "UnMarried") {
         maritalStatusNum = "2"
       }
-      setPostData((prevData: UserData) => {
+      setPostData((prevData: VguardRishtaUser) => {
         return {
           ...prevData,
           [label]: value,
@@ -427,15 +443,14 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const setPostDataOfImage = (label: string, value: string) => {
-    // console.log(label, value)
     if (label == 'gstPic') {
-      setPostData((prevData: UserData) => ({
+      setPostData((prevData: VguardRishtaUser) => ({
         ...prevData,
         [label]: value
       }));
     }
     else {
-      setPostData((prevData: UserData) => ({
+      setPostData((prevData: VguardRishtaUser) => ({
         ...prevData,
         kycDetails: {
           ...prevData.kycDetails,
@@ -451,7 +466,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     let selectedCategory: any;
     if (type == "permanent") {
       selectedCategory = states.find((category: { stateName: string; }) => category.stateName === text);
-      setPostData((prevData: UserData) => ({
+      setPostData((prevData: VguardRishtaUser) => ({
         ...prevData,
         state: text,
         stateId: selectedCategory?.id || null,
@@ -459,7 +474,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
     else if (type == "current") {
       selectedCategory = currStates.find((category: { stateName: string; }) => category.stateName === text);
-      setPostData((prevData: UserData) => ({
+      setPostData((prevData: VguardRishtaUser) => ({
         ...prevData,
         currState: text,
         currStateId: selectedCategory?.id || null,
@@ -480,7 +495,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     let selectedCategory: any;
     if (type == "permanent") {
       selectedCategory = districts.find((category: { districtName: string; }) => category.districtName === text);
-      setPostData((prevData: UserData) => ({
+      setPostData((prevData: VguardRishtaUser) => ({
         ...prevData,
         dist: text,
         distId: selectedCategory?.id || null,
@@ -488,7 +503,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
     else if (type == "current") {
       selectedCategory = currDistricts.find((category: { districtName: string; }) => category.districtName === text);
-      setPostData((prevData: UserData) => ({
+      setPostData((prevData: VguardRishtaUser) => ({
         ...prevData,
         currDist: text,
         currDistId: selectedCategory?.id || null,
@@ -509,7 +524,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     let selectedCategory: any;
     if (type == "permanent") {
       selectedCategory = cities.find((category: { cityName: string; }) => category.cityName === text);
-      setPostData((prevData: UserData) => ({
+      setPostData((prevData: VguardRishtaUser) => ({
         ...prevData,
         city: text,
         cityId: selectedCategory?.id || null,
@@ -517,7 +532,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
     else if (type == "current") {
       selectedCategory = currCities.find((category: { cityName: string; }) => category.cityName === text);
-      setPostData((prevData: UserData) => ({
+      setPostData((prevData: VguardRishtaUser) => ({
         ...prevData,
         currCity: text,
         currCityId: selectedCategory?.id || null,
@@ -581,7 +596,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       })
       .then(secondData => {
         secondData = secondData.data;
-        console.log("SEcond Data", secondData)
         setDistricts([{
           distId: secondData.distId,
           districtName: secondData.distName,
@@ -590,7 +604,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         setCities([secondData]);
 
         type === 'permanent' ?
-          setPostData((prevData: UserData) => ({
+          setPostData((prevData: VguardRishtaUser) => ({
             ...prevData,
             dist: secondData.distName,
             distId: secondData.distId,
@@ -600,7 +614,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
             city: secondData.cityName,
             pinCode: pincode
           }))
-          : setPostData((prevData: UserData) => ({
+          : setPostData((prevData: VguardRishtaUser) => ({
             ...prevData,
             currDist: secondData.distName,
             currDistId: secondData.distId,
@@ -614,7 +628,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       })
       .then(cityData => {
         cityData = cityData;
-        // console.log('Second API call:', cityData);
         showLoader(false);
       })
       .catch(error => {
@@ -642,10 +655,8 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         }
         if (pincode.length == 6) {
           updateDistrictState(pincode, type);
-          console.log("SHOP ADDRESS", isShopAddressDifferent);
           if (isShopAddressDifferent == 'Yes') {
-            console.log("<><><><")
-            setPostData((prevData: UserData) => ({
+            setPostData((prevData: VguardRishtaUser) => ({
               ...prevData,
               currLandmark: postData.landmark,
               currCity: postData.city,
@@ -664,10 +675,10 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
     // console.log(pincode);
 
-    type === 'permanent' ? setPostData((prevData: UserData) => ({
+    type === 'permanent' ? setPostData((prevData: VguardRishtaUser) => ({
       ...prevData,
       pinCode: pincode
-    })) : setPostData((prevData: UserData) => ({
+    })) : setPostData((prevData: VguardRishtaUser) => ({
       ...prevData,
       currPinCode: pincode
     }))
@@ -691,7 +702,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           </ImageBackground>
         </View>
         <View style={styles.profileText}>
-          <Text style={styles.textDetail}>{userData?.name}</Text>
+          <Text style={styles.textDetail}>{userName}</Text>
           <Text style={styles.textDetail}>{userData?.userCode}</Text>
           <TouchableOpacity onPress={openEVisitingCard}>
             <Text style={styles.viewProfile}>{t('strings:view_e_card')}</Text>
@@ -934,7 +945,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
               return category?.prodCatName || '';
             });
 
-            setPostData((prevData: UserData) => {
+            setPostData((prevData: VguardRishtaUser) => {
               const categoryDealInIDArray = selectedItems.map(item => {
                 const category = retailerCategoryDealIn.find(cat => cat.prodCatName === item);
                 return category?.prodCatId || null;

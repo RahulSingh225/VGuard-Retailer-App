@@ -25,7 +25,6 @@ const Downloads: React.FC = () => {
           fullURL: baseURL + item.fileName,
         }));
         setData(updatedData);
-        console.log("<><<><<><>><", updatedData, "<><<<><><><><><><<><");
       })
       .catch(error => {
         console.error('Error fetching data:', error);

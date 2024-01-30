@@ -23,9 +23,8 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
     const [loader, showLoader] = useState(true);
 
     useEffect(() => {
-        AsyncStorage.getItem('USER').then(result => {
+        AsyncStorage.getItem('VGUSER').then(result => {
             setUserData(JSON.parse(result as string))
-            console.log("<><><><", result);
             setPostData(JSON.parse(result as string));
             showLoader(false);
         })
@@ -34,11 +33,9 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
 
 
     const handleSubmit = () => {
-        console.log("Post Data:----", postData);
         reUpdateUserForKyc(postData)
             .then(response => response.data)
             .then((responseData) => {
-                console.log("RESPONSE DATA:", responseData);
                 setPopupVisible(true);
                 setPopupContent(responseData?.message);
 

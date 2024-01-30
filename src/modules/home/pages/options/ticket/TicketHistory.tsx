@@ -34,7 +34,7 @@ const TicketHistory: React.FC = () => {
         const profileImageUrl = await getImageUrl(userData.userImage, 'Profile');
         setProfileImage(profileImageUrl);
       } catch (error) {
-        console.log('Error while fetching profile image:', error);
+        console.error('Error while fetching profile image:', error);
       }
     };
 
@@ -72,7 +72,6 @@ const TicketHistory: React.FC = () => {
 
         setData(sortedData);
         setLoader(false);
-        console.log("<><<><<><>><", sortedData, "<><<<><><><><><><<><");
       })
       .catch(error => {
         console.error('Error fetching data:', error);

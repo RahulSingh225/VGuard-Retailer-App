@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableHighlight, Image, Linking, TouchableOpacity, Modal, ImageBackground } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Image, Linking, TouchableOpacity, Modal, ImageBackground } from 'react-native';
 import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-native-responsive-dimensions';
 import colors from '../../../../colors';
 import { getFile, getRishtaUserProfile, getUser } from '../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
-import { UserData } from '../../../utils/modules/UserData';
+import { VguardRishtaUser } from '../../../utils/modules/UserData';
 import InputField from '../../../components/InputField';
 import Popup from '../../../components/Popup';
 import Loader from '../../../components/Loader';
@@ -18,7 +18,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const baseURL = 'https://www.vguardrishta.com/img/appImages/Profile/';
   const ecardURL = 'https://www.vguardrishta.com/img/appImages/eCard/';
 
-  const [userData, setUserData] = useState<UserData | any>();
+  const [userData, setUserData] = useState<VguardRishtaUser | any>();
   const [profileImage, setProfileImage] = useState("");
   const [showImagePreviewModal, setShowImagePreviewModal] = useState(false);
   const [gstImageName, setGstImageName] = useState("");
@@ -27,12 +27,17 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [imageOpen, setimageOpen] = useState("")
   const [loading, setLoading] = useState(true);
   const [disableOptions, setDisableOptions] = useState(false);
+  const [userName, setUserName] = useState("")
 
   const handleImageClick = (imageSource: string | "") => {
     setShowImagePreviewModal(true);
     setimageOpen(imageSource);
   };
   useEffect(() => {
+    AsyncStorage.getItem('USER').then((r) => {
+      const user = JSON.parse(r as string);
+      setUserName(user.name);
+    });
     const fetchData = async () => {
       try {
         const diffAcc = await AsyncStorage.getItem('diffAcc');
@@ -42,7 +47,6 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
         const response = await getUser();
         const res = await response.data;
 
-        console.log(res);
         setUserData(res);
         setLoading(false);
       } catch (error) {
@@ -62,7 +66,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
           const profileImageUrl = await getImageUrl(userData.kycDetails.selfie, 'Profile');
           setProfileImage(profileImageUrl);
         } catch (error) {
-          console.log('Error while fetching profile image:', error);
+          console.error('Error while fetching profile image:', error);
         }
       };
       getImage();
@@ -72,7 +76,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
           const source = await getImageUrl(userData?.checkPhoto, 'Cheque')
           setChequeCopySource(source);
         } catch (error) {
-          console.log('Error while fetching cheque image:', error);
+          console.error('Error while fetching cheque image:', error);
         }
       };
       getImage();
@@ -83,7 +87,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
           const gstSource = await getImageUrl(userData?.gstPic, 'GST')
           setGstCopySource(gstSource);
         } catch (error) {
-          console.log('Error while fetching GST image:', error);
+          console.error('Error while fetching GST image:', error);
         }
       };
       getImage();
@@ -160,7 +164,6 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
       // const gstPhoto = await getFile(gstFront, 'GST', "2");
       const gstPhoto = await getImageUrl(gstFront, 'GST');
       const url = gstPhoto;
-      console.log("URL", url)
       return url;
     }
     const fieldMap: Record<string, string> = {
@@ -249,7 +252,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
           </ImageBackground>
         </View>
         <View style={styles.profileText}>
-          <Text style={styles.textDetail}>{userData?.name}</Text>
+          <Text style={styles.textDetail}>{userName}</Text>
           <Text style={styles.textDetail}>{userData?.userCode}</Text>
           <TouchableOpacity onPress={openEVisitingCard}>
             <Text style={styles.viewProfile}>{t('strings:view_e_card')}</Text>
@@ -257,24 +260,24 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
         </View>
       </View>
       <View style={styles.buttons}>
-        <TouchableHighlight
+        <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('Edit Profile')}
         >
           <Text style={styles.buttonText}>{t('strings:edit_profile')}</Text>
-        </TouchableHighlight>
-        <TouchableHighlight
+        </TouchableOpacity>
+        <TouchableOpacity
           style={styles.button}
           onPress={handleAddSubLogin}
         >
           <Text style={styles.buttonText}>{t('strings:add_sub_login')}</Text>
-        </TouchableHighlight>
-        <TouchableHighlight
+        </TouchableOpacity>
+        <TouchableOpacity
           style={styles.button}
           onPress={() => openReferralPopop()}
         >
           <Text style={styles.buttonText}>{t('strings:referral_code')}</Text>
-        </TouchableHighlight>
+        </TouchableOpacity>
       </View>
       <View style={styles.detailsContainer}>
         {labels.map((label, index) => (
@@ -291,7 +294,6 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
           isImage
           imageSource={facadeCopySource}
           onPressImage={() => {
-            console.log("Image Pressed")
           }}
         /> */}
 
@@ -357,12 +359,17 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
           >
             <Image resizeMode='contain' style={{ width: 50, height: 50 }} source={require('../../../assets/images/ic_close.png')} />
           </TouchableOpacity>
-
-          <Image
-            source={{ uri: imageOpen }}
-            style={{ width: '70%', height: '70%' }}
+          <ImageBackground
+            source={require('../../../assets/images/no_image.webp')}
+            style={{ width: '100%', height: '70%'}}
             resizeMode="contain"
-          />
+          >
+            <Image
+              source={{ uri: imageOpen }}
+              style={{ width: '100%', height: '70%' }}
+              resizeMode="contain"
+            />
+          </ImageBackground>
         </View>
       </Modal>
       {isPopupVisible && (

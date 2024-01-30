@@ -57,7 +57,6 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       try {
         await AsyncStorage.removeItem('USER');
         await AsyncStorage.removeItem('diffAcc');
-        console.log('Language changed:', i18n.language);
       } catch (error) {
         console.error('Error clearing AsyncStorage:', error);
       }
@@ -104,10 +103,13 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
     try {
       const response = await loginWithPassword(username, password, Constants.RET_USER_TYPE);
+      console.log("RESPONSE", response.data)
       showLoader(false);
       if (response.status === 200) {
         const responseData = response.data;
         if (responseData.name === "Fail") {
+          setIsPopupVisible(!isPopupVisible);
+          setPopupContent("Wrong Username or Password!")
           throw new Error("Wrong Username or Password!");
         }
         login(responseData);
@@ -119,8 +121,8 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     } catch (error: any) {
       showLoader(false);
       setIsPopupVisible(!isPopupVisible);
-      setPopupContent(error.response.data);
-      console.error('Login error:', error.response.data);
+      setPopupContent(error.message);
+      console.error('Login error:', error.message);
     }
   };
 

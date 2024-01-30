@@ -140,12 +140,9 @@ const TDSStatement: React.FC<TDSProps> = () => {
   }, []);
 
   useEffect(() => {
-    console.log("POSTDATA", postData)
     getTdsStatementList(postData)
       .then((response) => response.data)
       .then((responseData) => {
-        console.log("POSTDATA", postData)
-        console.log(responseData)
         setStatementList(responseData);
       })
       .catch((error) => {
@@ -156,7 +153,6 @@ const TDSStatement: React.FC<TDSProps> = () => {
 
   let data: any[] = [];
   if (statementList && statementList.length > 0) {
-    console.log("Statement List", statementList)
     data = statementList?.map((data) => [
       data?.redDate.toString(),
       data?.redAmnt.toString(),
