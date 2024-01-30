@@ -171,7 +171,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
             clubPoints: '',
             scanDate: '',
             scanStatus: '',
-            copuonCode: '',
+            couponCode: '',
             bitEligibleScratchCard: '',
             pardId: '',
             partNumber: '',

@@ -3,7 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
 
 // const BASE_URL = 'http://192.168.1.37:5000/vguard/api';
-const BASE_URL = 'http://34.93.182.174:5000/vguard/api';
+// const BASE_URL = 'http://34.93.182.174:5000/vguard/api';
+const BASE_URL = 'http://34.93.239.251:5000/vguard/api';
 
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -54,7 +55,6 @@ api.interceptors.response.use(
         await AsyncStorage.removeItem('USER');
         await AsyncStorage.removeItem('diffAcc');
         await AsyncStorage.removeItem('refreshToken');
-        await AsyncStorage.removeItem('isUserAuthenticated');
       }
     }
     return Promise.reject(error);

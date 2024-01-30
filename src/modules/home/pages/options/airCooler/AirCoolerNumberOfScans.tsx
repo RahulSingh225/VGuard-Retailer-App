@@ -6,7 +6,7 @@ import colors from '../../../../../../colors';
 import { getAirCoolerScanCodeHistory } from '../../../../../utils/apiservice';
 interface RedemptionHistoryItem {
   scanDate: string;
-  copuonCode: string;
+  couponCode: string;
   scanStatus: string;
 }
 
@@ -32,7 +32,7 @@ const AirCoolerNumberOfScans: React.FC = () => {
   const renderItem = ({ item }: { item: RedemptionHistoryItem }) => (
     <View style={styles.item}>
       <Text style={styles.text}>{item.scanDate}</Text>
-      <Text style={styles.text}>{item.copuonCode}</Text>
+      <Text style={styles.text}>{item.couponCode}</Text>
       <Text style={styles.status}>{item.scanStatus}</Text>
     </View>
   );
