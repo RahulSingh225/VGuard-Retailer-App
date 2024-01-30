@@ -16,13 +16,16 @@ import {
   generateOtpForReverify,
   generateOtpForLogin,
   validateReverifyOtp,
+  validateLoginOtp,
+  loginWithOtp,
 } from '../../../utils/apiservice';
 import Popup from '../../../components/Popup';
 import { width, height } from '../../../utils/dimensions';
-import { Colors } from '../../../utils/constants';
+import Constants, { Colors } from '../../../utils/constants';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loader from '../../../components/Loader';
+import { useAuth } from '../../../components/AuthContext';
 
 interface ReUpdateKycOTPProps {
   navigation: any;
@@ -30,14 +33,13 @@ interface ReUpdateKycOTPProps {
 
 const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
   const [number, setNumber] = useState('');
-  const [preferedLanguage, setpreferedLanguage] = useState(1);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [popupMessage, setPopupMessage] = useState('');
-  const [selectedOption, setSelectedOption] = useState('retailer');
   const [countdown, setCounter] = useState<number | null>(null);
   const [otpsentflag, setotpsentflag] = useState(false);
   const [otp, setOtp] = useState('');
   const [loader, showLoader] = useState(false);
+  const { login } = useAuth();
 
   let intervalId: NodeJS.Timeout;
 
@@ -78,8 +80,8 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
         setIsPopupVisible(true);
         setPopupMessage(successMessage);
         if (
-          validationResponse.data.message ==
-          'Please enter OTP to proceed with the process'
+          validationResponse.data.code ==
+          200
         ) {
           setotpsentflag(true);
         }
@@ -109,19 +111,20 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
         loginOtpUserName: number,
         otp: otp,
       };
-
-      let response = await validateReverifyOtp(userCredentials);
-      showLoader(false);
+      const response = await validateLoginOtp(userCredentials);
       let message = response.data.message;
-      if (response.status === 200 && response.data.message == "OTP verified successfully, please proceed with the registration.") {
-        AsyncStorage.setItem('username', number.toString()).then(() => {
-          AsyncStorage.setItem('password', otp.toString()).then(() => {
-            AsyncStorage.setItem('authtype', 'otp').then(() => {
-              navigation.navigate('ReUpdateKyc', { usernumber: number });
-            });
-          });
-        });
 
+      const verificationResponseData = response.data;
+      if (verificationResponseData.code === 200) {
+        showLoader(false);
+        const loginResponse = await loginWithOtp(number, otp, Constants.RET_USER_TYPE);
+        const loginResponseData = loginResponse.data;
+        if (loginResponse.status === 200) {
+          // login(loginResponseData)
+          navigation.navigate('ReUpdateKyc', { usernumber: number });
+        } else {
+          throw new Error(loginResponseData);
+        }
       } else {
         setIsPopupVisible(true);
         setPopupMessage(message);
@@ -146,7 +149,7 @@ const ReUpdateKycOTP: React.FC<ReUpdateKycOTPProps> = ({ navigation }) => {
 
       let response = await generateOtpForLogin(userCredentials);
       let message = response.data.message;
-      
+
       if (response.status === 200) {
         setCounter(60);
         setotpsentflag(true);

@@ -23,7 +23,7 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
     const [loader, showLoader] = useState(true);
 
     useEffect(() => {
-        AsyncStorage.getItem('USER').then(result => {
+        AsyncStorage.getItem('VGUSER').then(result => {
             setUserData(JSON.parse(result as string))
             setPostData(JSON.parse(result as string));
             showLoader(false);
