@@ -551,8 +551,8 @@ export function getProductWiseOffers() {
   return createGetRequest(path);
 }
 
-export function getRedemptionHistory() {
-  const path = `product/redemptionHistory?type=''`;
+export function getRedemptionHistory(type: string) {
+  const path = `product/redemptionHistory?type=${type}`;
   return createGetRequest(path);
 }
 

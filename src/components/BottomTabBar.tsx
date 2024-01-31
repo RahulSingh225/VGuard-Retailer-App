@@ -14,11 +14,17 @@ import { getNotificationCount } from '../utils/apiservice';
 
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   const { routes = [], index: activeIndex } = state;
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState('0');
   useEffect(() => {
     getNotificationCount().then(async r => {
       const result = await r.data;
-      setCount(result.count);
+      if(result.count > 999){
+        setCount('999+')
+      }
+      else{
+        setCount(result.count);
+      }
+      
     });
 }, []);
   const getTabIcon = (routeName: string) => {
@@ -89,7 +95,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
                 {route.name === 'Notifications' && (
                   <View>
                     <Icon name={icon} size={24} color={isFocused ? '#673ab7' : '#222'} />
-                    { count > 0 &&
+                    { count > '0' &&
                       (<View style={styles.badge}>
                       <Text style={styles.badgeText}>{count}</Text>
                     </View>)
@@ -138,7 +144,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: colors.black,
-    fontSize: responsiveFontSize(1),
+    fontSize: responsiveFontSize(0.9),
     fontWeight: 'bold',
     textAlign: 'center'
   },
