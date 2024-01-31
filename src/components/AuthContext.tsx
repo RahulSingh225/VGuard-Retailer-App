@@ -8,7 +8,6 @@ interface AuthContextProps {
   isUserAuthenticated: boolean;
   login: (user: User) => Promise<void>;
   logout: () => Promise<void>;
-  popupAuthContent: string;
   showPopup: boolean;
   setShowPopup: Dispatch<SetStateAction<boolean>>;
 }
@@ -22,7 +21,6 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-  const [popupAuthContent, setPopupContent] = useState('Please Enter Credentials of a Retailer');
 
   const login = async (user: User) => {
     const diffAcc = user.vguardRishtaUser.diffAcc;
@@ -57,7 +55,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isUserAuthenticated, setIsUserAuthenticated,  login, logout, showPopup, popupAuthContent, setShowPopup }}>
+    <AuthContext.Provider value={{ isUserAuthenticated, setIsUserAuthenticated,  login, logout, showPopup, setShowPopup }}>
       {children}
     </AuthContext.Provider>
   );

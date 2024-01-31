@@ -22,10 +22,15 @@ interface UserData {
   userId: string;
 }
 interface PostData {
-  id: string;
-  month: string;
+  month: number;
   year: string;
-  intuserid: string;
+}
+interface FY {
+  Fiscalyear: string
+}
+interface MonthData {
+  id: number,
+  month: string
 }
 const CustomMonthDropdown: React.FC<{ data: any[]; value: string; onChange: (item: any) => void }> = ({ data, value, onChange }) => {
   return (
@@ -58,30 +63,25 @@ const CustomYearDropdown: React.FC<{ data: any[]; value: string; onChange: (item
 
 const TDSStatement: React.FC<TDSProps> = () => {
   const { t } = useTranslation();
-  const [fiscalYearData, setFiscalYearData] = useState<string[]>([]); // Set appropriate type for fiscalYearData
-  const [monthData, setMonthData] = useState<any[]>([]); // Set appropriate type for monthData
+  const [fiscalYearData, setFiscalYearData] = useState<FY[]>([]); // Set appropriate type for fiscalYearData
+  const [monthData, setMonthData] = useState<MonthData[]>([]); // Set appropriate type for monthData
   const [loader, showLoader] = useState<boolean>(false);
   const [isFocusFiscalYear, setIsFocusFiscalYear] = useState<boolean>(false);
   const [isFocusMonth, setIsFocusMonth] = useState<boolean>(false);
   const [fiscalYearValue, setFiscalYearValue] = useState<string>('');
   const [selectedMonth, setSelectedMonth] = useState<string>('');
-  const [userData, setUserData] = useState<UserData>({
-    userId: '',
-  });
   const [postData, setPostData] = useState<PostData>({
-    id: '',
-    month: '',
+    month: 1,
     year: '',
-    intuserid: '',
   });
   const [statementList, setStatementList] = useState<StatementList[]>([]);
 
-  const handleDropdownFiscalYear = (item: string) => {
+  const handleDropdownFiscalYear = (item: any) => {
     setIsFocusFiscalYear(false);
-    setFiscalYearValue(item);
+    setFiscalYearValue(item.Fiscalyear);
     setPostData((prevData) => ({
       ...prevData,
-      year: item,
+      year: item.Fiscalyear,
     }));
   };
 
@@ -90,31 +90,30 @@ const TDSStatement: React.FC<TDSProps> = () => {
     setSelectedMonth(item.month);
     setPostData((prevData) => ({
       ...prevData,
-      id: item.id,
-      month: item.month,
+      month: item.id,
     }));
   };
 
   useEffect(() => {
     const fetchData = async () => {
       showLoader(true);
-
       try {
-        const [fiscalYearResponse, monthResponse] = await Promise.all([
-          getFiscalYear(),
-          getMonth(),
-        ]);
-
-        const fiscalYearResult = await fiscalYearResponse.data;
-        const monthResult = await monthResponse.data;
-        setFiscalYearData(fiscalYearResult);
+        const fiscalYearResponse = await getFiscalYear();
+        const monthResponse = await getMonth();
+        const fiscalYearResponseData = fiscalYearResponse.data;
+        const monthResponseData = monthResponse.data;
+        const fiscalYearResult: FY[] = fiscalYearResponseData.map((year: FY) => ({ Fiscalyear: year.Fiscalyear }));
+        const monthResult: MonthData[] = monthResponseData.map((month: MonthData) => ({
+          id: month.id,
+          month: month.month
+        }))
+        setFiscalYearData(fiscalYearResponseData);
         setFiscalYearValue(fiscalYearResult[0].Fiscalyear);
         setMonthData(monthResult);
         setSelectedMonth(monthResult[0]?.month);
         setPostData((prevData) => ({
           ...prevData,
-          id: monthResult[0].id,
-          month: monthResult[0].month,
+          month: monthResult[0].id,
           year: fiscalYearResult[0].Fiscalyear,
         }));
         showLoader(false);
@@ -123,20 +122,7 @@ const TDSStatement: React.FC<TDSProps> = () => {
         showLoader(false);
       }
     };
-
     fetchData();
-
-    AsyncStorage.getItem('USER').then((r) => {
-      const user = JSON.parse(r || '{}');
-      const data: UserData = {
-        userId: user.userId || '',
-      };
-      setUserData(data);
-      setPostData((prevData) => ({
-        ...prevData,
-        intuserid: user.userId || '',
-      }));
-    });
   }, []);
 
   useEffect(() => {

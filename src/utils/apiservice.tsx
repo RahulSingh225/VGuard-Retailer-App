@@ -1,6 +1,8 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
+import { useAuth } from '../components/AuthContext';
+import useAxios from './useAxios';
 
 // const BASE_URL = 'http://192.168.1.37:5000/vguard/api';
 // const BASE_URL = 'http://34.93.182.174:5000/vguard/api';
@@ -114,7 +116,7 @@ export async function loginWithPassword(
 ): Promise<AxiosResponse> {
   const path = 'user/loginWithSp';
   const response = await createPostRequest(path, { userName, password, role });
-  // await AsyncStorage.setItem('accessToken', `Bearer ${response.data.tokens.accessToken}`);
+  await AsyncStorage.setItem('accessToken', `Bearer ${response.data.tokens.accessToken}`);
   if (response.status === 200) {
     if (response.data.name !== "Fail") {
       api.defaults.headers.common[
@@ -128,7 +130,7 @@ export async function loginWithPassword(
 export async function loginWithOtp(username: string, otp: string, roleId: string) {
   const path = 'user/userDetails/login';
   const response = await createPostRequest(path, { username, otp, roleId });
-  // await AsyncStorage.setItem('accessToken', `Bearer ${response.data.tokens.accessToken}`);
+  await AsyncStorage.setItem('accessToken', `Bearer ${response.data.tokens.accessToken}`);
   if (response.status === 200) {
     api.defaults.headers.common[
       'Authorization'
