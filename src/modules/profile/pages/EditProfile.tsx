@@ -108,7 +108,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   useEffect(() => {
     if (stateId) {
       fetchData();
-      processPincode(postData.pinCode, 'permananent')
+      processPincode(postData.pinCode.toString(), 'permananent')
     }
   }, [stateId, postData?.pinCode]);
 
@@ -282,7 +282,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         }))
       }
       if (value == 'No') {
-        processPincode(postData.currPinCode, 'current');
+        processPincode(postData.currPinCode.toString(), 'current');
       }
     }
     else if (label == "enrolledOtherSchemeYesNo") {
@@ -651,10 +651,11 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   }
 
   async function processPincode(pincode: string, type: string) {
-    pincode = pincode.toString();
+    // pincode = pincode.toString();
     if (pincode.length > 3) {
       let suggestionData = await getPincodeList(pincode);
       suggestionData = suggestionData.data;
+      console.log(suggestionData)
 
       if (Array.isArray(suggestionData) && suggestionData.length > 0) {
         const filteredSuggestions = suggestionData.filter((item) => (
@@ -951,7 +952,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         />
         <MultiSelectField
           label={t('strings:select_category_you_deal_in')}
-          selectedValues={postData?.categoryDealIn ? postData.categoryDealIn.split(', ') : []}
+          selectedValues={postData?.categoryDealIn ? postData.categoryDealIn.split(',') : []}
           onValuesChange={(selectedItems: string[]) => {
             const selectedCategories = selectedItems.map(item => {
               const category = retailerCategoryDealIn.find(cat => cat.prodCatName === item);
@@ -964,11 +965,11 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
                 return category?.prodCatId || null;
               });
 
-              const categoryDealInIDString = categoryDealInIDArray.join(', ');
+              const categoryDealInIDString = categoryDealInIDArray.join(',');
               
               return {
                 ...prevData,
-                categoryDealIn: selectedCategories.join(', '),
+                categoryDealIn: selectedCategories.join(','),
                 categoryDealInID: categoryDealInIDString,
               };
             });
