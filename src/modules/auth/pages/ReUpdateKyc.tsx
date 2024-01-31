@@ -47,71 +47,74 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             contactNo: usernumber
         }));
     }, []);
-      
+
 
     useEffect(() => {
         const fetchDataAndUpdatePostData = async () => {
-          try {
-            const response = await getUser();
-            showLoader(false);
-            const res = await response.data;
-            setPostData(res);
-            if (
-              res.currLandmark == res.landmark &&
-              res.currentAddress == res.permanentAddress &&
-              res.currStreetAndLocality == res.streetAndLocality &&
-              res.currPinCode == res.pinCode
-            ) {
-              setIsShopAddressDifferent('Yes');
+            try {
+                const response = await getUser();
+                showLoader(false);
+                const res = await response.data;
+                setPostData(res);
+                if (
+                    res.currLandmark == res.landmark &&
+                    res.currentAddress == res.permanentAddress &&
+                    res.currStreetAndLocality == res.streetAndLocality &&
+                    res.currPinCode == res.pinCode
+                ) {
+                    setIsShopAddressDifferent('Yes');
+                }
+                else if (res.currLandmark != res.landmark &&
+                    res.currentAddress != res.permanentAddress &&
+                    res.currStreetAndLocality != res.streetAndLocality &&
+                    res.currPinCode != res.pinCode) {
+                    setIsShopAddressDifferent('No');
+                }
+                if (res.gstYesNo == 'yess') {
+                    setPostData((prevData: VguardRishtaUser) => ({
+                        ...prevData,
+                        gstYesNo: 'Yes',
+                        gstNo: res.gstNo,
+                        gstPic: res.gstPic,
+                    }));
+                }
+            } catch (error) {
+                showLoader(false);
+                setPopupContent("Something went wrong!");
+                setPopupVisible(true);
+                console.error('Error fetching user profile:', error);
             }
-            else if (res.currLandmark != res.landmark &&
-                res.currentAddress != res.permanentAddress &&
-                res.currStreetAndLocality != res.streetAndLocality &&
-                res.currPinCode != res.pinCode) {
-              setIsShopAddressDifferent('No');
-            }
-            if (res.gstYesNo == 'yess') {
-                setPostData((prevData: VguardRishtaUser) => ({
-                  ...prevData,
-                  gstYesNo: 'Yes',
-                  gstNo: res.gstNo,
-                  gstPic: res.gstPic,
-                }));
-              }
-          } catch (error) {
-            showLoader(false);
-            setPopupContent("Something went wrong!");
-            setPopupVisible(true);
-            console.error('Error fetching user profile:', error);
-          }
         };
-      
-        fetchDataAndUpdatePostData();
-      }, [usernumber]);
 
-      useEffect(() => {
-        fetchData();
-    }, [postData?.stateId, postData?.distId, postData?.currDistId, postData?.currStateId]);
+        fetchDataAndUpdatePostData();
+    }, [usernumber]);
+
+    useEffect(() => {
+        if (postData?.stateId && postData?.pinCode) {
+            fetchData();
+            processPincode(postData.pinCode.toString(), 'permananent')
+        }
+    }, [postData?.stateId, postData?.pinCode]);
 
     const fetchData = async () => {
-        if(postData.stateId && postData.distId && postData.currStateId && postData.currDistId){
+        if (postData.stateId && postData.distId && postData.currStateId && postData.currDistId) {
             try {
                 const statesResponse = await getStates();
                 const statesData = await statesResponse.data;
                 setStates(statesData);
                 setCurrStates(statesData);
-    
+
                 const defaultState = postData.stateId;
                 const currDefaultState = postData.currStateId;
-    
+
                 const districtsResponse = await getDistricts(defaultState);
                 const districtsData = await districtsResponse.data;
                 const currDistrictsResponse = await getDistricts(currDefaultState);
                 const currDistrictsData = await currDistrictsResponse.data;
-    
+
                 if (Array.isArray(districtsData)) {
                     setDistricts(districtsData);
-    
+
                     if (Array.isArray(districtsData) && districtsData.length > 0) {
                         const citiesResponse = await getCities(postData.distId);
                         const citiesData = await citiesResponse.data;
@@ -122,7 +125,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 }
                 if (Array.isArray(currDistrictsData)) {
                     setCurrDistricts(currDistrictsData);
-    
+
                     if (Array.isArray(currDistrictsData) && currDistrictsData.length > 0) {
                         const citiesResponse = await getCities(postData.currDistId);
                         const citiesData = await citiesResponse.data;
@@ -136,7 +139,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 console.error('Error fetching data:', error);
             }
         }
-        else{
+        else {
             showLoader(false);
         }
     };
@@ -290,6 +293,9 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     currState: postData.state,
                     currPinCode: postData.pinCode
                 }))
+            }
+            if (value == 'No') {
+                processPincode(postData.currPinCode.toString(), 'current');
             }
         } else if (label === 'gstYesNo') {
             setPostData((prevData: VguardRishtaUser) => ({
@@ -469,14 +475,12 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             })
             .then(secondData => {
                 secondData = secondData.data;
-                if (type == 'permanent') {
-                    setDistricts([{
-                        distId: secondData.distId,
-                        districtName: secondData.distName,
-                    }]);
-                    setStates([secondData]);
-                    setCities([secondData]);
-                }
+                setDistricts([{
+                    distId: secondData.distId,
+                    districtName: secondData.distName,
+                }]);
+                setStates([secondData]);
+                setCities([secondData]);
                 if (type == 'current') {
                     setCurrDistricts([{
                         distId: secondData.distId,
@@ -523,33 +527,49 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
 
     async function processPincode(pincode: string, type: string) {
         if (pincode.length > 3) {
-            let suggestionData = await getPincodeList(pincode);
-            suggestionData = suggestionData.data;
-
-            if (Array.isArray(suggestionData) && suggestionData.length > 0) {
-                const filteredSuggestions = suggestionData.filter((item) => (
-                    item.pinCode !== null
-                ));
-                if (type == 'permanent') {
-                    setPincode_Suggestions(filteredSuggestions);
-                }
-                if (type == 'current') {
-                    setCurr_Pincode_Suggestions(filteredSuggestions);
-                }
-                if (pincode.length == 6) {
-                    updateDistrictState(pincode, type);
-                }
+          let suggestionData = await getPincodeList(pincode);
+          suggestionData = suggestionData.data;
+    
+          if (Array.isArray(suggestionData) && suggestionData.length > 0) {
+            const filteredSuggestions = suggestionData.filter((item) => (
+              item.pinCode !== null
+            ));
+            if (type == 'permanent') {
+              setPincode_Suggestions(filteredSuggestions);
             }
+            if (type == 'current') {
+              setCurr_Pincode_Suggestions(filteredSuggestions);
+            }
+            if (pincode.length == 6) {
+              updateDistrictState(pincode, type);
+              if (isShopAddressDifferent == 'Yes') {
+                setPostData((prevData: VguardRishtaUser) => ({
+                  ...prevData,
+                  currLandmark: postData.landmark,
+                  currCity: postData.city,
+                  currDist: postData.dist,
+                  currState: postData.state,
+                  currPinCode: pincode,
+                  currStateId: postData.stateId,
+                  currCityId: postData.cityId,
+                  currDistId: postData.distId,
+                  currStreetAndLocality: postData.streetAndLocality,
+                  currentAddress: postData.permanentAddress
+                }))
+              }
+            }
+          }
         }
-
+        // console.log(pincode);
+    
         type === 'permanent' ? setPostData((prevData: VguardRishtaUser) => ({
-            ...prevData,
-            pinCode: pincode
+          ...prevData,
+          pinCode: pincode
         })) : setPostData((prevData: VguardRishtaUser) => ({
-            ...prevData,
-            currPinCode: pincode
+          ...prevData,
+          currPinCode: pincode
         }))
-    }
+      }
 
 
     return (
