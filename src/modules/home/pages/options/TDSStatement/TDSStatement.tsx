@@ -51,20 +51,21 @@ const CustomYearDropdown: React.FC<{ data: any[]; value: string; onChange: (item
     <FlatList
       style={styles.dropdown}
       data={data}
-      keyExtractor={(item) => item.value}
+      keyExtractor={(item) => item.Fiscalyear}
       renderItem={({ item }) => (
         <TouchableOpacity onPress={() => onChange(item)}>
-          <Text style={styles.dropdownItem}>{item}</Text>
+          <Text style={styles.dropdownItem}>{item.Fiscalyear}</Text>
         </TouchableOpacity>
       )}
     />
   );
 };
 
+
 const TDSStatement: React.FC<TDSProps> = () => {
   const { t } = useTranslation();
-  const [fiscalYearData, setFiscalYearData] = useState<FY[]>([]); // Set appropriate type for fiscalYearData
-  const [monthData, setMonthData] = useState<MonthData[]>([]); // Set appropriate type for monthData
+  const [fiscalYearData, setFiscalYearData] = useState<FY[]>([])
+  const [monthData, setMonthData] = useState<MonthData[]>([]);
   const [loader, showLoader] = useState<boolean>(false);
   const [isFocusFiscalYear, setIsFocusFiscalYear] = useState<boolean>(false);
   const [isFocusMonth, setIsFocusMonth] = useState<boolean>(false);
@@ -107,7 +108,8 @@ const TDSStatement: React.FC<TDSProps> = () => {
           id: month.id,
           month: month.month
         }))
-        setFiscalYearData(fiscalYearResponseData);
+        console.log(fiscalYearResult); // Check if this prints the correct data
+        setFiscalYearData(fiscalYearResult);
         setFiscalYearValue(fiscalYearResult[0].Fiscalyear);
         setMonthData(monthResult);
         setSelectedMonth(monthResult[0]?.month);
