@@ -108,9 +108,12 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   useEffect(() => {
     if (stateId) {
       fetchData();
-      processPincode(postData.pinCode.toString(), 'permananent')
+      processPincode(postData.pinCode.toString(), 'permanent');
+      if (isShopAddressDifferent == 'No') {
+        processPincode(postData.currPinCode.toString(), 'current');
+      }
     }
-  }, [stateId, postData?.pinCode]);
+  }, [stateId, postData?.pinCode, postData?.currPinCode]);
 
   const fetchData = async () => {
     try {
@@ -600,22 +603,14 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       })
       .then(secondData => {
         secondData = secondData.data;
+        showLoader(false);
+        if (type == 'permanent') {
           setDistricts([{
             distId: secondData.distId,
             districtName: secondData.distName,
           }]);
           setStates([secondData]);
           setCities([secondData]);
-        if (type == 'current') {
-          setCurrDistricts([{
-            distId: secondData.distId,
-            districtName: secondData.distName,
-          }])
-          setCurrStates([secondData]);
-          setCurrCities([secondData]);
-        }
-
-        type === 'permanent' ?
           setPostData((prevData: VguardRishtaUser) => ({
             ...prevData,
             dist: secondData.distName,
@@ -626,7 +621,15 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
             city: secondData.cityName,
             pinCode: pincode
           }))
-          : setPostData((prevData: VguardRishtaUser) => ({
+        }
+        if (type == 'current') {
+          setCurrDistricts([{
+            distId: secondData.distId,
+            districtName: secondData.distName,
+          }])
+          setCurrStates([secondData]);
+          setCurrCities([secondData]);
+          setPostData((prevData: VguardRishtaUser) => ({
             ...prevData,
             currDist: secondData.distName,
             currDistId: secondData.distId,
@@ -636,6 +639,8 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
             currCity: secondData.cityName,
             currPinCode: pincode
           }));
+        }
+        showLoader(false);
         return getCities(secondData.distId);
       })
       .then(cityData => {
@@ -650,53 +655,41 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       });
   }
 
-  async function processPincode(pincode: string, type: string) {
-    // pincode = pincode.toString();
-    if (pincode.length > 3) {
-      let suggestionData = await getPincodeList(pincode);
-      suggestionData = suggestionData.data;
-      console.log(suggestionData)
+  function processPincode(pincode: string, type: string) {
+    if (pincode.length <= 3) {
+      return;
+    }
 
-      if (Array.isArray(suggestionData) && suggestionData.length > 0) {
-        const filteredSuggestions = suggestionData.filter((item) => (
-          item.pinCode !== null
-        ));
-        if (type == 'permanent') {
-          setPincode_Suggestions(filteredSuggestions);
-        }
-        if (type == 'current') {
-          setCurr_Pincode_Suggestions(filteredSuggestions);
-        }
-        if (pincode.length == 6) {
-          updateDistrictState(pincode, type);
-          if (isShopAddressDifferent == 'Yes') {
-            setPostData((prevData: VguardRishtaUser) => ({
-              ...prevData,
-              currLandmark: postData.landmark,
-              currCity: postData.city,
-              currDist: postData.dist,
-              currState: postData.state,
-              currPinCode: pincode,
-              currStateId: postData.stateId,
-              currCityId: postData.cityId,
-              currDistId: postData.distId,
-              currStreetAndLocality: postData.streetAndLocality,
-              currentAddress: postData.permanentAddress
-            }))
+    getPincodeList(pincode)
+      .then((response) => response.data)
+      .then((suggestionData) => {
+        if (Array.isArray(suggestionData) && suggestionData.length > 0) {
+          const filteredSuggestions = suggestionData.filter((item) => item.pinCode !== null);
+
+          if (type === 'permanent') {
+            setPincode_Suggestions(filteredSuggestions);
+          }
+
+          if (type === 'current') {
+            setCurr_Pincode_Suggestions(filteredSuggestions);
+          }
+
+          if (pincode.length == 6) {
+            updateDistrictState(pincode, type);
           }
         }
-      }
-    }
-    // console.log(pincode);
+      })
+      .catch((error) => {
+        console.error('Error fetching pincode list:', error);
+      });
 
-    type === 'permanent' ? setPostData((prevData: VguardRishtaUser) => ({
+    const updatedField = type === 'permanent' ? 'pinCode' : 'currPinCode';
+    setPostData((prevData: VguardRishtaUser) => ({
       ...prevData,
-      pinCode: pincode
-    })) : setPostData((prevData: VguardRishtaUser) => ({
-      ...prevData,
-      currPinCode: pincode
-    }))
+      [updatedField]: pincode
+    }));
   }
+
 
   return (
     <ScrollView style={styles.mainWrapper}>
@@ -801,7 +794,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           setOpen={() => setUIswitch({ pincode: !uiSwitch.pincode })}
           value={postData?.pinCode}
           onSelectItem={(item) => {
-            // console.log(item)
             processPincode(`${item.value}`, 'permanent')
           }}
           onChangeSearchText={(text) => processPincode(text, 'permanent')}
@@ -894,7 +886,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
               setOpen={() => setUIswitch({ currentpincode: !uiSwitch.currentpincode })}
               value={postData?.currPinCode}
               onSelectItem={(item) => {
-                // console.log(item)
                 processPincode(`${item.value}`, 'current')
               }}
               onChangeSearchText={(text) => processPincode(text, 'current')}
@@ -966,7 +957,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
               });
 
               const categoryDealInIDString = categoryDealInIDArray.join(',');
-              
+
               return {
                 ...prevData,
                 categoryDealIn: selectedCategories.join(','),

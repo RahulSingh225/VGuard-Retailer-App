@@ -90,11 +90,14 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     }, [usernumber]);
 
     useEffect(() => {
-        if (postData?.stateId && postData?.pinCode) {
-            fetchData();
-            processPincode(postData.pinCode.toString(), 'permananent')
+        if (postData?.stateId) {
+          fetchData();
+          processPincode(postData.pinCode.toString(), 'permanent');
+          if (isShopAddressDifferent == 'No') {
+            processPincode(postData.currPinCode.toString(), 'current');
+          }
         }
-    }, [postData?.stateId, postData?.pinCode]);
+      }, [postData?.stateId, postData?.pinCode, postData?.currPinCode]);
 
     const fetchData = async () => {
         if (postData.stateId && postData.distId && postData.currStateId && postData.currDistId) {
@@ -467,108 +470,99 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
 
     function updateDistrictState(pincode: string, type: string) {
         showLoader(true);
-
         getPincodeList(pincode)
-            .then(data => {
-                const pincodeid = data.data[0].pinCodeId;
-                return getDetailsByPinCode(pincodeid);
-            })
-            .then(secondData => {
-                secondData = secondData.data;
-                setDistricts([{
-                    distId: secondData.distId,
-                    districtName: secondData.distName,
-                }]);
-                setStates([secondData]);
-                setCities([secondData]);
-                if (type == 'current') {
-                    setCurrDistricts([{
-                        distId: secondData.distId,
-                        districtName: secondData.distName,
-                    }]);
-                    setCurrStates([secondData]);
-                    setCurrCities([secondData]);
-                }
-
-                type === 'permanent' ?
-                    setPostData((prevData: VguardRishtaUser) => ({
-                        ...prevData,
-                        dist: secondData.distName,
-                        distId: secondData.distId,
-                        state: secondData.stateName,
-                        stateId: secondData.stateId,
-                        cityId: secondData.cityId,
-                        city: secondData.cityName,
-                        pinCode: pincode
-                    }))
-                    : setPostData((prevData: VguardRishtaUser) => ({
-                        ...prevData,
-                        currDist: secondData.distName,
-                        currDistId: secondData.distId,
-                        currState: secondData.stateName,
-                        currStateId: secondData.stateId,
-                        currCityId: secondData.cityId,
-                        currCity: secondData.cityName,
-                        currPinCode: pincode
-                    }));
-                return getCities(secondData.distId);
-            })
-            .then(cityData => {
-                cityData = cityData;
-                showLoader(false);
-            })
-            .catch(error => {
-                console.error('Error in Page 1:', error);
-            })
-            .finally(() => {
-                showLoader(false);
-            });
-    }
-
-    async function processPincode(pincode: string, type: string) {
-        if (pincode.length > 3) {
-          let suggestionData = await getPincodeList(pincode);
-          suggestionData = suggestionData.data;
-    
-          if (Array.isArray(suggestionData) && suggestionData.length > 0) {
-            const filteredSuggestions = suggestionData.filter((item) => (
-              item.pinCode !== null
-            ));
+          .then(data => {
+            const pincodeid = data.data[0].pinCodeId;
+            return getDetailsByPinCode(pincodeid);
+          })
+          .then(secondData => {
+            secondData = secondData.data;
+            console.log(secondData)
+            showLoader(false);
             if (type == 'permanent') {
-              setPincode_Suggestions(filteredSuggestions);
+              setDistricts([{
+                distId: secondData.distId,
+                districtName: secondData.distName,
+              }]);
+              setStates([secondData]);
+              setCities([secondData]);
+              setPostData((prevData: VguardRishtaUser) => ({
+                ...prevData,
+                dist: secondData.distName,
+                distId: secondData.distId,
+                state: secondData.stateName,
+                stateId: secondData.stateId,
+                cityId: secondData.cityId,
+                city: secondData.cityName,
+                pinCode: pincode
+              }))
             }
             if (type == 'current') {
-              setCurr_Pincode_Suggestions(filteredSuggestions);
+              setCurrDistricts([{
+                distId: secondData.distId,
+                districtName: secondData.distName,
+              }])
+              setCurrStates([secondData]);
+              setCurrCities([secondData]);
+              setPostData((prevData: VguardRishtaUser) => ({
+                ...prevData,
+                currDist: secondData.distName,
+                currDistId: secondData.distId,
+                currState: secondData.stateName,
+                currStateId: secondData.stateId,
+                currCityId: secondData.cityId,
+                currCity: secondData.cityName,
+                currPinCode: pincode
+              }));
             }
-            if (pincode.length == 6) {
-              updateDistrictState(pincode, type);
-              if (isShopAddressDifferent == 'Yes') {
-                setPostData((prevData: VguardRishtaUser) => ({
-                  ...prevData,
-                  currLandmark: postData.landmark,
-                  currCity: postData.city,
-                  currDist: postData.dist,
-                  currState: postData.state,
-                  currPinCode: pincode,
-                  currStateId: postData.stateId,
-                  currCityId: postData.cityId,
-                  currDistId: postData.distId,
-                  currStreetAndLocality: postData.streetAndLocality,
-                  currentAddress: postData.permanentAddress
-                }))
+            showLoader(false);
+            return getCities(secondData.distId);
+          })
+          .then(cityData => {
+            cityData = cityData;
+            showLoader(false);
+          })
+          .catch(error => {
+            console.error('Error in Page 1:', error);
+          })
+          .finally(() => {
+            showLoader(false);
+          });
+      }
+
+    function processPincode(pincode: string, type: string) {
+        if (pincode.length <= 3) {
+          return;
+        }
+    
+        getPincodeList(pincode)
+          .then((response) => response.data)
+          .then((suggestionData) => {
+            if (Array.isArray(suggestionData) && suggestionData.length > 0) {
+              const filteredSuggestions = suggestionData.filter((item) => item.pinCode !== null);
+    
+              if (type === 'permanent') {
+                setPincode_Suggestions(filteredSuggestions);
+              }
+    
+              if (type === 'current') {
+                setCurr_Pincode_Suggestions(filteredSuggestions);
+              }
+    
+              if (pincode.length == 6) {
+                updateDistrictState(pincode, type);
               }
             }
-          }
-        }
-        // console.log(pincode);
+          })
+          .catch((error) => {
+            console.error('Error fetching pincode list:', error);
+          });
     
-        type === 'permanent' ? setPostData((prevData: VguardRishtaUser) => ({
+        const updatedField = type === 'permanent' ? 'pinCode' : 'currPinCode';
+        setPostData((prevData: VguardRishtaUser) => ({
           ...prevData,
-          pinCode: pincode
-        })) : setPostData((prevData: VguardRishtaUser) => ({
-          ...prevData,
-          currPinCode: pincode
-        }))
+          [updatedField]: pincode
+        }));
       }
 
 
