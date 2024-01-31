@@ -67,7 +67,14 @@ async function createPostRequest(
   relativeUrl: string,
   data: any,
 ): Promise<AxiosResponse> {
-  // try {
+  if (!api.defaults.headers.common.Authorization) {
+    const accessToken = JSON.parse(
+      (await AsyncStorage.getItem('accessToken')) as string,
+    );
+    api.defaults.headers.common[
+      'Authorization'
+    ] = `Bearer ${accessToken}`;
+  }
   const headers = {
     Accept: 'application/json',
     'Content-Type': 'application/json',
@@ -76,22 +83,20 @@ async function createPostRequest(
     headers,
   });
   return response;
-  // } catch (error) {
-  //   console.error('Error:', error);
-  //   throw error;
-  // }
 }
 
 async function createGetRequest(relativeUrl: string): Promise<AxiosResponse> {
-  try {
-    const response = await api.get(relativeUrl);
-    return response;
-  } catch (error) {
-    console.error('Error:', relativeUrl, error);
-    throw error;
+  if (!api.defaults.headers.common.Authorization) {
+    const accessToken = JSON.parse(
+      (await AsyncStorage.getItem('accessToken')) as string,
+    );
+    api.defaults.headers.common[
+      'Authorization'
+    ] = `Bearer ${accessToken}`;
   }
+  const response = await api.get(relativeUrl);
+  return response;
 }
-
 const update_fcm_token = async () => {
   const path = 'pushNotification/registerToken';
   try {
