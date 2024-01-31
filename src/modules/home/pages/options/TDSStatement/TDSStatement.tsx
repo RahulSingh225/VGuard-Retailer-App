@@ -78,7 +78,7 @@ const TDSStatement: React.FC<TDSProps> = () => {
 
   const handleDropdownFiscalYear = (item: any) => {
     setIsFocusFiscalYear(false);
-    setFiscalYearValue(item);
+    setFiscalYearValue(item.Fiscalyear);
     setPostData((prevData) => ({
       ...prevData,
       year: item.Fiscalyear,
@@ -87,6 +87,7 @@ const TDSStatement: React.FC<TDSProps> = () => {
 
   const handleDropdownMonth = (item: any) => {
     setIsFocusMonth(false);
+    setSelectedMonth(item.month);
     setPostData((prevData) => ({
       ...prevData,
       month: item.id,
