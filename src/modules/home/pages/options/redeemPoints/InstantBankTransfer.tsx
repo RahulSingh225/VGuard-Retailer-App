@@ -38,6 +38,20 @@ import ImagePickerField from '../../../../../components/ImagePickerField';
 
 type BankProps = {};
 
+interface BankDetail {
+    bankAccNo: string;
+    bankAccHolderName: string;
+    bankNameAndBranch: string;
+    bankAccType: string;
+    bankIfsc: string;
+    checkPhoto: string;
+}
+
+interface BankTransferData {
+    amount: string;
+    bankDetail: BankDetail;
+}
+
 const Bank: React.FC<BankProps> = () => {
     const { t } = useTranslation();
     const [select, setSelect] = useState<string | null>(null);
@@ -228,57 +242,101 @@ const Bank: React.FC<BankProps> = () => {
         }
     };
 
-    const handleProceed = () => {
+    const handleProceed = async () => {
         showLoader(true);
-        triggerApiWithImage(fileData)
-            .then((uuid) => {
-                const postData = {
+        try {
+            await triggerApiWithImage(fileData);
+            const postData: BankTransferData = {
+                amount: points,
+                bankDetail: {
                     bankAccNo: accNo,
                     bankAccHolderName: accHolder,
                     bankAccType: accType,
                     bankNameAndBranch: bankName,
                     bankIfsc: ifscCode,
-                    checkPhoto: entityUid,
-                    points: points
-                };
-                if (postData.bankAccNo != "" &&
-                    postData.bankAccHolderName != "" &&
-                    postData.bankAccType != "" &&
-                    postData.bankAccType != "" &&
-                    postData.bankNameAndBranch != "" &&
-                    postData.bankIfsc != "" &&
-                    postData.checkPhoto != "" &&
-                    postData.points != ""
-                ) {
-                    bankTransfer(postData)
-                        .then((response) => {
-                            showLoader(false);
-                            const responses = response.data;
-                            return responses;
-                        })
-                        .then((data) => {
-                            setPopupVisible(true);
-                            setPopupContent(data.message)
-                        })
-                        .catch((error) => {
-                            setPopupContent('Failed to update Bank Details');
-                            setPopupVisible(true);
-                            showLoader(false);
-                            console.error('API Error:', error);
-                        });
+                    checkPhoto: entityUid
                 }
-                else {
+            }
+            if (postData.amount != "" &&
+                postData.bankDetail.bankAccNo != "" &&
+                postData.bankDetail.bankAccHolderName != "" &&
+                postData.bankDetail.bankAccType != "" &&
+                postData.bankDetail.bankAccType != "" &&
+                postData.bankDetail.bankNameAndBranch != "" &&
+                postData.bankDetail.bankIfsc != "" &&
+                postData.bankDetail.checkPhoto != "") {
+                try {
+                    const bankTransferResponse = await bankTransfer(postData);
                     showLoader(false);
-                    setPopupContent("Enter all the details");
+                    const bankTransferResponseData = bankTransferResponse.data;
                     setPopupVisible(true);
+                    setPopupContent(bankTransferResponseData.message);
+                } catch (error) {
+                    showLoader(false);
+                    setPopupVisible(true);
+                    setPopupContent('Failed to update Bank Details');
+                    console.error('API Error:', error);
                 }
-
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                setPopupContent("An error occurred");
+            } else {
+                showLoader(false);
                 setPopupVisible(true);
-            });
+                setPopupContent("Enter all the details");
+            }
+        } catch (error) {
+            showLoader(false);
+            console.error('Error: bt', error);
+            setPopupVisible(true);
+            setPopupContent("An error occurred");
+        }
+        // triggerApiWithImage(fileData)
+        //     .then((uuid) => {
+        //         const postData = {
+        //             bankAccNo: accNo,
+        //             bankAccHolderName: accHolder,
+        //             bankAccType: accType,
+        //             bankNameAndBranch: bankName,
+        //             bankIfsc: ifscCode,
+        //             checkPhoto: entityUid,
+        //             points: points
+        //         };
+        //         if (postData.bankAccNo != "" &&
+        //             postData.bankAccHolderName != "" &&
+        //             postData.bankAccType != "" &&
+        //             postData.bankAccType != "" &&
+        //             postData.bankNameAndBranch != "" &&
+        //             postData.bankIfsc != "" &&
+        //             postData.checkPhoto != "" &&
+        //             postData.points != ""
+        //         ) {
+        //             bankTransfer(postData)
+        //                 .then((response) => {
+        //                     showLoader(false);
+        //                     const responses = response.data;
+        //                     return responses;
+        //                 })
+        //                 .then((data) => {
+        //                     setPopupVisible(true);
+        //                     setPopupContent(data.message)
+        //                 })
+        //                 .catch((error) => {
+        //                     setPopupContent('Failed to update Bank Details');
+        //                     setPopupVisible(true);
+        //                     showLoader(false);
+        //                     console.error('API Error:', error);
+        //                 });
+        //         }
+        //         else {
+        //             showLoader(false);
+        //             setPopupContent("Enter all the details");
+        //             setPopupVisible(true);
+        //         }
+
+        //     })
+        //     .catch(error => {
+        //         console.error('Error:', error);
+        //         setPopupContent("An error occurred");
+        //         setPopupVisible(true);
+        //     });
 
     };
 
