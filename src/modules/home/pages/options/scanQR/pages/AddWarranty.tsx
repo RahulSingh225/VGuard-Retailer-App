@@ -92,7 +92,7 @@ const AddWarranty = ({navigation}) => {
     AsyncStorage.getItem('COUPON_RESPONSE').then(r => {
      
       setCouponResponse(JSON.parse(r));
-      setQrcode(JSON.parse(r).copuonCode);
+      setQrcode(JSON.parse(r).couponCode);
       setSkuDetails(JSON.parse(r).skuDetail);
       AsyncStorage.getItem('CUSTOMER_DETAILS').then(r => {
     
@@ -282,7 +282,7 @@ const AddWarranty = ({navigation}) => {
         clubPoints: '',
         scanDate: '',
         scanStatus: '',
-        copuonCode: '',
+        couponCode: '',
         bitEligibleScratchCard: '',
         pardId: '',
         partNumber: '',

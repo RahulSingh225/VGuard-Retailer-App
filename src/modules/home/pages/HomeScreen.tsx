@@ -116,7 +116,7 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         </View>
         <View style={styles.dashboard}>
           <View style={styles.row}>
-            {userData?.inAllow == 1 ? (
+            {userData?.inAllow == 0 ? (
               <CustomTouchableOption
                 text="strings:scan_code"
                 iconSource={require('../../../assets/images/ic_scan_code.png')}

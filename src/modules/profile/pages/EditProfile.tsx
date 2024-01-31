@@ -108,8 +108,9 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   useEffect(() => {
     if (stateId) {
       fetchData();
+      processPincode(postData.pinCode, 'permananent')
     }
-  }, [stateId]);
+  }, [stateId, postData?.pinCode]);
 
   const fetchData = async () => {
     try {
@@ -225,7 +226,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
               .then((responseData) => {
                 setPopupVisible(true);
                 setPopupContent(responseData?.message);
-                if(responseData.code == 200){
+                if (responseData.code == 200) {
                   fetchAndSetData();
                 }
                 showLoader(false);
@@ -251,15 +252,15 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const fetchAndSetData = async () => {
     getUser()
-    .then(response => {
-      const user = response.data;
-      if(user.userCode != "" && user.userCode != null){
-        AsyncStorage.setItem('USER', JSON.stringify(user));
-      }
-      else{
-        console.error("Error getting details");
-      }
-    })
+      .then(response => {
+        const user = response.data;
+        if (user.userCode != "" && user.userCode != null) {
+          AsyncStorage.setItem('USER', JSON.stringify(user));
+        }
+        else {
+          console.error("Error getting details");
+        }
+      })
   }
 
   const handleChange = (label: string, value: string) => {
@@ -279,6 +280,9 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           currStreetAndLocality: postData.streetAndLocality,
           currentAddress: postData.permanentAddress
         }))
+      }
+      if (value == 'No') {
+        processPincode(postData.currPinCode, 'current');
       }
     }
     else if (label == "enrolledOtherSchemeYesNo") {
@@ -596,12 +600,20 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       })
       .then(secondData => {
         secondData = secondData.data;
-        setDistricts([{
-          distId: secondData.distId,
-          districtName: secondData.distName,
-        }]);
-        setStates([secondData]);
-        setCities([secondData]);
+          setDistricts([{
+            distId: secondData.distId,
+            districtName: secondData.distName,
+          }]);
+          setStates([secondData]);
+          setCities([secondData]);
+        if (type == 'current') {
+          setCurrDistricts([{
+            distId: secondData.distId,
+            districtName: secondData.distName,
+          }])
+          setCurrStates([secondData]);
+          setCurrCities([secondData]);
+        }
 
         type === 'permanent' ?
           setPostData((prevData: VguardRishtaUser) => ({
@@ -639,6 +651,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
   }
 
   async function processPincode(pincode: string, type: string) {
+    pincode = pincode.toString();
     if (pincode.length > 3) {
       let suggestionData = await getPincodeList(pincode);
       suggestionData = suggestionData.data;
@@ -952,7 +965,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
               });
 
               const categoryDealInIDString = categoryDealInIDArray.join(', ');
-
+              
               return {
                 ...prevData,
                 categoryDealIn: selectedCategories.join(', '),

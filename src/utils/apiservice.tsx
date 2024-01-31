@@ -4,8 +4,9 @@ import messaging from '@react-native-firebase/messaging';
 import { useAuth } from '../components/AuthContext';
 import useAxios from './useAxios';
 
-const BASE_URL = 'http://192.168.1.37:5000/vguard/api';
+// const BASE_URL = 'http://192.168.1.37:5000/vguard/api';
 // const BASE_URL = 'http://34.93.182.174:5000/vguard/api';
+const BASE_URL = 'http://34.93.239.251:5000/vguard/api';
 
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -27,6 +28,40 @@ async function newTokens(token: string) {
     throw new Error('Failed to refresh tokens');
   }
 }
+
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    console.log(error.response.status);
+    if (error.response.status === 401) {
+      console.log("Axios Interceptor", error);
+      const refreshToken = JSON.parse(
+        (await AsyncStorage.getItem('refreshToken')) as string,
+      );
+      if (!refreshToken) {
+        // logout
+      }
+
+      try {
+        const { accessToken, newRefreshToken } = await newTokens(refreshToken);
+        await AsyncStorage.setItem(
+          'refreshToken',
+          JSON.stringify(newRefreshToken),
+        );
+        // await AsyncStorage.setItem('accessToken', `Bearer ${accessToken}`);
+        api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+        // return api(originalRequest);
+      } catch (refreshError: any) {
+        console.log(`${refreshError.message}`);
+        //logout
+        await AsyncStorage.removeItem('USER');
+        await AsyncStorage.removeItem('diffAcc');
+        await AsyncStorage.removeItem('refreshToken');
+      }
+    }
+    return Promise.reject(error);
+  },
+);
 
 async function createPostRequest(
   relativeUrl: string,

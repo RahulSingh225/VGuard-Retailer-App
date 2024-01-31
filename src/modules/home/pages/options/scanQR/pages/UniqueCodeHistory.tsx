@@ -7,7 +7,7 @@ import { getScanCodeHistory } from '../../../../../../utils/apiservice';
 import Loader from '../../../../../../components/Loader';
 interface RedemptionHistoryItem {
   scanDate: string;
-  copuonCode: string;
+  couponCode: string;
   scanStatus: string;
 }
 
@@ -34,7 +34,7 @@ const UniqueCodeHistory: React.FC = () => {
   const renderItem = ({ item }: { item: RedemptionHistoryItem }) => (
     <View style={styles.item}>
       <Text style={styles.text}>{item.scanDate}</Text>
-      <Text style={styles.text}>{item.copuonCode}</Text>
+      <Text style={styles.text}>{item.couponCode}</Text>
       <Text style={styles.status}>{item.scanStatus}</Text>
     </View>
   );
