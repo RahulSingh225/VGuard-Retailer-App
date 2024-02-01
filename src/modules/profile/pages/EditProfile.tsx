@@ -4,7 +4,7 @@ import { responsiveFontSize, responsiveHeight } from 'react-native-responsive-di
 import colors from '../../../../colors';
 import { getCities, getDetailsByPinCode, getDistricts, getPincodeList, getRetailerCategoryDealIn, getStates, getUser, sendFile, updateProfile } from '../../../utils/apiservice';
 import { useTranslation } from 'react-i18next';
-import { Cities, District, State, VguardRishtaUser } from '../../../utils/modules/VguardRishtaUser';
+import { Cities, District, State, VguardRishtaUser } from '../../../utils/modules/UserData';
 import InputField from '../../../components/InputField';
 import Buttons from '../../../components/Buttons';
 import PickerField from '../../../components/PickerField';
@@ -71,6 +71,7 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         }
         else {
           setIsShopAddressDifferent('No');
+          processPincode(res.currPinCode.toString(), 'current');
         }
         const countNonEmptyStrings = (fields: any[]) => {
           return fields.filter(field => typeof field === 'string' && field.trim() !== '').length;
@@ -107,60 +108,13 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   useEffect(() => {
     if (stateId) {
-      // fetchData();
       processPincode(postData.pinCode.toString(), 'permanent');
-      if (isShopAddressDifferent == 'No') {
-        processPincode(postData.currPinCode.toString(), 'current');
-      }
     }
-  }, [stateId, postData?.pinCode, postData?.currPinCode]);
-
-  // const fetchData = async () => {
-  //   try {
-  //     const statesResponse = await getStates();
-  //     // const statesData = await statesResponse.data;
-  //     // setStates(statesData);
-  //     // setCurrStates(statesData);
-
-  //     const defaultState = postData.stateId;
-  //     const currDefaultState = postData.currStateId;
-
-  //     const districtsResponse = await getDistricts(defaultState);
-  //     const districtsData = await districtsResponse.data;
-  //     const currDistrictsResponse = await getDistricts(currDefaultState);
-  //     const currDistrictsData = await currDistrictsResponse.data;
-
-  //     if (Array.isArray(districtsData)) {
-  //       // setDistricts(districtsData);
-
-  //       if (Array.isArray(districtsData) && districtsData.length > 0) {
-  //         const citiesResponse = await getCities(postData.distId);
-  //         const citiesData = await citiesResponse.data;
-  //         setCities(citiesData);
-  //       }
-  //     } else {
-  //       console.error('Error: Districts data is not an array.', districtsData);
-  //     }
-  //     if (Array.isArray(currDistrictsData)) {
-  //       // setCurrDistricts(currDistrictsData);
-
-  //       if (Array.isArray(currDistrictsData) && currDistrictsData.length > 0) {
-  //         const citiesResponse = await getCities(postData.currDistId);
-  //         const citiesData = await citiesResponse.data;
-  //         setCurrCities(citiesData);
-  //       }
-  //     } else {
-  //       console.error('Error: Districts data is not an array.', currDistrictsData);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
+  }, [stateId, postData?.pinCode]);
 
   useEffect(() => {
     const getImage = async () => {
       try {
-        // const profileImageUrl = await getFile(userData.kycDetails.selfie, 'Profile', 2);
         const profileImageUrl = getImageUrl(userData.kycDetails.selfie, 'Profile');
         setProfileImage(profileImageUrl);
       } catch (error) {
@@ -293,6 +247,14 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
       let enrolledOtherSchemeNum = 0;
       if (value == "Yes") {
         enrolledOtherSchemeNum = 1;
+      }
+      if(value == "No"){
+        setPostData((prevData: VguardRishtaUser) => ({
+          ...prevData,
+          [label]: value,
+          abtOtherSchemeLiked: '',
+          otherSchemeBrand: ''
+        }))
       }
       setPostData((prevData: VguardRishtaUser) => ({
         ...prevData,
@@ -467,68 +429,17 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
 
   };
-
-
-  const handleStateSelect = async (text: string, type: string) => {
-    let selectedCategory: any;
-    if (type == "permanent") {
-      selectedCategory = states.find((category: { stateName: string; }) => category.stateName === text);
-      setPostData((prevData: VguardRishtaUser) => ({
-        ...prevData,
-        state: text,
-        stateId: selectedCategory?.id || null,
-      }));
-    }
-    else if (type == "current") {
-      selectedCategory = currStates.find((category: { stateName: string; }) => category.stateName === text);
-      setPostData((prevData: VguardRishtaUser) => ({
-        ...prevData,
-        currState: text,
-        currStateId: selectedCategory?.id || null,
-      }));
-    }
-    getDistricts(selectedCategory?.id)
-      .then(response => response.data)
-      .then((data) => {
-        if (type == 'permanent') {
-          setDistricts(data);
-        }
-        if (type == 'current') {
-          setCurrDistricts(data);
-        }
-      })
-  }
-  const handleDistrictSelect = async (text: string, type: string) => {
-    let selectedCategory: any;
-    if (type == "permanent") {
-      selectedCategory = districts.find((category: { districtName: string; }) => category.districtName === text);
-      setPostData((prevData: VguardRishtaUser) => ({
-        ...prevData,
-        dist: text,
-        distId: selectedCategory?.id || null,
-      }));
-    }
-    else if (type == "current") {
-      selectedCategory = currDistricts.find((category: { districtName: string; }) => category.districtName === text);
-      setPostData((prevData: VguardRishtaUser) => ({
-        ...prevData,
-        currDist: text,
-        currDistId: selectedCategory?.id || null,
-      }));
-    }
-    getCities(selectedCategory?.id)
-      .then(response => response.data)
-      .then((data) => {
-        if (type == 'permanent') {
-          setCities(data);
-        }
-        if (type == 'current') {
-          setCurrCities(data);
-        }
-      })
-  }
+  const [isFieldAvailable, showField] = useState(false);
+  const [isCurrFieldAvailable, showCurrField] = useState(false);
   const handleCitySelect = async (text: string, type: string) => {
     let selectedCategory: any;
+    if (text == 'Other' && type == "permanent") {
+      showField(true)
+    }
+    if (text == 'Other' && type == "current") {
+      showCurrField(true)
+    }
+
     if (type == "permanent") {
       selectedCategory = cities.find((category: { cityName: string; }) => category.cityName === text);
       setPostData((prevData: VguardRishtaUser) => ({
@@ -604,12 +515,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         secondData = secondData.data;
         showLoader(false);
         if (type == 'permanent') {
-          // setDistricts([{
-          //   distId: secondData.distId,
-          //   districtName: secondData.distName,
-          // }]);
-          // setStates([secondData]);
-          setCities([secondData]);
           setPostData((prevData: VguardRishtaUser) => ({
             ...prevData,
             dist: secondData.distName,
@@ -622,12 +527,6 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           }))
         }
         if (type == 'current') {
-          // setCurrDistricts([{
-          //   distId: secondData.distId,
-          //   districtName: secondData.distName,
-          // }])
-          // setCurrStates([secondData]);
-          setCurrCities([secondData]);
           setPostData((prevData: VguardRishtaUser) => ({
             ...prevData,
             currDist: secondData.distName,
@@ -643,7 +542,14 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         return getCities(secondData.distId);
       })
       .then(cityData => {
-        cityData = cityData;
+        cityData = cityData.data;
+        const cityDataWithOther = [...cityData, { cityName: "Other", id: "" }];
+        if (type == "permanent") {
+          setCities(cityDataWithOther)
+        }
+        if (type == "current") {
+          setCurrCities(cityDataWithOther);
+        }
         showLoader(false);
       })
       .catch(error => {
@@ -847,6 +753,14 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
           onValueChange={(text: string) => handleCitySelect(text, 'permanent')}
           items={cities?.map(city => ({ label: city.cityName, value: city.cityName }))}
         />
+        {isFieldAvailable ? (
+          <InputField
+            label={t('strings:city')}
+            value={postData?.otherCity}
+            onChangeText={(text) => handleInputChange(text, 'otherCity')}
+          />
+        ) : null}
+
         <PickerField
           label={t('strings:is_shop_address_different')}
           selectedValue={isShopAddressDifferent}
@@ -934,6 +848,13 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
               onValueChange={(text: string) => handleCitySelect(text, 'current')}
               items={currCities?.map(city => ({ label: city.cityName, value: city.cityName }))}
             />
+            {isCurrFieldAvailable ? (
+              <InputField
+                label={t('strings:city')}
+                value={postData?.otherCurrCity}
+                onChangeText={(text) => handleInputChange(text, 'otherCurrCity')}
+              />
+            ) : null}
           </>
         ) : null}
         <PickerField
@@ -1038,7 +959,8 @@ const EditProfile: React.FC<{ navigation: any }> = ({ navigation }) => {
         <InputField
           label={t('strings:id_proof_no')}
           value={postData?.kycDetails?.aadharOrVoterOrDlNo}
-          onChangeText={(text) => handleInputChange(text, 'kycDetails.aadharOrVoterOrDlNo')}
+          // onChangeText={(text) => handleInputChange(text, 'kycDetails.aadharOrVoterOrDlNo')}
+          disabled={true}
         />
         <InputField
           label={t('strings:do_you_have_gst_number')}

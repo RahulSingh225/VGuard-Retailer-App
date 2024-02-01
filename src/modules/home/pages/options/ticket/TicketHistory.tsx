@@ -120,9 +120,9 @@ const TicketHistory: React.FC = () => {
           <View key={index} style={styles.listItem}>
             <View style={styles.messageContainer}>
               <Text style={styles.messageText}>{item.createdDate}</Text>
-              <Text style={styles.messageText}>{item.name}</Text>
-              <TouchableOpacity onPress={() => toggleRow(index)}>
-                <Image resizeMode='contain' style={{ height: 20, width: 20 }} source={require('../../../../../assets/images/ic_ticket_drop_down2.png')} />
+              <Text style={styles.messageTextDes}>{item.name}</Text>
+              <TouchableOpacity style={{ flex: 0.5}} onPress={() => toggleRow(index)}>
+                <Image resizeMode='contain' style={{ height: 20, width: 20}} source={require('../../../../../assets/images/ic_ticket_drop_down2.png')} />
               </TouchableOpacity>
               <View style={styles.statusContainer}>
                 <Text style={styles.status}>{item.status}</Text>
@@ -130,8 +130,8 @@ const TicketHistory: React.FC = () => {
             </View>
             {expandedRows.includes(index) && (
               <View style={styles.expandedContent}>
-                <Text style={styles.messageText}>Ticket NO.: {item.ticketNo}</Text>
-                <Text style={styles.messageText}>Status: {item.status}</Text>
+                <Text style={styles.messageSmallText}>Ticket NO.: {item.ticketNo}</Text>
+                <Text style={styles.messageSmallText}>Status: {item.status}</Text>
               </View>
             )}
           </View>
@@ -182,14 +182,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   listItem: {
-    // flexDirection: 'row',
-    // justifyContent: 'space-between',
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.lightGrey,
   },
   messageContainer: {
-    flex: 1,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -197,8 +194,21 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: responsiveFontSize(1.6),
-    textAlign: 'left',
     color: colors.black,
+    flex: 1,
+    marginRight: 10
+  },
+  messageSmallText: {
+    fontSize: responsiveFontSize(1.6),
+    color: colors.black,
+    // flex: 1,
+    // marginRight: 20
+  },
+  messageTextDes: {
+    fontSize: responsiveFontSize(1.6),
+    color: colors.black,
+    flex: 2,
+    fontWeight: 'bold'
   },
   expandedContent: {
     backgroundColor: colors.lightYellow,
@@ -216,7 +226,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     borderRadius: 5,
   },
-  downImage: {
+downImage: {
     height: responsiveFontSize(2),
     width: responsiveFontSize(2),
   },
@@ -225,6 +235,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 5,
     alignItems: 'center',
+    flex: 1
   },
 });
 

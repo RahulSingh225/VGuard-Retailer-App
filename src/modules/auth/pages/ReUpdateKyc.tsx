@@ -30,11 +30,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
     const [isShopAddressDifferent, setIsShopAddressDifferent] = useState('');
     const [isPopupVisible, setPopupVisible] = useState(false);
     const [popupContent, setPopupContent] = useState('');
-    // const [states, setStates] = useState<State | any>();
-    // const [districts, setDistricts] = useState<District | any>();
     const [cities, setCities] = useState<Cities | any>();
-    // const [currStates, setCurrStates] = useState<State | any>();
-    // const [currDistricts, setCurrDistricts] = useState<District | any>();
     const [currCities, setCurrCities] = useState<Cities | any>();
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const [uiSwitch, setUIswitch] = React.useState({ currentpincode: false, pincode: false })
@@ -98,54 +94,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             }
         }
     }, [postData?.stateId, postData?.pinCode, postData?.currPinCode]);
-
-    // const fetchData = async () => {
-    //     if (postData.stateId && postData.distId && postData.currStateId && postData.currDistId) {
-    //         try {
-    //             const statesResponse = await getStates();
-    //             const statesData = await statesResponse.data;
-    //             setStates(statesData);
-    //             setCurrStates(statesData);
-
-    //             const defaultState = postData.stateId;
-    //             const currDefaultState = postData.currStateId;
-
-    //             const districtsResponse = await getDistricts(defaultState);
-    //             const districtsData = await districtsResponse.data;
-    //             const currDistrictsResponse = await getDistricts(currDefaultState);
-    //             const currDistrictsData = await currDistrictsResponse.data;
-
-    //             if (Array.isArray(districtsData)) {
-    //                 setDistricts(districtsData);
-
-    //                 if (Array.isArray(districtsData) && districtsData.length > 0) {
-    //                     const citiesResponse = await getCities(postData.distId);
-    //                     const citiesData = await citiesResponse.data;
-    //                     setCities(citiesData);
-    //                 }
-    //             } else {
-    //                 console.error('Error: Districts data is not an array.', districtsData);
-    //             }
-    //             if (Array.isArray(currDistrictsData)) {
-    //                 setCurrDistricts(currDistrictsData);
-
-    //                 if (Array.isArray(currDistrictsData) && currDistrictsData.length > 0) {
-    //                     const citiesResponse = await getCities(postData.currDistId);
-    //                     const citiesData = await citiesResponse.data;
-    //                     setCurrCities(citiesData);
-    //                 }
-    //             } else {
-    //                 console.error('Error: Districts data is not an array.', currDistrictsData);
-    //             }
-    //             showLoader(false);
-    //         } catch (error) {
-    //             console.error('Error fetching data:', error);
-    //         }
-    //     }
-    //     else {
-    //         showLoader(false);
-    //     }
-    // };
 
     const validateField = (label: string, value: string, postData: VguardRishtaUser | any) => {
         const errors: string[] = [];
@@ -232,6 +180,12 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             const [panUid, idFrontUid, idBackUid, gstUid] = await Promise.all([panPromise, idFrontPromise, idBackPromise, gstPromise]);
 
             const updatedPostData = { ...postData };
+
+            if(postData?.gstYesNo=='No'){
+                updatedPostData.gstYesNo = 'No';
+                updatedPostData.gstPic = '';
+                updatedPostData.gstNo = '';
+            }
 
             if (panFileData.uri !== "" && panUid !== null) {
                 setPostDataOfImage('pan', panUid);
@@ -387,66 +341,16 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
             }
         }));
     }
+    const [isFieldAvailable, showField] = useState(false);
+    const [isCurrFieldAvailable, showCurrField] = useState(false);
 
-    const handleStateSelect = async (text: string, type: string) => {
-        let selectedCategory: any;
-        if (type == "permanent") {
-            selectedCategory = states.find(category => category.stateName === text);
-            setPostData((prevData: VguardRishtaUser) => ({
-                ...prevData,
-                state: text,
-                stateId: selectedCategory?.id || null,
-            }));
-        }
-        else if (type == "current") {
-            selectedCategory = currStates.find(category => category.stateName === text);
-            setPostData((prevData: VguardRishtaUser) => ({
-                ...prevData,
-                currState: text,
-                currStateId: selectedCategory?.id || null,
-            }));
-        }
-        getDistricts(selectedCategory?.id)
-            .then(response => response.data)
-            .then((data) => {
-                if (type == 'permanent') {
-                    setDistricts(data);
-                }
-                if (type == 'current') {
-                    setCurrDistricts(data);
-                }
-            })
-    }
-    const handleDistrictSelect = async (text: string, type: string) => {
-        let selectedCategory: any;
-        if (type == "permanent") {
-            selectedCategory = districts.find(category => category.districtName === text);
-            setPostData((prevData: VguardRishtaUser) => ({
-                ...prevData,
-                dist: text,
-                distId: selectedCategory?.id || null,
-            }));
-        }
-        else if (type == "current") {
-            selectedCategory = currDistricts.find(category => category.districtName === text);
-            setPostData((prevData: VguardRishtaUser) => ({
-                ...prevData,
-                currDist: text,
-                currDistId: selectedCategory?.id || null,
-            }));
-        }
-        getCities(selectedCategory?.id)
-            .then(response => response.data)
-            .then((data) => {
-                if (type == 'permanent') {
-                    setCities(data);
-                }
-                if (type == 'current') {
-                    setCurrCities(data);
-                }
-            })
-    }
     const handleCitySelect = async (text: string, type: string) => {
+        if (text == 'Other' && type == "permanent") {
+            showField(true)
+        }
+        if (text == 'Other' && type == "current") {
+            showCurrField(true)
+        }
         if (type == "permanent") {
             const selectedCategory = cities.find(category => category.cityName === text);
             setPostData((prevData: VguardRishtaUser) => ({
@@ -479,12 +383,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 secondData = secondData.data;
                 showLoader(false);
                 if (type == 'permanent') {
-                    // setDistricts([{
-                    //     distId: secondData.distId,
-                    //     districtName: secondData.distName,
-                    // }]);
-                    // setStates([secondData]);
-                    setCities([secondData]);
                     setPostData((prevData: VguardRishtaUser) => ({
                         ...prevData,
                         dist: secondData.distName,
@@ -497,12 +395,6 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     }))
                 }
                 if (type == 'current') {
-                    // setCurrDistricts([{
-                    //     distId: secondData.distId,
-                    //     districtName: secondData.distName,
-                    // }])
-                    // setCurrStates([secondData]);
-                    setCurrCities([secondData]);
                     setPostData((prevData: VguardRishtaUser) => ({
                         ...prevData,
                         currDist: secondData.distName,
@@ -518,7 +410,14 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                 return getCities(secondData.distId);
             })
             .then(cityData => {
-                cityData = cityData;
+                cityData = cityData.data;
+                const cityDataWithOther = [...cityData, { cityName: "Other", id: "" }];
+                if (type == "permanent") {
+                    setCities(cityDataWithOther)
+                }
+                if (type == "current") {
+                    setCurrCities(cityDataWithOther);
+                }
                 showLoader(false);
             })
             .catch(error => {
@@ -716,6 +615,13 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     onValueChange={(text: string) => handleCitySelect(text, "permanent")}
                     items={cities?.map(city => ({ label: city.cityName, value: city.cityName }))}
                 />
+                {isFieldAvailable ? (
+                    <InputField
+                        label={t('strings:city')}
+                        value={postData?.otherCity}
+                        onChangeText={(text) => handleInputChange(text, 'otherCity')}
+                    />
+                ) : null}
                 <PickerField
                     label={t('strings:is_shop_address_different')}
                     selectedValue={isShopAddressDifferent}
@@ -816,6 +722,13 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                             onValueChange={(text: string) => handleCitySelect(text, 'current')}
                             items={currCities?.map(city => ({ label: city.cityName, value: city.cityName }))}
                         />
+                        {isCurrFieldAvailable ? (
+                            <InputField
+                                label={t('strings:city')}
+                                value={postData?.otherCurrCity}
+                                onChangeText={(text) => handleInputChange(text, 'otherCurrCity')}
+                            />
+                        ) : null}
                     </>
                 ) : null}
                 <InputField

@@ -108,7 +108,6 @@ const TDSStatement: React.FC<TDSProps> = () => {
           id: month.id,
           month: month.month
         }))
-        console.log(fiscalYearResult); // Check if this prints the correct data
         setFiscalYearData(fiscalYearResult);
         setFiscalYearValue(fiscalYearResult[0].Fiscalyear);
         setMonthData(monthResult);
