@@ -9,7 +9,7 @@ const RedemptionHistory = () => {
   const { t } = useTranslation();
   const [redemptionHistoryData, setRedemptionHistoryData] = useState([]);
   useEffect(() => {
-    getRedemptionHistory('')
+    getRedemptionHistory("''")
       .then(response => response.data)
       .then(responseData => {
         setRedemptionHistoryData(responseData);

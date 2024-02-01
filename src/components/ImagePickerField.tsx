@@ -175,7 +175,7 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
                         <Image
                             source={{ uri: selectedImage }}
                             style={{ width: '100%', height: '70%' }}
-                            resizeMode="contain"
+                            resizeMode="cover"
                         />
                     </ImageBackground>
                     {/* <Image source={{ uri: selectedImage }} style={{ width: '70%', height: '70%' }} resizeMode="contain" /> */}

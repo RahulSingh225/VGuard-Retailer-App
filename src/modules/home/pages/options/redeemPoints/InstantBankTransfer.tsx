@@ -38,6 +38,20 @@ import ImagePickerField from '../../../../../components/ImagePickerField';
 
 type BankProps = {};
 
+interface BankDetail {
+    bankAccNo: string;
+    bankAccHolderName: string;
+    bankNameAndBranch: string;
+    bankAccType: string;
+    bankIfsc: string;
+    checkPhoto: string;
+}
+
+interface BankTransferData {
+    amount: string;
+    bankDetail: BankDetail;
+}
+
 const Bank: React.FC<BankProps> = () => {
     const { t } = useTranslation();
     const [select, setSelect] = useState<string | null>(null);
@@ -228,57 +242,101 @@ const Bank: React.FC<BankProps> = () => {
         }
     };
 
-    const handleProceed = () => {
+    const handleProceed = async () => {
         showLoader(true);
-        triggerApiWithImage(fileData)
-            .then((uuid) => {
-                const postData = {
+        try {
+            await triggerApiWithImage(fileData);
+            const postData: BankTransferData = {
+                amount: points,
+                bankDetail: {
                     bankAccNo: accNo,
                     bankAccHolderName: accHolder,
                     bankAccType: accType,
                     bankNameAndBranch: bankName,
                     bankIfsc: ifscCode,
-                    checkPhoto: entityUid,
-                    points: points
-                };
-                if (postData.bankAccNo != "" &&
-                    postData.bankAccHolderName != "" &&
-                    postData.bankAccType != "" &&
-                    postData.bankAccType != "" &&
-                    postData.bankNameAndBranch != "" &&
-                    postData.bankIfsc != "" &&
-                    postData.checkPhoto != "" &&
-                    postData.points != ""
-                ) {
-                    bankTransfer(postData)
-                        .then((response) => {
-                            showLoader(false);
-                            const responses = response.data;
-                            return responses;
-                        })
-                        .then((data) => {
-                            setPopupVisible(true);
-                            setPopupContent(data.message)
-                        })
-                        .catch((error) => {
-                            setPopupContent('Failed to update Bank Details');
-                            setPopupVisible(true);
-                            showLoader(false);
-                            console.error('API Error:', error);
-                        });
+                    checkPhoto: entityUid
                 }
-                else {
+            }
+            if (postData.amount != "" &&
+                postData.bankDetail.bankAccNo != "" &&
+                postData.bankDetail.bankAccHolderName != "" &&
+                postData.bankDetail.bankAccType != "" &&
+                postData.bankDetail.bankAccType != "" &&
+                postData.bankDetail.bankNameAndBranch != "" &&
+                postData.bankDetail.bankIfsc != "" &&
+                postData.bankDetail.checkPhoto != "") {
+                try {
+                    const bankTransferResponse = await bankTransfer(postData);
                     showLoader(false);
-                    setPopupContent("Enter all the details");
+                    const bankTransferResponseData = bankTransferResponse.data;
                     setPopupVisible(true);
+                    setPopupContent(bankTransferResponseData.message);
+                } catch (error) {
+                    showLoader(false);
+                    setPopupVisible(true);
+                    setPopupContent('Failed to update Bank Details');
+                    console.error('API Error:', error);
                 }
-
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                setPopupContent("An error occurred");
+            } else {
+                showLoader(false);
                 setPopupVisible(true);
-            });
+                setPopupContent("Enter Amount to Proceed!");
+            }
+        } catch (error) {
+            showLoader(false);
+            console.error('Error: bt', error);
+            setPopupVisible(true);
+            setPopupContent("An error occurred");
+        }
+        // triggerApiWithImage(fileData)
+        //     .then((uuid) => {
+        //         const postData = {
+        //             bankAccNo: accNo,
+        //             bankAccHolderName: accHolder,
+        //             bankAccType: accType,
+        //             bankNameAndBranch: bankName,
+        //             bankIfsc: ifscCode,
+        //             checkPhoto: entityUid,
+        //             points: points
+        //         };
+        //         if (postData.bankAccNo != "" &&
+        //             postData.bankAccHolderName != "" &&
+        //             postData.bankAccType != "" &&
+        //             postData.bankAccType != "" &&
+        //             postData.bankNameAndBranch != "" &&
+        //             postData.bankIfsc != "" &&
+        //             postData.checkPhoto != "" &&
+        //             postData.points != ""
+        //         ) {
+        //             bankTransfer(postData)
+        //                 .then((response) => {
+        //                     showLoader(false);
+        //                     const responses = response.data;
+        //                     return responses;
+        //                 })
+        //                 .then((data) => {
+        //                     setPopupVisible(true);
+        //                     setPopupContent(data.message)
+        //                 })
+        //                 .catch((error) => {
+        //                     setPopupContent('Failed to update Bank Details');
+        //                     setPopupVisible(true);
+        //                     showLoader(false);
+        //                     console.error('API Error:', error);
+        //                 });
+        //         }
+        //         else {
+        //             showLoader(false);
+        //             setPopupContent("Enter all the details");
+        //             setPopupVisible(true);
+        //         }
+
+        //     })
+        //     .catch(error => {
+        //         console.error('Error:', error);
+        //         setPopupContent("An error occurred");
+        //         setPopupVisible(true);
+        //     });
 
     };
 
@@ -314,7 +372,7 @@ const Bank: React.FC<BankProps> = () => {
                             )}
                             placeholderTextColor={colors.grey}
                             value={accNo}
-                            onChangeText={(value) => setAccNo(value)}
+                            editable={false}
                         />
                     </View>
                     <View style={styles.inputContainer}>
@@ -325,21 +383,30 @@ const Bank: React.FC<BankProps> = () => {
                             )}
                             value={accHolder}
                             placeholderTextColor={colors.grey}
-                            onChangeText={(value) => setAccHolder(value)}
+                            editable={false}
                         />
                     </View>
                     <View style={styles.inputContainer}>
-                        <Picker
+                        {/* <Picker
                             selectedValue={accType}
                             onValueChange={(itemValue) => setAccType(itemValue)}
                             style={styles.picker}>
                             <Picker.Item label={t('strings:select_account_type')} value={''} />
                             <Picker.Item label={t('strings:account_type:saving')} value={'Saving'} />
                             <Picker.Item label={t('strings:account_type:current')} value={'Current'} />
-                        </Picker>
+                        </Picker> */}
+                        <TextInput
+                            style={styles.input}
+                            placeholder={t(
+                                'strings:select_account_type'
+                            )}
+                            value={accType}
+                            placeholderTextColor={colors.grey}
+                            editable={false}
+                        />
                     </View>
                     <View style={styles.inputContainer}>
-                        <Picker
+                        {/* <Picker
                             selectedValue={bankName}
                             onValueChange={(itemValue) => setBankName(itemValue)}
                             style={styles.picker}>
@@ -354,7 +421,16 @@ const Bank: React.FC<BankProps> = () => {
                                     value={bank}
                                 />
                             ))}
-                        </Picker>
+                        </Picker> */}
+                        <TextInput
+                            style={styles.input}
+                            placeholder={t(
+                                'strings:bank_name'
+                            )}
+                            value={bankName}
+                            placeholderTextColor={colors.grey}
+                            editable={false}
+                        />
                     </View>
                     <View style={styles.inputContainer}>
                         <TextInput
@@ -362,104 +438,17 @@ const Bank: React.FC<BankProps> = () => {
                             placeholder={t('strings:ifsc')}
                             value={ifscCode}
                             placeholderTextColor={colors.grey}
-                            onChangeText={(value) => setIfscCode(value)}
+                            editable={false}
                         />
                     </View>
                     <View>
-                        {/* <TouchableOpacity
-                            style={styles.inputContainer}
-                            onPress={handleImagePickerPress}> */}
                         <ImagePickerField label={t('strings:cancelled_cheque_copy')}
                             onImageChange={handleImageChange}
                             imageRelated='Cheque'
                             initialImage={entityUid}
                             getImageRelated='Cheque'
+                            editable={false}
                         />
-                        <TouchableOpacity
-                            onPress={handleImageClick}>
-                            <View style={styles.inputImage}>
-                                {selectedImage ? (
-                                    <Image
-                                        source={{ uri: selectedImage }}
-                                        style={{ width: '100%', height: '100%' }}
-                                        resizeMode="cover"
-                                    />
-                                ) : (
-                                    <Image
-                                        source={require('../../../../../assets/images/photo_camera.png')}
-                                        style={{ width: '100%', height: '100%' }}
-                                        resizeMode="contain"
-                                    />
-                                )}
-                            </View>
-                        </TouchableOpacity>
-                        {/* </TouchableOpacity> */}
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={showImagePreviewModal}
-                            onRequestClose={() => setShowImagePreviewModal(false)}
-                        >
-                            <View style={styles.modalContainer}>
-                                <TouchableOpacity
-                                    onPress={() => setShowImagePreviewModal(false)}
-                                >
-                                    <Image resizeMode='contain' style={{ width: 50, height: 50 }} source={require('../../../../../assets/images/ic_close.png')} />
-                                </TouchableOpacity>
-
-                                <Image
-                                    source={{ uri: selectedImage }}
-                                    style={{ width: '70%', height: '70%' }}
-                                    resizeMode="contain"
-                                />
-                            </View>
-                        </Modal>
-                        {/* Modal for selecting camera or gallery */}
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={showImagePickerModal}
-                            style={styles.modalcontainer}
-                            hardwareAccelerated={true}
-                            opacity={0.3}>
-                            <View style={{
-                                width: width / 1.80, borderRadius: 5, alignSelf: 'center', height: height / 8, top: height / 2.8,
-                                margin: 20,
-                                backgroundColor: '#D3D3D3',
-                                borderRadius: 20,
-                                padding: 10,
-                                shadowColor: '#000',
-                                shadowOffset: {
-                                    width: 100,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 4,
-                                elevation: 5,
-                            }}>
-                                <Picker
-                                    mode="dropdown"
-                                    placeholder={'Update Your Selfie *'}
-                                    style={{ color: 'black' }}
-                                    selectedValue={select}
-                                    onValueChange={(itemValue, itemIndex) => {
-                                        if (itemValue === "Open camera") {
-                                            handleCameraUpload()
-                                        } else if (itemValue === "Open Image picker") {
-                                            handleGalleryUpload();
-                                        }
-                                    }}
-                                >
-                                    <Picker.Item label="Select Action" value="" />
-                                    <Picker.Item label="Select Photo from gallery" value="Open Image picker" />
-                                    <Picker.Item label="Capture Photo from camera" value="Open camera" />
-
-                                </Picker>
-                                <Button mode="text" onPress={() => setShowImagePickerModal(false)}>
-                                    Close
-                                </Button>
-                            </View>
-                        </Modal>
                     </View>
                 </View>
                 <View style={styles.button}>

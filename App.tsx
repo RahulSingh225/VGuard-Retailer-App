@@ -5,6 +5,7 @@ import { Alert, Linking, PermissionsAndroid } from 'react-native';
 import notificationListener from './src/modules/notifications/pages/PushNotification';
 import { getAppVersion } from './src/utils/apiservice';
 import DeviceInfo from 'react-native-device-info';
+
 const App: React.FC = () => {
   const [appVersion, setAppVersion] = useState('');
 

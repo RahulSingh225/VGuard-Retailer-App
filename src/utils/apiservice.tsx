@@ -1,9 +1,12 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
+import { useAuth } from '../components/AuthContext';
+import useAxios from './useAxios';
 
 // const BASE_URL = 'http://192.168.1.37:5000/vguard/api';
-const BASE_URL = 'http://34.93.182.174:5000/vguard/api';
+// const BASE_URL = 'http://34.93.182.174:5000/vguard/api';
+const BASE_URL = 'http://34.93.239.251:5000/vguard/api';
 
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -26,46 +29,44 @@ async function newTokens(token: string) {
   }
 }
 
-api.interceptors.response.use(
-  response => response,
-  async error => {
-    console.log(error.response.status);
-    if (error.response.status === 401) {
-      console.log("Axios Interceptor", error);
-      const refreshToken = JSON.parse(
-        (await AsyncStorage.getItem('refreshToken')) as string,
-      );
-      if (!refreshToken) {
-        // logout
-      }
+// api.interceptors.response.use(
+//   response => response,
+//   async error => {
+//     console.log(error.response.status);
+//     if (error.response.status === 401) {
+//       console.log("Axios Interceptor", error);
+//       const refreshToken = JSON.parse(
+//         (await AsyncStorage.getItem('refreshToken')) as string,
+//       );
+//       if (!refreshToken) {
+//         // logout
+//       }
 
-      try {
-        const { accessToken, newRefreshToken } = await newTokens(refreshToken);
-        await AsyncStorage.setItem(
-          'refreshToken',
-          JSON.stringify(newRefreshToken),
-        );
-        // await AsyncStorage.setItem('accessToken', `Bearer ${accessToken}`);
-        api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-        // return api(originalRequest);
-      } catch (refreshError: any) {
-        console.log(`${refreshError.message}`);
-        //logout
-        await AsyncStorage.removeItem('USER');
-        await AsyncStorage.removeItem('diffAcc');
-        await AsyncStorage.removeItem('refreshToken');
-        await AsyncStorage.removeItem('isUserAuthenticated');
-      }
-    }
-    return Promise.reject(error);
-  },
-);
+//       try {
+//         const { accessToken, newRefreshToken } = await newTokens(refreshToken);
+//         await AsyncStorage.setItem(
+//           'refreshToken',
+//           JSON.stringify(newRefreshToken),
+//         );
+//         // await AsyncStorage.setItem('accessToken', `Bearer ${accessToken}`);
+//         api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+//         // return api(originalRequest);
+//       } catch (refreshError: any) {
+//         console.log(`${refreshError.message}`);
+//         //logout
+//         await AsyncStorage.removeItem('USER');
+//         await AsyncStorage.removeItem('diffAcc');
+//         await AsyncStorage.removeItem('refreshToken');
+//       }
+//     }
+//     return Promise.reject(error);
+//   },
+// );
 
 async function createPostRequest(
   relativeUrl: string,
   data: any,
 ): Promise<AxiosResponse> {
-  // try {
   const headers = {
     Accept: 'application/json',
     'Content-Type': 'application/json',
@@ -74,10 +75,6 @@ async function createPostRequest(
     headers,
   });
   return response;
-  // } catch (error) {
-  //   console.error('Error:', error);
-  //   throw error;
-  // }
 }
 
 async function createGetRequest(relativeUrl: string): Promise<AxiosResponse> {
@@ -114,9 +111,9 @@ export async function loginWithPassword(
 ): Promise<AxiosResponse> {
   const path = 'user/loginWithSp';
   const response = await createPostRequest(path, { userName, password, role });
-  // await AsyncStorage.setItem('accessToken', `Bearer ${response.data.tokens.accessToken}`);
   if (response.status === 200) {
     if (response.data.name !== "Fail") {
+      await AsyncStorage.setItem('accessToken', `Bearer ${response.data.tokens.accessToken}`);
       api.defaults.headers.common[
         'Authorization'
       ] = `Bearer ${response.data.tokens.accessToken}`;
@@ -128,8 +125,8 @@ export async function loginWithPassword(
 export async function loginWithOtp(username: string, otp: string, roleId: string) {
   const path = 'user/userDetails/login';
   const response = await createPostRequest(path, { username, otp, roleId });
-  // await AsyncStorage.setItem('accessToken', `Bearer ${response.data.tokens.accessToken}`);
   if (response.status === 200) {
+    await AsyncStorage.setItem('accessToken', `Bearer ${response.data.tokens.accessToken}`);
     api.defaults.headers.common[
       'Authorization'
     ] = `Bearer ${response.data.tokens.accessToken}`;
@@ -554,8 +551,8 @@ export function getProductWiseOffers() {
   return createGetRequest(path);
 }
 
-export function getRedemptionHistory() {
-  const path = `product/redemptionHistory?type=''`;
+export function getRedemptionHistory(type: string) {
+  const path = `product/redemptionHistory?type=${type}`;
   return createGetRequest(path);
 }
 
@@ -760,6 +757,8 @@ export function validateMobile(mobileNumber: string, dealerCategory: string) {
 
 export function validateRetailerCoupon(couponData: any) {
   const path = 'coupon/validateRetailerCoupon';
+  console.log(path)
+  console.log(couponData)
   return createPostRequest(path, couponData);
 }
 

@@ -8,14 +8,30 @@ import arrowIcon from '../../../../../assets/images/arrow.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { paytmTransfer } from '../../../../../utils/apiservice';
 import Popup from '../../../../../components/Popup';
+
+interface PaytmTransferData {
+  points: string;
+  mobileNo: string;
+}
+
 const PaytmTransfer = () => {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [popupContent, setPopupContent] = useState('');
+  const [pointData, setPointData] = useState({
+    pointsBalance: '',
+    redeemedPoints: '',
+    numberOfScan: '',
+  });
 
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [points, setPoints] = useState('');
+  const [paytmSelected, setPaytmSelected] = useState(true);
   const { t } = useTranslation();
+
   const validateMobileNumber = () => {
     return /^[0-9]{10}$/.test(mobileNumber);
   };
+
   const handleProceed = () => {
     if (!validateMobileNumber()) {
       setPopupContent("Enter Valid Mobile Number");
@@ -54,15 +70,6 @@ const PaytmTransfer = () => {
         }
       });
   };
-  const [pointData, setPointData] = useState({
-    pointsBalance: '',
-    redeemedPoints: '',
-    numberOfScan: '',
-  });
-
-  const [mobileNumber, setMobileNumber] = useState('');
-  const [points, setPoints] = useState('');
-  const [paytmSelected, setPaytmSelected] = useState(true);
 
   const handlePaytmPress = () => {
     setPaytmSelected(!paytmSelected);
@@ -77,7 +84,7 @@ const PaytmTransfer = () => {
 
   useEffect(() => {
     AsyncStorage.getItem('USER').then((r) => {
-      const user = JSON.parse(r);
+      const user = JSON.parse(r as string);
       const data = {
         pointsBalance: user.pointsSummary.pointsBalance,
         redeemedPoints: user.pointsSummary.redeemedPoints,
@@ -86,6 +93,7 @@ const PaytmTransfer = () => {
       setPointData(data);
     });
   }, []);
+  
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.mainWrapper}>

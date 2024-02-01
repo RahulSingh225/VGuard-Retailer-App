@@ -21,14 +21,35 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
     const [isPopupVisible, setPopupVisible] = useState(false);
     const [popupContent, setPopupContent] = useState('');
     const [loader, showLoader] = useState(true);
+    const [isShopAddressDifferent, setIsShopAddressDifferent] = useState('');
+
 
     useEffect(() => {
-        AsyncStorage.getItem('VGUSER').then(result => {
-            setUserData(JSON.parse(result as string))
-            setPostData(JSON.parse(result as string));
-            showLoader(false);
-        })
-    }, []);
+        AsyncStorage.getItem('VGUSER').then((result) => {
+          const parsedResult = JSON.parse(result as string);
+          setUserData(parsedResult);
+          setPostData(parsedResult);
+      
+          if (
+            parsedResult?.currLandmark === parsedResult?.landmark &&
+            parsedResult?.currentAddress === parsedResult?.permanentAddress &&
+            parsedResult?.currStreetAndLocality === parsedResult?.streetAndLocality &&
+            parsedResult?.currPinCode === parsedResult?.pinCode
+          ) {
+            setIsShopAddressDifferent('Yes');
+          } else if (
+            parsedResult?.currLandmark !== parsedResult?.landmark ||
+            parsedResult?.currentAddress !== parsedResult?.permanentAddress ||
+            parsedResult?.currStreetAndLocality !== parsedResult?.streetAndLocality ||
+            parsedResult?.currPinCode !== parsedResult?.pinCode
+          ) {
+            setIsShopAddressDifferent('No');
+          }
+      
+          showLoader(false);
+        });
+      }, []);
+      
 
 
 
@@ -39,7 +60,7 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
                 setPopupVisible(true);
                 setPopupContent(responseData?.message);
 
-                if (responseData?.code === 200 && responseData.message=="Your KYC re-submission successful") {
+                if (responseData?.code === 200 && responseData.message == "Your KYC re-submission successful") {
                     AsyncStorage.removeItem('VGUSER');
                 }
             })
@@ -50,7 +71,7 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
 
     const handleClose = () => {
         setPopupVisible(false);
-        if(popupContent == "Your KYC re-submission successful"){
+        if (popupContent == "Your KYC re-submission successful") {
             navigation.navigate("login");
         }
     }
@@ -109,6 +130,48 @@ const ReUpdateKycPreview: React.FC<ReUpdateKycPreviewProps> = ({ navigation }) =
                     value={postData?.city}
                     disabled={true}
                 />
+                {isShopAddressDifferent == "No" ? (
+                    <>
+                        <Text style={styles.subHeading}>{t('strings:current_address')}</Text>
+
+                        <InputField
+                            label={t('strings:lbl_current_address_mandatory')}
+                            value={postData?.currentAddress}
+                            disabled={true}
+                        />
+                        <InputField
+                            label={t('strings:lbl_street_locality')}
+                            value={postData?.currStreetAndLocality}
+                            disabled={true} 
+                            />
+                        <InputField
+                            label={t('strings:lbl_landmark')}
+                            value={postData?.currLandmark}
+                            disabled={true} 
+                            />
+                        <InputField
+                            label={t('strings:pincode')}
+                            value={postData?.currPinCode}
+                            disabled={true} 
+                            />
+
+                        <InputField
+                            label={t('strings:lbl_state')}
+                            value={postData?.currState}
+                            disabled={true}
+                        />
+                        <InputField
+                            label={t('strings:district')}
+                            value={postData?.currDist}
+                            disabled={true}
+                        />
+                        <InputField
+                            label={t('strings:city')}
+                            value={postData?.currCity}
+                            disabled={true}
+                        />
+                    </>
+                ) : null}
                 <ImagePickerField label='Aadhar Card* (Front)'
                     imageRelated='IdCard'
                     initialImage={postData?.kycDetails?.aadharOrVoterOrDLFront}

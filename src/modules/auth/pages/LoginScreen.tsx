@@ -103,7 +103,6 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
     try {
       const response = await loginWithPassword(username, password, Constants.RET_USER_TYPE);
-      console.log("RESPONSE", response.data)
       showLoader(false);
       if (response.status === 200) {
         const responseData = response.data;
