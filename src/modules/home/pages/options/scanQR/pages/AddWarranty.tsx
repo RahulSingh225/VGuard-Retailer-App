@@ -97,7 +97,7 @@ const AddWarranty = ({navigation}) => {
           const parsedCouponResponse = JSON.parse(couponResponse);
           console.log(parsedCouponResponse)
           setCouponResponse(parsedCouponResponse);
-          setQrcode(parsedCouponResponse.couponCode);
+          setQrcode(parsedCouponResponse.copuonCode);
           setSkuDetails(parsedCouponResponse.skuDetail);
         }
   
