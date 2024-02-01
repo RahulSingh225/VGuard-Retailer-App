@@ -55,7 +55,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
     district: '',
     city: '',
     address: '',
-    category: '',
+    category: '1',
     dealerName: '',
     dealerAddress: '',
     dealerPincode: '',
@@ -212,7 +212,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
         } else {
           AsyncStorage.setItem('CUSTOMER_DETAILS', JSON.stringify(postData)).then(
             r => {
-              navigation.navigate('Scan Code');
+              navigation.navigate('Scan-in Code');
             },
           );
         }
@@ -286,7 +286,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
     getLocation().then(r => (location = r));
     AsyncStorage.getItem('USER').then(r => {
       const user = JSON.parse(r || '');
-
+      
       setAddedBy(user.contactNo);
       setCustomerFormData({
         ...customerFormData,
@@ -295,7 +295,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
         dealerCity: user.currCity,
         dealerContactNo: user.contactNo,
         dealerDistrict: user.currDist,
-        dealerPincode: user.currPinCode,
+        dealerPincode: user.currPinCode.toString(),
         dealerState: user.currState,
       });
     });

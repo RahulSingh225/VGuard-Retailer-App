@@ -32,8 +32,8 @@ const AddWarranty = ({navigation}) => {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
-  const [qrcode, setQrcode] = useState('1234567890');
-  const [skuDetails, setSkuDetails] = useState('VS-400');
+  const [qrcode, setQrcode] = useState('');
+  const [skuDetails, setSkuDetails] = useState('');
   const [purchaseDate, setPurchaseDate] = useState('');
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
   const [loader, showLoader] = useState(true);
@@ -86,21 +86,35 @@ const AddWarranty = ({navigation}) => {
   const [imageType, setImageType] = useState('');
 
   useEffect(() => {
-    const today = new Date();
-    const formattedDate = today.toLocaleDateString('en-US');
-    setPurchaseDate(formattedDate);
-    AsyncStorage.getItem('COUPON_RESPONSE').then(r => {
-     
-      setCouponResponse(JSON.parse(r));
-      setQrcode(JSON.parse(r).couponCode);
-      setSkuDetails(JSON.parse(r).skuDetail);
-      AsyncStorage.getItem('CUSTOMER_DETAILS').then(r => {
-    
-        setCustomerDetails(JSON.parse(r));
-      });
-    });
-    getUserLocation();
+    const initializeData = async () => {
+      try {
+        const today = new Date();
+        const formattedDate = today.toLocaleDateString('en-US');
+        setPurchaseDate(formattedDate);
+  
+        const couponResponse = await AsyncStorage.getItem('COUPON_RESPONSE');
+        if (couponResponse) {
+          const parsedCouponResponse = JSON.parse(couponResponse);
+          console.log(parsedCouponResponse)
+          setCouponResponse(parsedCouponResponse);
+          setQrcode(parsedCouponResponse.couponCode);
+          setSkuDetails(parsedCouponResponse.skuDetail);
+        }
+  
+        const customerDetails = await AsyncStorage.getItem('CUSTOMER_DETAILS');
+        if (customerDetails) {
+          setCustomerDetails(JSON.parse(customerDetails));
+        }
+  
+        getUserLocation();
+      } catch (error) {
+        console.error('Error initializing data:', error);
+      }
+    };
+  
+    initializeData();
   }, []);
+  
 
   const getUserLocation = () => {
     getLocation()
@@ -218,6 +232,7 @@ const AddWarranty = ({navigation}) => {
   };
 
   async function saveData() {
+    showLoader(true);
     if (!customerDetails?.contactNo) {
       ToastAndroid.show(
         t('strings:enter_mandatory_fields'),
@@ -314,6 +329,7 @@ const AddWarranty = ({navigation}) => {
     };
     const response = await sendCustomerData(postData);
     const result = await response.data;
+    showLoader(false);
     if (result.errorCode == 1) {
       var couponPoints = result.couponPoints;
       var basePoints = result.basePoints;
@@ -368,7 +384,7 @@ const AddWarranty = ({navigation}) => {
   }
   return (
     <ScrollView style={styles.mainWrapper}>
-      {loader && <Loader />}
+      {loader && <Loader isLoading={loader} />}
       <Text style={styles.heading}>Register Product</Text>
       {scratchCard && (
         <RewardBox

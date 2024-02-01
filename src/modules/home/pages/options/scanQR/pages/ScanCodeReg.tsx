@@ -45,7 +45,7 @@ interface OkPopupContent {
   okAction: (() => void) | null;
 }
 
-const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
+const ScanCodeReg: React.FC<ScanCodeProps> = ({ navigation, route }) => {
   const type = route?.params?.type;
   const { t } = useTranslation();
   const [qrCode, setQrcode] = useState<string>('');
@@ -169,60 +169,34 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         return;
       }
       var apiResponse;
-      if (type == 'airCooler') {
-        apiResponse = await isValidBarcode(CouponData, 1, '', 0, null);
-        const r = await apiResponse.data;
-      }
-      else if (type == 'SCAN_IN') {
-        apiResponse = await sendScanInCoupon(CouponData);
-        const r = await apiResponse.data;
-        console.log(r, "<><><")
-        if (r.errorCode == 3) {
-          showLoader(false);
-          setQrcode('');
-          AsyncStorage.setItem('COUPON_RESPONSE', JSON.stringify(r)).then(() => {
-            setOkPopupContent({
-              text: r.errorMsg,
-              okAction: () => navigation.navigate('Product Registration Form'),
-            });
-            setOkPopupVisible(true);
-          });
-        }
-        else {
-          setPopupVisible(true);
-          setPopupContent(r.errorMsg);
-        }
-
+      apiResponse = await isValidBarcode(CouponData, 0, '', 0, null);
+      const r = await apiResponse.data;
+      console.log(r, "<><")
+      const result = await AsyncStorage.setItem(
+        'COUPON_RESPONSE',
+        JSON.stringify(r),
+      );
+      CouponResponse = r;
+      if (r.errorCode == 1) {
+        showLoader(false);
+        setQrcode('');
+        setOkPopupVisible(true);
+        setOkPopupContent({
+          text: t('strings:valid_coupon_please_proceed_to_prod_regi'),
+          okAction: () => navigation.navigate('Add Warranty'),
+        });
+      } else if (r.errorCode == 2) {
+        setPinPopupVisible(true);
+        showLoader(false);
+      } else if (r.errorMsg && r.errorMsg != '') {
+        setPopupVisible(true);
+        setPopupContent(r.errorMsg);
+        showLoader(false);
+        // setPinPopupVisible(true);
       } else {
-        apiResponse = await isValidBarcode(CouponData, 0, '', 0, null);
-        const r = await apiResponse.data;
-        console.log(r, "<><")
-        const result = await AsyncStorage.setItem(
-          'COUPON_RESPONSE',
-          JSON.stringify(r),
-        );
-        CouponResponse = r;
-        if (r.errorCode == 1) {
-          showLoader(false);
-          setQrcode('');
-          setOkPopupVisible(true);
-          setOkPopupContent({
-            text: t('strings:valid_coupon_please_proceed_to_prod_regi'),
-            okAction: () => navigation.navigate('Add Warranty'),
-          });
-        } else if (r.errorCode == 2) {
-          setPinPopupVisible(true);
-          showLoader(false);
-        } else if (r.errorMsg && r.errorMsg != '') {
-          setPopupVisible(true);
-          setPopupContent(r.errorMsg);
-          showLoader(false);
-          // setPinPopupVisible(true);
-        } else {
-          setPopupVisible(true);
-          setPopupContent(t('strings:something_wrong'));
-          showLoader(false);
-        }
+        setPopupVisible(true);
+        setPopupContent(t('strings:something_wrong'));
+        showLoader(false);
       }
     } else {
       setPopupVisible(true);
@@ -519,7 +493,7 @@ async function isValidBarcode(
   }
 }
 
-export default ScanCode;
+export default ScanCodeReg;
 
 
 // var couponPoints = r.couponPoints;
