@@ -193,6 +193,7 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
                     <Picker
                         mode="dropdown"
                         style={{ color: 'black' }}
+                        dropdownIconColor = {colors.black}
                         selectedValue={select}
                         onValueChange={(itemValue, itemIndex) => {
                             if (itemValue === 'Open camera') {

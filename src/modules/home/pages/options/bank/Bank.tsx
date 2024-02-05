@@ -252,6 +252,7 @@ const Bank: React.FC<BankProps> = () => {
           <View style={styles.inputContainer}>
             <Picker
               selectedValue={bankName}
+              dropdownIconColor = {colors.black}
               onValueChange={(itemValue) => setBankName(itemValue)}
               style={styles.picker}>
               <Picker.Item
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   picker: {
-    width: '90%',
+    width: '100%',
     color: colors.grey,
   },
   labelPicker: {

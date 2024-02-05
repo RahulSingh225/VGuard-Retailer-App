@@ -88,6 +88,7 @@ const DailyWinner: React.FC = () => {
                 selectedValue={selectedDate}
                 onValueChange={handleDateChange}
                 style={styles.picker}
+                dropdownIconColor = {colors.black}
               >
                 {dates.map(date => (
                   <Picker.Item key={date} label={date} value={date} />

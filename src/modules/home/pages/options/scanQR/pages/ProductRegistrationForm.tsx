@@ -471,6 +471,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
           </View>
           <View style={styles.inputContainer}>
             <Picker
+            dropdownIconColor = {colors.black}
               selectedValue={customerFormData.category}
               onValueChange={value =>
                 setCustomerFormData(prevData => ({

@@ -269,6 +269,7 @@ const Ticket: React.FC<{ navigation: any }> = ({ navigation }) => {
       ) : (
         <View style={styles.inputContainer}>
           <Picker
+            dropdownIconColor={colors.black}
             selectedValue={selectedOption}
             onValueChange={handleOptionChange}
             style={styles.picker}

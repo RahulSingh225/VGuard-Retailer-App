@@ -39,6 +39,7 @@ const PickerField: React.FC<PickerFieldProps> = ({
                 <Picker
                     style={[styles.picker, disabled && styles.disabledPicker]}
                     enabled={!disabled}
+                    dropdownIconColor = {colors.black}
                     onValueChange={handleValueChange}
                     selectedValue={selectedValue}
                     onFocus={handleFocus}
