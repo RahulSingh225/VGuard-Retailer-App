@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Text, Linking, Image, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, Text, Linking, Image, View, Modal, Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Popup from './Popup';
 import colors from '../../colors';
 import { responsiveFontSize } from 'react-native-responsive-dimensions';
 
 const OpenPopupOnOpeningApp = () => {
-    const [isPopupVisible, setPopupVisible] = useState(false);
+    const [isModalVisible, setModalVisible] = useState(true);
     const [userData, setUserData] = useState({
         videoPath: "",
         imgPath: "",
         vdoText: "",
         textMessage: "",
     });
+    const [imageHeight, setImageHeight] = useState(null);
 
     useEffect(() => {
-        setPopupVisible(true);
         AsyncStorage.getItem('USER').then(r => {
             const value = JSON.parse(r);
             const welcomeBanner = value?.welcomeBanner || {};
@@ -25,6 +24,17 @@ const OpenPopupOnOpeningApp = () => {
                 vdoText: welcomeBanner.vdoText || "",
                 textMessage: welcomeBanner.textMessage || "Welcome!",
             });
+
+            Image.getSize(imageUrl, (width, height) => {
+                let value = height;
+                if(value > 500){
+                    value = value/2;
+                    if(value > 500){
+                        value = value/2;
+                    }
+                }
+                setImageHeight(value);
+            }, error => console.error("Error getting image size:", error));
         });
     }, []);
 
@@ -35,44 +45,78 @@ const OpenPopupOnOpeningApp = () => {
     const imageUrl = "https://www.vguardrishta.com/" + userData.imgPath;
 
     return (
-        <Popup isVisible={isPopupVisible} onClose={() => setPopupVisible(false)}>
-            <View style={styles.popupContent}>
-                <Text style={styles.blackText}>{userData.textMessage}</Text>
-                <Image
-                    source={{ uri: imageUrl }}
-                    style={styles.image}
-                    resizeMode="contain"
-                />
-                <TouchableOpacity onPress={handlePress}>
-                    <Text style={styles.linkText}>{userData.vdoText}</Text>
-                </TouchableOpacity>
+        <Modal
+            transparent={true}
+            visible={isModalVisible}
+            onRequestClose={() => setModalVisible(false)}
+        >
+            <View style={[styles.modalContainer]}>
+                <View style={[styles.modalContent, { height: imageHeight }]}>
+                    <Image
+                        source={{ uri: imageUrl }}
+                        style={styles.image}
+                        resizeMode="contain"
+                    />
+                    <TouchableOpacity style={styles.viewTouchable} onPress={handlePress}>
+                        <Text style={styles.viewText}>View</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+                        <Image
+                            source={require('../assets/images/ic_close.png')}
+                            style={styles.closeButtonImage}
+                            resizeMode='contain'
+                        />
+                    </TouchableOpacity>
+                </View>
             </View>
-        </Popup>
+        </Modal>
     );
 };
 
 const styles = StyleSheet.create({
-    linkText: {
-        color: colors.black,
-        textDecorationLine: 'underline'
-    },
-    image: {
-        width: 100,
-        height: 100,
-    },
-    blackText: {
-        color: colors.black,
-        fontWeight: 'bold',
-        fontSize: responsiveFontSize(2.2),
-        textAlign: 'center'
-    },
-    popupContent: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10,
+    modalContainer: {
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-    }
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        width: '80%',
+        padding: 20,
+        backgroundColor: 'white',
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    image: {
+        flex: 1,
+        width: '100%',
+        marginBottom: 30,
+        marginTop: 0,
+    },
+    closeButton: {
+        height: 50,
+        width: 50,
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+    },
+    closeButtonImage: {
+        height: '100%',
+        width: '100%',
+    },
+    viewText: {
+        color: colors.black,
+        fontWeight: 'bold',
+    },
+    viewTouchable: {
+        backgroundColor: colors.yellow,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 30,
+        position: 'absolute',
+        bottom: 0,
+        marginBottom: 5,
+    },
 });
 
 export default OpenPopupOnOpeningApp;
