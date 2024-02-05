@@ -709,7 +709,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   picker: {
-    width: '90%',
+    width: '100%',
     color: colors.grey,
   },
   labelPicker: {

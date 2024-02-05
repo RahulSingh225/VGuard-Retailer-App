@@ -61,22 +61,18 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff' 
     },
     head: { 
-        height: 40, 
         backgroundColor: colors.lightLightGrey,
-        paddingLeft: 10
-    },
-    row: { 
-        height: 40, 
-        paddingLeft: 10
     },
     text: { 
-        margin: 6,
+        paddingVertical: 2,
         color: colors.black,
+        paddingLeft: 10
     },
     headText: { 
-        margin: 6,
         color: colors.black,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        paddingLeft: 10,
+        paddingVertical: 5,
     },
 });
 

@@ -85,16 +85,14 @@ const AddSubLogin: React.FC<{ navigation: any }> = ({ navigation }) => {
                     numeric
                     maxLength={10}
                 />
-                <View style={styles.buttonContainer}>
-                    <Buttons
+            </View>
+            <View style={styles.buttonBottomContainer}>
+            <Buttons
                         label={t('strings:create_login')}
                         variant="filled"
                         onPress={() => addSubLogin()}
                         width="70%"
                     />
-                </View>
-            </View>
-            <View style={styles.buttonBottomContainer}>
                 <Buttons
                     label={t('strings:view_all_login')}
                     variant="filled"
@@ -150,7 +148,9 @@ const styles = StyleSheet.create({
     buttonBottomContainer: {
         marginTop: responsiveHeight(20),
         width: '100%',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexDirection: 'column',
+        gap: 40
     },
 });
 
