@@ -12,14 +12,22 @@ const OpenPopupOnOpeningApp = () => {
         vdoText: "",
         textMessage: "",
     });
-    const [imageHeight, setImageHeight] = useState(null);
-    const [imageWidth, setImageWidth] = useState(null);
+    const [imageHeight, setImageHeight] = useState(0);
+    const [imageWidth, setImageWidth] = useState(0);
 
     useEffect(() => {
         getDetails();
     }, []);
     useEffect(() => {
-        getImageSize();
+        getImageSize()
+            .then(({ width, height }) => {
+                setImageWidth(width);
+                setImageHeight(height);
+            })
+            .catch(error => {
+                console.error("Error:", error.message);
+            });
+
         if (userData.imgPath != "") {
             setModalVisible(true);
         }
@@ -39,19 +47,26 @@ const OpenPopupOnOpeningApp = () => {
     }
 
     const getImageSize = async () => {
-        Image.getSize(imageUrl, (width, height) => {
-            if (height > 700) {
-                height = height / 2;
-                width = width / 2;
-                if (height > 700 || width > 300) {
-                    height = height / 2;
-                    width = width / 2;   
+        return new Promise((resolve, reject) => {
+            Image.getSize(imageUrl, (width, height) => {
+                let optimizedHeight = height;
+                let optimizedWidth = width;
+    
+                const screenHeight = Dimensions.get('window').height;
+                const screenWidth = Dimensions.get('window').width;
+                const maxHeight = 0.8 * screenHeight;
+                const maxWidth = 0.8 * screenWidth;
+    
+                while (optimizedHeight > maxHeight || optimizedWidth > maxWidth) {
+                    optimizedHeight /= 1.5;
+                    optimizedWidth /= 1.5;
                 }
-            }
-            setImageWidth(width);
-            setImageHeight(height + 50);
-        }, error => console.error("Error getting image size:", error));
-    }
+    
+                resolve({ width: optimizedWidth, height: optimizedHeight + 50 });
+            }, error => reject(new Error("Error getting image size:" + error)));
+        });
+    };
+
 
     const handlePress = () => {
         Linking.openURL(userData.videoPath);
@@ -118,7 +133,7 @@ const styles = StyleSheet.create({
     closeButtonImage: {
         height: '100%',
         width: '100%',
-        
+
     },
     viewText: {
         color: colors.black,
