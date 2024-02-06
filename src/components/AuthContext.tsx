@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, Dispatch, SetStateAction } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User } from '../utils/modules/UserData';
-import { logoutUser } from '../utils/apiservice';
+import { User, VguardRishtaUser } from '../utils/modules/UserData';
+import { api, logoutUser, newTokens, logOut } from '../utils/apiservice';
 
 interface AuthContextProps {
   setIsUserAuthenticated: Dispatch<SetStateAction<boolean>>;
@@ -35,9 +35,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       const response = await logoutUser();
-      await AsyncStorage.removeItem('USER');
-      await AsyncStorage.removeItem('diffAcc');
-      await AsyncStorage.removeItem('refreshToken');
+      await AsyncStorage.clear();
       setIsUserAuthenticated(false);
     } catch (error) {
       console.error('Error while logging out:', error);
@@ -45,19 +43,57 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    AsyncStorage.getItem('USER')
-      .then((value) => {
-        if (value) {
-          login(JSON.parse(value));
+    (async () => {
+      try {
+        const user: string = await AsyncStorage.getItem('USER') as string;
+        const refreshToken: string = await AsyncStorage.getItem('refreshToken') as string;
+        const userData = JSON.parse(user);
+        const refreshTokenData = JSON.parse(refreshToken);
+        if (userData && refreshTokenData) {
+          const { accessToken, newRefreshToken } = await newTokens(refreshTokenData);
+          await AsyncStorage.setItem('refreshToken', JSON.stringify(newRefreshToken));
+          api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+          setIsUserAuthenticated(true);
+        } else {
+          throw new Error("No data in async storage");
         }
-      })
-      .catch((error) => {
-        console.error('AsyncStorage error:', error);
-      });
+      } catch (error: any) {
+        console.error("E1", error.message);
+      }
+    })();
   }, []);
 
+  // useEffect(() => {
+  //   const interceptor = api.interceptors.response.use(
+  //     response => response,
+  //     async error => {
+  //       console.log(error.config, error.response.status)
+  //       if (error.response.status === 401) {
+  //         const refreshToken = await AsyncStorage.getItem('refreshToken') as string;
+  //         const refreshTokenData = JSON.parse(refreshToken);
+  //         const { accessToken, newRefreshToken } = await newTokens(refreshTokenData);
+  //         await AsyncStorage.setItem('refreshToken', JSON.stringify(newRefreshToken));
+  //         api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+  //         return api.request(error.config);
+  //       }
+  //       if (error.response.status === 404) {
+  //         console.error("E2", error.response);
+  //         const user: string = await AsyncStorage.getItem("USER") as string;
+  //         const userData: VguardRishtaUser = JSON.parse(user);
+  //         const response = await logOut(userData.userId);
+  //         await AsyncStorage.clear();
+  //         setIsUserAuthenticated(false);
+  //       }
+  //       return Promise.reject(error);
+  //     }
+  //   );
+  //   return () => {
+  //     api.interceptors.response.eject(interceptor);
+  //   }
+  // }, [])
+
   return (
-    <AuthContext.Provider value={{ isUserAuthenticated, setIsUserAuthenticated,  login, logout, showPopup, popupAuthContent, setShowPopup }}>
+    <AuthContext.Provider value={{ isUserAuthenticated, setIsUserAuthenticated, login, logout, showPopup, popupAuthContent, setShowPopup }}>
       {children}
     </AuthContext.Provider>
   );

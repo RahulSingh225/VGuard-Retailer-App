@@ -67,7 +67,7 @@ export interface VguardRishtaUser {
     welcomePointsMsg: string | "";
     welcomePointsErrorCode: number | 0;
     ecardPath: string | "";
-    userId: string | "";
+    userId: number | 0;
     password: string | "";
     inAllow: number | 0;
     userCode: string | "";
