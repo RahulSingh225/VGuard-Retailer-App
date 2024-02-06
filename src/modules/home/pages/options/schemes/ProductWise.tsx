@@ -10,6 +10,7 @@ import {
 import colors from '../../../../../../colors';
 import { getProductWiseOffers } from '../../../../../utils/apiservice';
 import Loader from '../../../../../components/Loader';
+import { responsiveHeight } from 'react-native-responsive-dimensions';
 
 const baseURL = 'https://www.vguardrishta.com/';
 
@@ -61,6 +62,7 @@ const ProductWise: React.FC<ProductWiseProps> = ({ navigation }) => {
           <Image
             source={{ uri: category.imageUrl }}
             style={styles.categoryImage}
+            resizeMode='stretch'
             onLoadEnd={() => setLoading(false)}
           />
         </TouchableOpacity>
@@ -80,8 +82,8 @@ const styles = StyleSheet.create({
   },
   categoryImage: {
     width: '100%',
-    height: 100,
-    backgroundColor: colors.lightGrey
+    height: responsiveHeight(15),
+    backgroundColor: colors.black
   },
 });
 

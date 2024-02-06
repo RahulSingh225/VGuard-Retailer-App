@@ -10,25 +10,26 @@ import {
   TextInput,
   ToastAndroid,
 } from 'react-native';
-import React, {useState, useEffect, useTransition} from 'react';
+import React, { useState, useEffect, useTransition } from 'react';
 import colors from '../../../../../../../colors';
-import {responsiveFontSize} from 'react-native-responsive-dimensions';
-import {useTranslation} from 'react-i18next';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import { responsiveFontSize } from 'react-native-responsive-dimensions';
+import { useTranslation } from 'react-i18next';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 
 import Buttons from '../../../../../../components/Buttons';
 import arrowIcon from '../../../../../../assets/images/arrow.png';
-import {sendCustomerData, sendFile} from '../../../../../../utils/apiservice';
+import { sendCustomerData, sendFile } from '../../../../../../utils/apiservice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {CustomerData} from '../../../../../../utils/modules/CustomerData';
-import {Props} from 'react-native-paper';
+import { CustomerData } from '../../../../../../utils/modules/CustomerData';
+import { Props } from 'react-native-paper';
 import RewardBox from '../../../../../../components/ScratchCard';
 import Popup from '../../../../../../components/Popup';
 import getLocation from '../../../../../../utils/geolocation';
 import Loader from '../../../../../../components/Loader';
+import { height } from '../../../../../../utils/dimensions';
 
-const AddWarranty = ({navigation}) => {
-  const {t} = useTranslation();
+const AddWarranty = ({ navigation }) => {
+  const { t } = useTranslation();
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
@@ -49,7 +50,7 @@ const AddWarranty = ({navigation}) => {
       textContent: 'YOU WON',
       fontWeight: '700',
     },
-    text1: {color: 'black', fontSize: 16, textContent: '', fontWeight: '700'},
+    text1: { color: 'black', fontSize: 16, textContent: '', fontWeight: '700' },
     text2: {
       color: 'black',
       fontSize: 16,
@@ -66,7 +67,7 @@ const AddWarranty = ({navigation}) => {
       buttonColor: '#F0C300',
       buttonTextColor: 'black',
       buttonText: '',
-      buttonAction: () => {},
+      buttonAction: () => { },
       fontWeight: '400',
     },
     textInput: false,
@@ -91,7 +92,7 @@ const AddWarranty = ({navigation}) => {
         const today = new Date();
         const formattedDate = today.toLocaleDateString('en-US');
         setPurchaseDate(formattedDate);
-  
+
         const couponResponse = await AsyncStorage.getItem('COUPON_RESPONSE');
         if (couponResponse) {
           const parsedCouponResponse = JSON.parse(couponResponse);
@@ -100,21 +101,21 @@ const AddWarranty = ({navigation}) => {
           setQrcode(parsedCouponResponse.copuonCode);
           setSkuDetails(parsedCouponResponse.skuDetail);
         }
-  
+
         const customerDetails = await AsyncStorage.getItem('CUSTOMER_DETAILS');
         if (customerDetails) {
           setCustomerDetails(JSON.parse(customerDetails));
         }
-  
+
         getUserLocation();
       } catch (error) {
         console.error('Error initializing data:', error);
       }
     };
-  
+
     initializeData();
   }, []);
-  
+
 
   const getUserLocation = () => {
     getLocation()
@@ -198,7 +199,7 @@ const AddWarranty = ({navigation}) => {
     );
   };
   const triggerApiWithImage = async (
-    fileData: {uri: any; type: any; fileName: any} | null,
+    fileData: { uri: any; type: any; fileName: any } | null,
     documentType: string,
   ) => {
     const formData = new FormData();
@@ -371,7 +372,7 @@ const AddWarranty = ({navigation}) => {
           buttonTextColor: colors.black,
           buttonText: 'Scan Again',
           buttonAction: () =>
-            navigation.reset({index: 0, routes: [{name: 'Scan Code'}]}),
+            navigation.reset({ index: 0, routes: [{ name: 'Scan Code' }] }),
           fontWeight: '400',
         },
         textInput: false,
@@ -391,7 +392,7 @@ const AddWarranty = ({navigation}) => {
           scratchCardProps={scratchCardProps}
           visible={scratchCard}
           scratchable={scratchable}
-          onClose={() => navigation.reset({index: 0, routes: [{name: 'Home'}]})}
+          onClose={() => navigation.reset({ index: 0, routes: [{ name: 'Home' }] })}
         />
       )}
       {isPopupVisible && (
@@ -441,14 +442,14 @@ const AddWarranty = ({navigation}) => {
             <View style={styles.inputImage}>
               {selectedBillImage ? (
                 <Image
-                  source={{uri: selectedBillImage.uri}}
-                  style={{width: 30, height: 30}}
+                  source={{ uri: selectedBillImage.uri }}
+                  style={{ width: 30, height: 30 }}
                   resizeMode="cover"
                 />
               ) : (
                 <Image
                   source={require('../../../../../../assets/images/ic_attatchment_pin.png')}
-                  style={{width: 20, height: 20}}
+                  style={{ width: 20, height: 20 }}
                   resizeMode="contain"
                 />
               )}
@@ -480,14 +481,14 @@ const AddWarranty = ({navigation}) => {
             <View style={styles.inputImage}>
               {selectedWarrantyImage ? (
                 <Image
-                  source={{uri: selectedWarrantyImage.uri}}
-                  style={{width: 30, height: 30}}
+                  source={{ uri: selectedWarrantyImage.uri }}
+                  style={{ width: 30, height: 30 }}
                   resizeMode="cover"
                 />
               ) : (
                 <Image
                   source={require('../../../../../../assets/images/ic_attatchment_pin.png')}
-                  style={{width: 20, height: 20}}
+                  style={{ width: 20, height: 20 }}
                   resizeMode="contain"
                 />
               )}
@@ -518,7 +519,7 @@ const AddWarranty = ({navigation}) => {
               style={styles.input}
             />
             <Image
-              style={{width: 20, height: 20}}
+              style={{ width: 20, height: 20 }}
               source={require('../../../../../../assets/images/calendar.png')}
               resizeMode="contain"
             />
@@ -541,13 +542,31 @@ const AddWarranty = ({navigation}) => {
       <Modal
         animationType="slide"
         transparent={true}
-        visible={showImagePickerModal}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Button title="Launch Camera" onPress={handleCameraUpload} />
-            <Button title="Choose from Gallery" onPress={handleGalleryUpload} />
+        visible={showImagePickerModal}
+        hardwareAccelerated={true}
+        opacity={0.3}
+      >
+        <TouchableOpacity
+          style={styles.modalContainer}
+          onPressOut={() => setShowImagePickerModal(false)}
+          activeOpacity={1}
+        >
+          <View
+            style={styles.modalContent}>
+            <View style={{ flexDirection: 'column', gap: 15, width: '90%' }}>
+              <Text style={styles.blackHeading}>Select Action</Text>
+              <TouchableOpacity onPress={() => handleCameraUpload()}>
+                <Text style={styles.blackText}>Capture photo from camera</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleGalleryUpload()}>
+                <Text style={styles.blackText}>Select photo from gallery</Text>
+              </TouchableOpacity>
+            </View>
+            {/* <Button mode="text" onPress={() => setShowImagePickerModal(false)}>
+                            Close
+                        </Button> */}
           </View>
-        </View>
+        </TouchableOpacity>
       </Modal>
     </ScrollView>
   );
@@ -590,18 +609,37 @@ const styles = StyleSheet.create({
     width: '90%',
   },
   modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    flex: 1
   },
   modalContent: {
-    backgroundColor: 'white',
+    width: '80%',
+    alignSelf: 'center',
+    // height: height / 6,
+    top: height / 2.8,
+    margin: 20,
+    backgroundColor: colors.white,
+    borderRadius: 5,
     padding: 20,
-    gap: 10,
-    borderRadius: 10,
-    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 100,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    alignItems: 'center'
   },
+  blackText: {
+    color: colors.black,
+    fontSize: responsiveFontSize(2.2),
+    width: '100%'
+  },
+  blackHeading: {
+    color: colors.black,
+    fontSize: responsiveFontSize(2.3),
+    fontWeight: 'bold'
+  }
 });
 
 export default AddWarranty;

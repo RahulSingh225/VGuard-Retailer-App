@@ -129,7 +129,6 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         userMobileNumber: USER?.mobileNo,
         userCode: USER?.userCode,
       }));
-      getUserLocation();
     });
   }, []);
 
@@ -162,6 +161,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
   };
 
   async function sendBarcode() {
+    getUserLocation();
     if (qrCode && qrCode != '') {
       if (qrCode.length < 16) {
         setPopupContent("Please enter valid 16 character barcode");
