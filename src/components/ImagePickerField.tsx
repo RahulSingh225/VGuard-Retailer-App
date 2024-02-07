@@ -167,17 +167,17 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
                         onPress={handleImageModalToggle}>
                         <Image resizeMode='contain' style={{ width: 50, height: 50 }} source={require('../assets/images/ic_close.png')} />
                     </TouchableOpacity>
-                    <ImageBackground
+                    {/* <ImageBackground
                         source={require('../assets/images/no_image.webp')}
                         style={{ width: '100%', height: '70%' }}
                         resizeMode="contain"
-                    >
-                        <Image
-                            source={{ uri: selectedImage }}
-                            style={{ width: '100%', height: '70%' }}
-                            resizeMode="cover"
-                        />
-                    </ImageBackground>
+                    > */}
+                    <Image
+                        source={{ uri: selectedImage }}
+                        style={{ width: '100%', height: '70%' }}
+                        resizeMode="contain"
+                    />
+                    {/* </ImageBackground> */}
                     {/* <Image source={{ uri: selectedImage }} style={{ width: '70%', height: '70%' }} resizeMode="contain" /> */}
                 </View>
             </Modal>
@@ -189,28 +189,27 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
                 hardwareAccelerated={true}
                 opacity={0.3}
             >
-                <View style={styles.modalContent}>
-                    <Picker
-                        mode="dropdown"
-                        style={{ color: 'black' }}
-                        dropdownIconColor = {colors.black}
-                        selectedValue={select}
-                        onValueChange={(itemValue, itemIndex) => {
-                            if (itemValue === 'Open camera') {
-                                handleCameraUpload();
-                            } else if (itemValue === 'Open Image picker') {
-                                handleGalleryUpload();
-                            }
-                        }}
-                    >
-                        <Picker.Item label="Select Action" value="" />
-                        <Picker.Item label="Select Photo from gallery" value="Open Image picker" />
-                        <Picker.Item label="Capture Photo from camera" value="Open camera" />
-                    </Picker>
-                    <Button mode="text" onPress={() => setShowImagePickerModal(false)}>
-                        Close
-                    </Button>
-                </View>
+                <TouchableOpacity
+                    style={styles.modalContainer}
+                    onPressOut={() => setShowImagePickerModal(false)}
+                    activeOpacity={1}
+                >
+                    <View
+                        style={styles.modalContent}>
+                        <View style={{ flexDirection: 'column', gap: 15, width: '90%' }}>
+                            <Text style={styles.blackHeading}>Select Action</Text>
+                            <TouchableOpacity onPress={() => handleCameraUpload()}>
+                                <Text style={styles.blackText}>Capture photo from camera</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => handleGalleryUpload()}>
+                                <Text style={styles.blackText}>Select photo from gallery</Text>
+                            </TouchableOpacity>
+                        </View>
+                        {/* <Button mode="text" onPress={() => setShowImagePickerModal(false)}>
+                            Close
+                        </Button> */}
+                    </View>
+                </TouchableOpacity>
             </Modal>
         </View>
     );
@@ -277,15 +276,18 @@ const styles = StyleSheet.create({
         marginRight: 0,
         // backgroundColor: colors.lightGrey
     },
+    modalContainer: {
+        flex: 1
+    },
     modalContent: {
-        width: width / 1.8,
+        width: '80%',
         alignSelf: 'center',
-        height: height / 8,
+        // height: height / 6,
         top: height / 2.8,
         margin: 20,
-        backgroundColor: '#D3D3D3',
-        borderRadius: 20,
-        padding: 10,
+        backgroundColor: colors.white,
+        borderRadius: 5,
+        padding: 20,
         shadowColor: '#000',
         shadowOffset: {
             width: 100,
@@ -294,6 +296,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
+        alignItems: 'center'
     },
     imageName: {
         color: colors.black,
@@ -315,6 +318,16 @@ const styles = StyleSheet.create({
         gap: 10,
         borderRadius: 10,
         alignItems: 'center',
+    },
+    blackText: {
+        color: colors.black,
+        fontSize: responsiveFontSize(2.2),
+        width: '100%'
+    },
+    blackHeading: {
+        color: colors.black,
+        fontSize: responsiveFontSize(2.3),
+        fontWeight: 'bold'
     }
 });
 

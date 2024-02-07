@@ -359,17 +359,17 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
           >
             <Image resizeMode='contain' style={{ width: 50, height: 50 }} source={require('../../../assets/images/ic_close.png')} />
           </TouchableOpacity>
-          <ImageBackground
+          {/* <ImageBackground
             source={require('../../../assets/images/no_image.webp')}
             style={{ width: '100%', height: '70%'}}
             resizeMode="contain"
-          >
+          > */}
             <Image
               source={{ uri: imageOpen }}
               style={{ width: '100%', height: '70%' }}
               resizeMode="contain"
             />
-          </ImageBackground>
+          {/* </ImageBackground> */}
         </View>
       </Modal>
       {isPopupVisible && (
