@@ -4,9 +4,8 @@ import messaging from '@react-native-firebase/messaging';
 import { useAuth } from '../components/AuthContext';
 import useAxios from './useAxios';
 
-const BASE_URL = 'http://192.168.29.15:5000/vguard/api';
-// const BASE_URL = 'http://34.93.182.174:5000/vguard/api';
-// const BASE_URL = 'http://34.93.239.251:5000/vguard/api';
+// const BASE_URL = 'http://192.168.1.37:5000/vguard/api';
+const BASE_URL = 'http://34.93.239.251:5000/vguard/api';
 
 export const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -28,30 +27,6 @@ export async function newTokens(token: string) {
     throw new Error('Failed to refresh tokens');
   }
 }
-
-// api.interceptors.response.use(
-//   response => response,
-//   async error => {
-//     if (error.response.status === 401) {
-//       const refreshToken = JSON.parse(
-//         (await AsyncStorage.getItem('refreshToken')) as string,
-//       );
-//       try {
-//         const { newRefreshToken } = await newTokens(refreshToken);
-//         await AsyncStorage.setItem(
-//           'refreshToken',
-//           JSON.stringify(newRefreshToken),
-//         );
-//         // return api(originalRequest);
-//       } catch (refreshError: any) {
-//         console.log(`${refreshError.message}`);
-//         //logout
-
-//       }
-//     }
-//     return Promise.reject(error);
-//   },
-// );
 
 async function createPostRequest(
   relativeUrl: string,
@@ -100,7 +75,7 @@ export async function loginWithPassword(
   role: string,
 ): Promise<AxiosResponse> {
   const path = 'user/loginWithSp';
-  const response = await createPostRequest(path, { userName, password, role });
+  const response: AxiosResponse = await createPostRequest(path, { userName, password, role });
   if (response.status === 200) {
     if (response.data.name !== "Fail") {
       api.defaults.headers.common[
@@ -115,7 +90,7 @@ export async function loginWithPassword(
 
 export async function loginWithOtp(username: string, otp: string, roleId: string) {
   const path = 'user/userDetails/login';
-  const response = await createPostRequest(path, { username, otp, roleId });
+  const response: AxiosResponse = await createPostRequest(path, { username, otp, roleId });
   if (response.status === 200) {
     api.defaults.headers.common[
       'Authorization'

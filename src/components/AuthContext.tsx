@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           throw new Error("No data in async storage");
         }
       } catch (error: any) {
-        console.error("E1", error.message);
+        console.error(error.message);
       }
     })();
   }, []);
