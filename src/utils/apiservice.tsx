@@ -5,10 +5,9 @@ import { useAuth } from '../components/AuthContext';
 import useAxios from './useAxios';
 
 // const BASE_URL = 'http://192.168.1.37:5000/vguard/api';
-// const BASE_URL = 'http://34.93.182.174:5000/vguard/api';
 const BASE_URL = 'http://34.93.239.251:5000/vguard/api';
 
-const api: AxiosInstance = axios.create({
+export const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
 });
 
@@ -17,51 +16,17 @@ export interface Tokens {
   refreshToken: string;
 }
 
-async function newTokens(token: string) {
+export async function newTokens(token: string) {
   try {
-    const response: AxiosResponse = await api.post('user/refreshAccessToken', {
-      token,
-    });
+    const path = 'user/refreshAccessToken'
+    const response: AxiosResponse = await createPostRequest(path, { refreshToken: token });
     const { accessToken, refreshToken } = response.data;
+    api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
     return { accessToken, newRefreshToken: refreshToken };
   } catch (error) {
     throw new Error('Failed to refresh tokens');
   }
 }
-
-// api.interceptors.response.use(
-//   response => response,
-//   async error => {
-//     console.log(error.response.status);
-//     if (error.response.status === 401) {
-//       console.log("Axios Interceptor", error);
-//       const refreshToken = JSON.parse(
-//         (await AsyncStorage.getItem('refreshToken')) as string,
-//       );
-//       if (!refreshToken) {
-//         // logout
-//       }
-
-//       try {
-//         const { accessToken, newRefreshToken } = await newTokens(refreshToken);
-//         await AsyncStorage.setItem(
-//           'refreshToken',
-//           JSON.stringify(newRefreshToken),
-//         );
-//         // await AsyncStorage.setItem('accessToken', `Bearer ${accessToken}`);
-//         api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-//         // return api(originalRequest);
-//       } catch (refreshError: any) {
-//         console.log(`${refreshError.message}`);
-//         //logout
-//         await AsyncStorage.removeItem('USER');
-//         await AsyncStorage.removeItem('diffAcc');
-//         await AsyncStorage.removeItem('refreshToken');
-//       }
-//     }
-//     return Promise.reject(error);
-//   },
-// );
 
 async function createPostRequest(
   relativeUrl: string,
@@ -110,13 +75,14 @@ export async function loginWithPassword(
   role: string,
 ): Promise<AxiosResponse> {
   const path = 'user/loginWithSp';
-  const response = await createPostRequest(path, { userName, password, role });
+  const response: AxiosResponse = await createPostRequest(path, { userName, password, role });
   if (response.status === 200) {
     if (response.data.name !== "Fail") {
-      await AsyncStorage.setItem('accessToken', `Bearer ${response.data.tokens.accessToken}`);
       api.defaults.headers.common[
         'Authorization'
       ] = `Bearer ${response.data.tokens.accessToken}`;
+    } else {
+      throw new Error("Invalid username or password");
     }
   }
   return response;
@@ -124,9 +90,8 @@ export async function loginWithPassword(
 
 export async function loginWithOtp(username: string, otp: string, roleId: string) {
   const path = 'user/userDetails/login';
-  const response = await createPostRequest(path, { username, otp, roleId });
+  const response: AxiosResponse = await createPostRequest(path, { username, otp, roleId });
   if (response.status === 200) {
-    await AsyncStorage.setItem('accessToken', `Bearer ${response.data.tokens.accessToken}`);
     api.defaults.headers.common[
       'Authorization'
     ] = `Bearer ${response.data.tokens.accessToken}`;
@@ -662,7 +627,12 @@ export function getSubProfessions(professionId: string) {
 
 export function logoutUser() {
   const path = 'user/logoutUser';
-  return api.post(path);
+  return createPostRequest(path, {});
+}
+
+export function logOut(userId: number) {
+  const path = 'user/logout';
+  return createPostRequest(path, { userId });
 }
 
 export function getDetailsByPinCode(pinCode: string) {
