@@ -11,7 +11,7 @@ const ReusableCarousel = ({ data, autoChangeInterval = 5000, carouselHeight = 20
       <Image
         source={item.imageUrl}
         style={styles.carouselImage}
-        resizeMode="contain"
+        resizeMode="cover"
       />
     </View>
   );

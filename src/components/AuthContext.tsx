@@ -25,7 +25,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [popupAuthContent, setPopupContent] = useState('Please Enter Credentials of a Retailer');
 
   const login = async (user: User) => {
-    const diffAcc = user.vguardRishtaUser.diffAcc.toString();
+    let diffAcc = user.vguardRishtaUser.diffAcc ? user.vguardRishtaUser.diffAcc.toString() : '0';
     await AsyncStorage.setItem('USER', JSON.stringify(user.vguardRishtaUser));
     await AsyncStorage.setItem('refreshToken', JSON.stringify(user.tokens.refreshToken));
     await AsyncStorage.setItem('diffAcc', diffAcc);

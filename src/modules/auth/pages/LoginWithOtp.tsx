@@ -113,9 +113,11 @@ const LoginWithOtp: React.FC<LoginWithOtpProps> = ({ navigation, route }) => {
         const verificationResponseData = verificationResponse.data;
         if (verificationResponseData.code === 200) {
           showLoader(false);
+          console.log("LOGGING")
           const loginResponse = await loginWithOtp(number, otp, Constants.RET_USER_TYPE);
           const loginResponseData = loginResponse.data;
           if (loginResponse.status === 200) {
+            console.log("LOGGING 2")
             login(loginResponseData)
           } else {
             throw new Error(loginResponseData);

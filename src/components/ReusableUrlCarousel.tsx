@@ -54,7 +54,7 @@ const ReusableUrlCarousel: React.FC<ReusableUrlCarouselProps> = ({
               showSpinner={true}
               spinnerColor={colors.yellow}
               spinnerSize={15}
-              resizeMode="contain"
+              resizeMode="cover"
             />
           </ImageBackground>
       </View>
