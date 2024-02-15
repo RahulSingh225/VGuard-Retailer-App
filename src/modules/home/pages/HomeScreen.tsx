@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   },
   leftPoint: {
     flex: 1,
-    height: responsiveHeight(10),
+    height: responsiveHeight(12),
     backgroundColor: colors.lightYellow,
     borderTopLeftRadius: 50,
     borderBottomLeftRadius: 50,
@@ -257,14 +257,14 @@ const styles = StyleSheet.create({
   },
   middlePoint: {
     flex: 1,
-    height: responsiveHeight(10),
+    height: responsiveHeight(12),
     backgroundColor: colors.lightYellow,
     alignItems: 'center',
     justifyContent: 'center',
   },
   rightPoint: {
     flex: 1,
-    height: responsiveHeight(10),
+    height: responsiveHeight(12),
     backgroundColor: colors.lightYellow,
     borderTopRightRadius: 50,
     borderBottomRightRadius: 50,
@@ -273,7 +273,6 @@ const styles = StyleSheet.create({
   },
   greyText: {
     marginTop: 20,
-    flex: 1,
     width: '80%',
     color: colors.grey,
     fontWeight: 'bold',
@@ -282,7 +281,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   point: {
-    flex: 1,
     fontWeight: 'bold',
     color: colors.black,
     fontSize: responsiveFontSize(1.5),

@@ -198,6 +198,8 @@ const ProductRegistrationForm: React.FC<{ navigation: any }> = ({ navigation }) 
           longitude: location.longitude,
           geolocation: '',
         };
+
+        console.log(customerFormData.category)
         const response = await validateMobile(
           contactNo,
           customerFormData.category,
@@ -480,12 +482,12 @@ const ProductRegistrationForm: React.FC<{ navigation: any }> = ({ navigation }) 
               <Picker.Item
                 key={'Customer'}
                 label={'Customer'}
-                value={'Customer'}
+                value={'1'}
               />
               <Picker.Item
                 key={'Sub-Dealer'}
                 label={'Sub-Dealer'}
-                value={'Sub-Dealer'}
+                value={'2'}
               />
             </Picker>
           </View>
