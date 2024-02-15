@@ -89,9 +89,9 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
         if (postData?.stateId) {
             //   fetchData();
             processPincode(postData.pinCode.toString(), 'permanent');
-            if (isShopAddressDifferent == 'No') {
+            // if (isShopAddressDifferent == 'No') {
                 processPincode(postData.currPinCode.toString(), 'current');
-            }
+            // }
         }
     }, [postData?.stateId, postData?.pinCode, postData?.currPinCode]);
 
@@ -416,6 +416,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                     setCities(cityDataWithOther)
                 }
                 if (type == "current") {
+                    console.log(cityDataWithOther)
                     setCurrCities(cityDataWithOther);
                 }
                 showLoader(false);
@@ -721,7 +722,7 @@ const ReUpdateKyc: React.FC<ReUpdateKycProps> = ({ navigation, route }) => {
                             selectedValue={postData?.currCity}
                             onValueChange={(text: string) => handleCitySelect(text, 'current')}
                             items={currCities?.map(city => ({ label: city.cityName, value: city.cityName }))}
-                        />
+                            />
                         {isCurrFieldAvailable ? (
                             <InputField
                                 label={t('strings:city')}
