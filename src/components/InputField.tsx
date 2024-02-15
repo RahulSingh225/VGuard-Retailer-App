@@ -12,7 +12,7 @@ interface InputFieldProps {
   isImage?: boolean;
   imageSource?: string;
   onPressImage?: () => void;
-  onChangeText: (value: string) => void;
+  onChangeText?: (value: string) => void;
   numeric?: boolean;
   maxLength?: number;
   imageName?: string;

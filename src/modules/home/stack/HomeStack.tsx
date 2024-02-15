@@ -30,6 +30,7 @@ import AirCoolerStack from '../pages/options/airCooler/stack/AirCoolerStack';
 import RedemptionHistory from '../pages/options/redeemPoints/RedemptionHistory';
 import UniqueCodeHistory from '../pages/options/scanQR/pages/UniqueCodeHistory';
 import ProductRegistrationForm from '../pages/options/scanQR/pages/ProductRegistrationForm';
+import ScanCodeReg from '../pages/options/scanQR/pages/ScanCodeReg';
 
 const HomeStack: React.FC = () => {
   type HomeStackParams = {
@@ -52,6 +53,7 @@ const HomeStack: React.FC = () => {
     'Unique Code History': undefined;
     'Redemption History': undefined;
     'Product Registration Form': undefined;
+    'Scan In': undefined;
   };
 
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
@@ -113,6 +115,13 @@ const HomeStack: React.FC = () => {
         <Stack.Screen
           name="Unique Code History"
           component={UniqueCodeHistory}
+          options={{
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="Scan In"
+          component={ScanCodeReg}
           options={{
             headerShown: true,
           }}

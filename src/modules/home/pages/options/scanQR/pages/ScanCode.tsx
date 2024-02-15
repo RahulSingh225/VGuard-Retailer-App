@@ -130,6 +130,7 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
         userCode: USER?.userCode,
       }));
     });
+    showLoader(false);
   }, []);
 
   const getUserLocation = () => {
@@ -145,10 +146,13 @@ const ScanCode: React.FC<ScanCodeProps> = ({ navigation, route }) => {
           showLoader(false);
         } else {
           console.error('Position is undefined or null');
+          showLoader(false);
         }
       })
       .catch(error => {
         console.error('Error getting location:', error);
+        showLoader(false);
+
       });
   };
 

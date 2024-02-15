@@ -14,9 +14,9 @@ const ScanStack: React.FC = () => {
     'Product Registratrion': undefined;
     'Scan Code': undefined;
     'Unique Code History': undefined;
+    'Scan In': undefined;
     'Product Registration Form': undefined;
     'Add Warranty': undefined;
-    'Scan-in Code': undefined;
   };
 
   const Stack = createNativeStackNavigator<ScanStackParams>();
@@ -45,13 +45,6 @@ const ScanStack: React.FC = () => {
           }}
         />
         <Stack.Screen
-          name="Scan-in Code"
-          component={ScanCodeReg}
-          options={{
-            headerShown: true,
-          }}
-        />
-        <Stack.Screen
           name="Unique Code History"
           component={UniqueCodeHistory}
           options={{
@@ -68,6 +61,13 @@ const ScanStack: React.FC = () => {
         <Stack.Screen
           name="Add Warranty"
           component={AddWarranty}
+          options={{
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="Scan In"
+          component={ScanCodeReg}
           options={{
             headerShown: true,
           }}

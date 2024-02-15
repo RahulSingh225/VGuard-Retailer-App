@@ -34,11 +34,8 @@ import { height } from '../../../../../../utils/dimensions';
 import getLocation from '../../../../../../utils/geolocation';
 import Loader from '../../../../../../components/Loader';
 
-type ProductRegistrationFormProps = {};
 var location: {};
-const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
-  navigation,
-}) => {
+const ProductRegistrationForm: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
   const [contactNo, setContactNo] = useState('');
   const [addedBy, setAddedBy] = useState('');
@@ -212,7 +209,7 @@ const ProductRegistrationForm: React.FC<ProductRegistrationFormProps> = ({
         } else {
           AsyncStorage.setItem('CUSTOMER_DETAILS', JSON.stringify(postData)).then(
             r => {
-              navigation.navigate('Scan-in Code');
+              navigation.navigate('Scan In');
             },
           );
         }

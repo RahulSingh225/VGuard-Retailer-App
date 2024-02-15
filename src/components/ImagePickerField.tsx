@@ -37,6 +37,7 @@ const ImagePickerField: React.FC<ImagePickerFieldProps> = ({ label, onImageChang
                 try {
                     // const image = await getFile(initialImage, imageRelated, "2");
                     const image = await getImageUrl(initialImage, getImageRelated);
+                    console.log(image)
                     setIsImageSelected(true);
                     setSelectedImage(image);
                     setSelectedImageName(initialImage);

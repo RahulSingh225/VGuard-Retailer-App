@@ -123,7 +123,7 @@ const UpdatePAN: React.FC<BankProps> = () => {
   }) => {
     const formData = new FormData();
     formData.append('userRole', Constants.RET_USER_TYPE);
-    formData.append('imageRelated', 'PAN_CARD_FRONT');
+    formData.append('imageRelated', 'PanCard');
     formData.append('file', {
       uri: fileData.uri,
       name: fileData.name,

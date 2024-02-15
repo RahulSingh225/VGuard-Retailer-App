@@ -33,6 +33,8 @@ import Popup from '../../../../../components/Popup';
 import ImagePickerField from '../../../../../components/ImagePickerField';
 import Loader from '../../../../../components/Loader';
 import Constants from '../../../../../utils/constants';
+import InputField from '../../../../../components/InputField';
+import PickerField from '../../../../../components/PickerField';
 
 type BankProps = {};
 
@@ -63,6 +65,7 @@ const Bank: React.FC<BankProps> = () => {
         const response = await getany();
         if (response.status === 200) {
           const data = response.data;
+          console.log(data)
           setAccHolder(data.bankAccHolderName);
           setAccType(data.bankAccType);
           setBankName(data.bankNameAndBranch);
@@ -97,8 +100,9 @@ const Bank: React.FC<BankProps> = () => {
       })
       .then((responses) => {
         if (Array.isArray(responses)) {
-          const bankNames = responses.map((bank) => bank.bankNameAndBranch);
-          setAvailableBanks(bankNames);
+          const bankOptions = responses.map((bank) => ({ label: bank.bankNameAndBranch, value: bank.bankNameAndBranch }));
+          setAvailableBanks(bankOptions);
+
         } else {
           console.error('Invalid response format');
         }
@@ -182,7 +186,7 @@ const Bank: React.FC<BankProps> = () => {
   const triggerApiWithImage = async (fileData: { uri: string; type: string; name: string }) => {
     const formData = new FormData();
     formData.append('userRole', Constants.RET_USER_TYPE);
-    formData.append('imageRelated', 'CHEQUE');
+    formData.append('imageRelated', 'Cheque');
     formData.append('file', {
       uri: fileData.uri,
       name: fileData.name,
@@ -216,75 +220,31 @@ const Bank: React.FC<BankProps> = () => {
           </Text>
         </View>
         <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder={t(
-                'strings:lbl_account_number',
-              )}
-              placeholderTextColor={colors.grey}
-              value={accNo}
-              onChangeText={(value) => setAccNo(value)}
-              keyboardType='numeric'
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder={t(
-                'strings:lbl_account_holder_name'
-              )}
-              value={accHolder}
-              placeholderTextColor={colors.grey}
-              onChangeText={(value) => setAccHolder(value)}
-            />
-          </View>
-          {/* <View style={styles.inputContainer}>
-            <Picker
-              selectedValue={accType}
-              onValueChange={(itemValue) => setAccType(itemValue)}
-              style={styles.picker}>
-              <Picker.Item label={t('strings:select_account_type')} value={''} />
-              <Picker.Item label={t('strings:account_type:saving')} value={'Saving'} />
-              <Picker.Item label={t('strings:account_type:current')} value={'Current'} />
-            </Picker>
-          </View> */}
-          <View style={styles.inputContainer}>
-            <Picker
-              selectedValue={bankName}
-              dropdownIconColor = {colors.black}
-              onValueChange={(itemValue) => setBankName(itemValue)}
-              style={styles.picker}>
-              <Picker.Item
-                key="Select"
-                label="Select Bank Name"
-                value="" />
-              {availableBanks.map((bank, index) => (
-                <Picker.Item
-                  key={index}
-                  label={bank}
-                  value={bank}
-                />
-              ))}
-            </Picker>
-          </View>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder={t('strings:ifsc')}
-              value={ifscCode}
-              placeholderTextColor={colors.grey}
-              onChangeText={(value) => setIfscCode(value)}
-            />
-          </View>
-          <View>
-            <ImagePickerField label={t('strings:cancelled_cheque_copy')}
-              onImageChange={handleImageChange}
-              imageRelated='Cheque'
-              initialImage={entityUid}
-              getImageRelated = 'Cheque'
-            />
-          </View>
+          <InputField
+            label={t('strings:lbl_account_number')}
+            value={accNo}
+            onChangeText={(value) => setAccNo(value)} />
+          <InputField
+            label={t('strings:lbl_account_holder_name')}
+            value={accHolder}
+            onChangeText={(value) => setAccHolder(value)} />
+          <PickerField
+            label={'Select Bank Name'}
+            selectedValue={bankName}
+            onValueChange={(itemValue) => setBankName(itemValue)}
+            items={availableBanks}
+          />
+          <InputField
+            label={t('strings:ifsc')}
+            value={ifscCode}
+            onChangeText={(value) => setIfscCode(value)}
+          />
+          <ImagePickerField label={t('strings:cancelled_cheque_copy')}
+            onImageChange={handleImageChange}
+            imageRelated='Cheque'
+            initialImage={entityUid}
+            getImageRelated='Cheque'
+          />
         </View>
         <View style={styles.button}>
           <Buttons
